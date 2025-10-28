@@ -1,4 +1,6 @@
 node_modules
+#ไม่ต้องติดตามไฟล์package-lock.json
+package-lock.json
 # ไม่ต้องติดตามไฟล์ .exe
 *.exe
 
