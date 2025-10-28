@@ -1,5 +1,5 @@
-// server.js (เวอร์ชันแก้ไข PostgreSQL และ S3)
-require('dotenv').config();
+// server.js (เวอร์ชันแก้ไข PostgreSQL และ S3 - ใช้ ES Module)
+import 'dotenv/config'; // <-- เปลี่ยน require('dotenv').config() เป็น import
 import AWS from 'aws-sdk';
 import multer from 'multer';
 import multerS3 from 'multer-s3';
@@ -7,12 +7,16 @@ import multerS3 from 'multer-s3';
 // 1. ดึงค่าจาก Environment Variables
 const S3_BUCKET = process.env.S3_BUCKET_NAME;
 const AWS_REGION = process.env.AWS_REGION;
-const { Pool } = require('pg');
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-// const multer = require('multer'); // ถูก import จาก 'import multer' ด้านบนแล้ว
-const path = require('path');
+
+import pg from 'pg'; // <-- เปลี่ยน require('pg') เป็น import
+const { Pool } = pg; 
+
+import express from 'express'; // <-- เปลี่ยน require('express') เป็น import
+import bodyParser from 'body-parser'; // <-- เปลี่ยน require('body-parser') เป็น import
+import cors from 'cors'; // <-- เปลี่ยน require('cors') เป็น import
+// import multer from 'multer'; // ถูก import ด้านบนแล้ว
+import path from 'path'; // <-- เปลี่ยน require('path') เป็น import
+
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -51,7 +55,7 @@ pool.connect((err, client, release) => {
 // Middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true })); // <-- เพิ่มเพื่อรองรับ Form Data จาก Multer
-app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); 
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads'))); // <-- แก้ไข path ให้ทำงานได้ใน ES Module
 
 // ===============================================
 // API for Users (CRUD Operations) - (แก้ไขเป็น pg)
@@ -458,6 +462,7 @@ const uploadMiddleware = upload.fields([
 ]);
 
 // --- API Upload Project (แก้ไขให้ถูกต้อง) ---
+// ใช้ uploadMiddleware เป็น middleware โดยตรงเพื่อจัดการไฟล์และ body data
 app.post('/api/upload-project', uploadMiddleware, async (req, res) => {
     
     // ตรวจสอบ Multer Error ที่อาจเกิดขึ้นระหว่าง uploadMiddleware
@@ -504,7 +509,7 @@ app.post('/api/upload-project', uploadMiddleware, async (req, res) => {
         `; // <-- pg: ใช้ $1..$11, EXTRACT/CURRENT_DATE, FALSE, และ RETURNING id
 
         const values = [
-            document_type || null,
+            Array.isArray(document_type) ? document_type.join(',') : document_type, // แปลง Array (ถ้ามี) เป็น String
             title || null,
             title_eng || null,
             author || null,
@@ -573,13 +578,10 @@ app.get('/api/professor/documents/:id', async (req, res) => {
 app.get('/api/download/:filename', (req, res) => {
     const { filename } = req.params;
     
-    // *** แก้ไข: ใช้ AWS S3 เพื่อสร้าง Signed URL สำหรับการดาวน์โหลด ***
-    const s3Key = `projects/${filename.split('-')[0]}/${filename}`; // ต้องมีการหา Key ที่ถูกต้องใน S3
-    
     // NOTE: การดาวน์โหลดไฟล์จาก S3 ที่ง่ายที่สุดคือการสร้าง Signed URL
     const params = {
         Bucket: S3_BUCKET,
-        Key: filename, // ต้องมีการจัดการ Key ใน DB ให้ถูกต้อง
+        Key: filename, // Key คือ S3 Path/Filename ที่บันทึกไว้
         Expires: 300 // URL มีอายุ 5 นาที
     };
     
