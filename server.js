@@ -1,906 +1,824 @@
-    // server.js
-    require('dotenv').config();
-    const express = require('express');
-    const mysql = require('mysql');
-    const bodyParser = require('body-parser');
-    const cors = require('cors');
-    const multer = require('multer');
-    const path = require('path');
-    const app = express();
-    const port = 5000;
-    
-    // Middleware
-    app.use(cors());
-    app.use(bodyParser.json());
-    
-    // ทำให้ Express สามารถเข้าถึงไฟล์ในโฟลเดอร์ uploads ได้โดยตรง
-    app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); 
-    
-    // 1. เปลี่ยนมาใช้ 'pg'
+// server.js (เวอร์ชันแก้ไข PostgreSQL)
+require('dotenv').config();
 const { Pool } = require('pg');
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const multer = require('multer');
+const path = require('path');
+const app = express();
+const port = process.env.PORT || 5000;
 
-// 2. สร้าง Pool ใหม่
+// (สำคัญ!) ตั้งค่า CORS ให้ถูกต้อง
+const corsOptions = {
+  origin: 'https://my-firstprojectdeploysohard.onrender.com' 
+};
+app.use(cors(corsOptions)); // <--- ใช้ตัวแปรนี้
+    
+// ตั้งค่าการเชื่อมต่อ PostgreSQL (อ่านจาก DATABASE_URL)
 const pool = new Pool({
-  // 3. อ่าน 'DATABASE_URL' จาก Environment ที่เราตั้งค่าบน Render
   connectionString: process.env.DATABASE_URL, 
-  
-  // 4. (สำคัญมาก) เพิ่มส่วนนี้เพื่อให้เชื่อมต่อกับ Render DB ได้
   ssl: {
     rejectUnauthorized: false
   }
 });
 
-// 5. ทดสอบการเชื่อมต่อ
+// ทดสอบการเชื่อมต่อ (แค่ครั้งเดียว)
 pool.connect((err, client, release) => {
   if (err) {
-    // นี่คือ Error ที่คุณจะเห็นถ้าตั้งค่า ENV ผิด
     return console.error('Error acquiring client', err.stack); 
   }
-  console.log('Connected to PostgreSQL database successfully!'); // <-- เราอยากเห็นข้อความนี้
+  console.log('Connected to PostgreSQL database successfully!');
   release();
 });
 
-// อย่าลืม export 'pool' ไปใช้ในส่วนอื่นๆ ของแอป
-// module.exports = pool;
-    
-    // ===============================================
-    // API for Users (CRUD Operations)
-    // ... (โค้ดส่วน API for Users ไม่มีการเปลี่ยนแปลง) ...
-    // ===============================================
-    
-    // GET: ดึงข้อมูลผู้ใช้ทั้งหมด (โค้ดเดิม)
-    app.get('/api/users', (req, res) => {
-      const sql = `
-        SELECT 
-          id, 
-          username,
-          first_name,
-          last_name,
-          email, 
-          role, 
-          is_active,
-          created_at
-        FROM users
-      `;
-    
-      db.query(sql, (err, results) => {
-        if (err) {
-          console.error('Error fetching users:', err);
-          return res.status(500).json({ error: 'Database query failed' });
-        }
-        res.json(results);
-      });
+// Middleware
+app.use(bodyParser.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); 
+
+// ===============================================
+// API for Users (CRUD Operations) - (แก้ไขเป็น pg)
+// ===============================================
+
+// GET: ดึงข้อมูลผู้ใช้ทั้งหมด
+app.get('/api/users', async (req, res) => {
+  const sql = `
+    SELECT 
+      id, username, first_name, last_name, email, 
+      role, is_active, created_at
+    FROM users
+  `;
+
+  try {
+    const results = await pool.query(sql);
+    res.json(results.rows); // <-- pg: ใช้ .rows
+  } catch (err) {
+    console.error('Error fetching users:', err);
+    return res.status(500).json({ error: 'Database query failed' });
+  }
+});
+
+//สำหรับดึงข้อมูลผู้ใช้รายคน
+app.get('/api/users/:id', async (req, res) => {
+  const userId = req.params.id;
+  const sql = 'SELECT id, username, password, email, identification, first_name, last_name, role, is_active FROM users WHERE id = $1'; // <-- pg: ใช้ $1
+  
+  try {
+    const results = await pool.query(sql, [userId]);
+    if (results.rows.length === 0) return res.status(404).json({ message: 'User not found' });
+    res.json(results.rows[0]); // <-- pg: ใช้ .rows[0]
+  } catch (err) {
+    return res.status(500).json({ error: 'Database query failed' });
+  }
+});
+
+//สร้างผู้ใช้ใหม่
+app.post('/api/users', async (req, res) => {
+  const { username, email, password, first_name, last_name, identification, role } = req.body;
+  const is_active = true; // <-- pg: ใช้ boolean true
+  const sql = `
+    INSERT INTO users (username, email, password, first_name, last_name, identification, role, is_active) 
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    RETURNING id`; // <-- pg: ใช้ RETURNING id
+  const values = [username, email, password, first_name, last_name, identification, role, is_active];
+
+  try {
+    const result = await pool.query(sql, values);
+    res.status(201).json({ message: 'User created successfully', userId: result.rows[0].id }); // <-- pg: อ่าน .rows[0].id
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to create user', details: err.message });
+  }
+});
+
+// PUT: อัปเดตข้อมูลผู้ใช้
+app.put('/api/users/:id', async (req, res) => {
+  const userId = req.params.id;
+  const { password } = req.body; 
+
+  if (!password) {
+    return res.status(400).json({ message: 'Password is required to update.' });
+  }
+
+  const updateSql = `
+    UPDATE users SET password = $1 
+    WHERE id = $2
+  `; // <-- pg: ใช้ $1, $2
+  const values = [password, userId];
+
+  try {
+    const result = await pool.query(updateSql, values);
+    if (result.rowCount === 0) { // <-- pg: ใช้ .rowCount
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json({ message: 'Password updated successfully' });
+  } catch (err) {
+    console.error('Failed to update user password:', err);
+    return res.status(500).json({ error: 'Failed to update password', details: err.message });
+  }
+});
+
+// DELETE: ลบผู้ใช้
+app.delete('/api/users/:id', async (req, res) => {
+  const userId = req.params.id;
+  const sql = 'DELETE FROM users WHERE id = $1'; // <-- pg: ใช้ $1
+  
+  try {
+    const result = await pool.query(sql, [userId]);
+    if (result.rowCount === 0) return res.status(404).json({ message: 'User not found' }); // <-- pg: ใช้ .rowCount
+    res.json({ message: 'User deleted successfully' });
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to delete user' });
+  }
+});
+
+//API for Project Summaries
+app.get('/api/users/:id/summary', async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    //Get the user's full name from the users table
+    const userSql = 'SELECT first_name, last_name FROM users WHERE id = $1'; // <-- pg: ใช้ $1
+    const userResults = await pool.query(userSql, [userId]);
+
+    if (userResults.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const user = userResults.rows[0];
+    const userFullName = `${user.first_name} ${user.last_name}`;
+
+    //Get the counts from the documents table using the full name
+    const summarySql = `
+      SELECT
+        COUNT(*) AS uploaded,
+        SUM(CASE WHEN approval_status = 'approved' THEN 1 ELSE 0 END) AS approved
+      FROM documents
+      WHERE author = $1
+    `; // <-- pg: ใช้ $1
+
+    const summaryResults = await pool.query(summarySql, [userFullName]);
+    const summary = summaryResults.rows[0];
+    res.json({
+      uploaded: summary.uploaded || 0,
+      approved: parseInt(summary.approved) || 0,
     });
+
+  } catch (err) {
+    console.error('Error fetching document summary:', err);
+    return res.status(500).json({ message: 'Database error fetching summary' });
+  }
+});
+
+app.get('/api/users/:id/profile', async (req, res) => {
+  const userId = req.params.id;
+  const sql = 'SELECT first_name, last_name, role FROM users WHERE id = $1'; // <-- pg: ใช้ $1
+  
+  try {
+    const results = await pool.query(sql, [userId]);
+    if (results.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
     
-    //สำหรับดึงข้อมูลผู้ใช้รายคน
-    app.get('/api/users/:id', (req, res) => {
-      const userId = req.params.id;
-      const sql = 'SELECT id, username, password, email, identification, first_name, last_name, role, is_active FROM users WHERE id = ?';
-      
-      db.query(sql, [userId], (err, results) => {
-        if (err) return res.status(500).json({ error: 'Database query failed' });
-        if (results.length === 0) return res.status(404).json({ message: 'User not found' });
-        res.json(results[0]);
-      });
+    const userProfile = results.rows[0];
+    if (userProfile.role === 'admin') {
+      userProfile.role = 'Administrator';
+    } else if (userProfile.role === 'user') {
+      userProfile.role = 'User';
+    }
+    res.json(userProfile);
+  } catch (err) {
+    console.error('Error fetching user profile:', err);
+    return res.status(500).json({ error: 'Database query failed' });
+  }
+});
+
+app.get('/api/users/:id/projects', async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    //ดึงชื่อเต็มของผู้ใช้จากตาราง users
+    const userSql = 'SELECT first_name, last_name FROM users WHERE id = $1'; // <-- pg: ใช้ $1
+    const userResults = await pool.query(userSql, [userId]);
+
+    if (userResults.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const user = userResults.rows[0];
+    const userFullName = `${user.first_name} ${user.last_name}`; // ชื่อเต็มของผู้ใช้ที่เข้าสู่ระบบ
+
+    // Step 2: ดึงข้อมูลโปรเจกต์
+    const projectsSql = `
+      SELECT
+        id, title, approval_status, is_active, created_at AS submitted_date 
+      FROM documents
+      WHERE 
+        author LIKE $1 OR          -- เป็นผู้เขียนหลัก
+        advisorName LIKE $2 OR     -- เป็นอาจารย์ที่ปรึกษา
+        coAdvisorName LIKE $3      -- เป็นอาจารย์ที่ปรึกษาร่วม
+      ORDER BY created_at DESC
+    `; // <-- pg: ใช้ $1, $2, $3
+
+    const values = [userFullName, userFullName, userFullName];
+    const projectsResults = await pool.query(projectsSql, values);
+    res.json(projectsResults.rows);
+
+  } catch (err) {
+    console.error('Error fetching user projects:', err);
+    return res.status(500).json({ message: 'Database error fetching projects' });
+  }
+});
+
+// ===============================================
+// API for Authentication
+// ===============================================
+app.post('/api/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).json({ message: 'โปรดระบุชื่อผู้ใช้และรหัสผ่าน' });
+  }
+  
+  const sql = 'SELECT id, username, password, role, first_name, last_name, is_active FROM users WHERE username = $1'; // <-- pg: ใช้ $1
+  
+  try {
+    const results = await pool.query(sql, [username]);
+
+    if (results.rows.length === 0) {
+      return res.status(401).json({ message: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง' });
+    }
+
+    const user = results.rows[0];
+    
+    if (user.password !== password) {
+      return res.status(401).json({ message: 'รหัสผ่านไม่ถูกต้อง' });
+    }
+    // (สำคัญ) MySQL 0/1, PostgreSQL true/false
+    if (user.is_active === false) { // <-- pg: ใช้ boolean false
+      return res.status(403).json({ message: 'บัญชีผู้ใช้ถูกระงับ กรุณาติดต่อผู้ดูแลระบบ' });
+    }
+    
+    res.status(200).json({ 
+      message: 'Login สำเร็จ', 
+      user: { 
+        id: user.id, 
+        username: user.username,
+        role: user.role,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        is_active: user.is_active
+      } 
     });
-    
-    //สร้างผู้ใช้ใหม่
-    app.post('/api/users', (req, res) => {
-      const { username, email, password, first_name, last_name, identification, role } = req.body;
-      const is_active = 1;
-      const sql = `
-        INSERT INTO users (username, email, password, first_name, last_name, identification, role, is_active) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      `;
-      const values = [username, email, password, first_name, last_name, identification, role, is_active];
-    
-      db.query(sql, values, (err, result) => {
-        if (err) return res.status(500).json({ error: 'Failed to create user', details: err.message });
-        res.status(201).json({ message: 'User created successfully', userId: result.insertId });
-      });
-    });
-    
-    // PUT: อัปเดตข้อมูลผู้ใช้
-    app.put('/api/users/:id', (req, res) => {
-      const userId = req.params.id;
-      // ดึงเฉพาะ password จาก Body (เพราะ Frontend ส่งมาแค่ password)
-      const { password } = req.body; 
-    
-      if (!password) {
-        // โค้ดนี้จะป้องกันการอัปเดตถ้าไม่มี password ส่งมา
-        return res.status(400).json({ message: 'Password is required to update.' });
-      }
-    
-      // อัพเดต password
-      const updateSql = `
-        UPDATE users SET password = ? 
-        WHERE id = ?
-      `;
-      const values = [password, userId];
-    
-      db.query(updateSql, values, (err, result) => {
-        if (err) {
-          console.error('Failed to update user password:', err);
-          // หากเกิด error จากการเชื่อมต่อหรือ SQL
-          return res.status(500).json({ error: 'Failed to update password', details: err.message });
-        }
-        
-        // ตรวจสอบ affectedRows: หากผลกระทบเป็น 0 หมายความว่าไม่พบ ID นั้นในฐานข้อมูล
-        if (result.affectedRows === 0) {
-          return res.status(404).json({ message: 'User not found' });
-        }
-        
-        // สำเร็จ
-        res.json({ message: 'Password updated successfully' });
-      });
-    });
-    
-    // DELETE: ลบผู้ใช้
-    app.delete('/api/users/:id', (req, res) => {
-      const userId = req.params.id;
-      const sql = 'DELETE FROM users WHERE id = ?';
-      db.query(sql, [userId], (err, result) => {
-        if (err) return res.status(500).json({ error: 'Failed to delete user' });
-        if (result.affectedRows === 0) return res.status(404).json({ message: 'User not found' });
-        res.json({ message: 'User deleted successfully' });
-      });
-    });
-    
-    //API for Project Summaries
-    app.get('/api/users/:id/summary', (req, res) => {
-      const userId = req.params.id;
-    
-      //Get the user's full name from the users table
-      const userSql = 'SELECT first_name, last_name FROM users WHERE id = ?';
-      db.query(userSql, [userId], (err, userResults) => {
-        if (err) {
-          console.error('Error fetching user for summary:', err);
-          return res.status(500).json({ message: 'Database error fetching user' });
-        }
-        if (userResults.length === 0) {
-          return res.status(404).json({ message: 'User not found' });
-        }
-    
-        const user = userResults[0];
-        const userFullName = `${user.first_name} ${user.last_name}`;
-    
-        //Get the counts from the documents table using the full name
-        const summarySql = `
-          SELECT
-            COUNT(*) AS uploaded,
-            SUM(CASE WHEN approval_status = 'approved' THEN 1 ELSE 0 END) AS approved
-          FROM documents
-          WHERE author = ?
-        `;
-    
-        db.query(summarySql, [userFullName], (err, summaryResults) => {
-          if (err) {
-            console.error('Error fetching document summary:', err);
-            return res.status(500).json({ message: 'Database error fetching summary' });
-          }
-    
-          const summary = summaryResults[0];
-          res.json({
-            uploaded: summary.uploaded || 0,
-            approved: parseInt(summary.approved) || 0,
-          });
-        });
-      });
-    });
-    
-    app.get('/api/users/:id/profile', (req, res) => {
-      const userId = req.params.id;
-      const sql = 'SELECT first_name, last_name, role FROM users WHERE id = ?';
-      
-      db.query(sql, [userId], (err, results) => {
-        if (err) {
-          console.error('Error fetching user profile:', err);
-          return res.status(500).json({ error: 'Database query failed' });
-        }
-        if (results.length === 0) {
-          return res.status(404).json({ message: 'User not found' });
-        }
-        
-        const userProfile = results[0];
-        if (userProfile.role === 'admin') {
-          userProfile.role = 'Administrator';
-        } else if (userProfile.role === 'user') {
-          userProfile.role = 'User';
-        }
-        res.json(userProfile);
-      });
-    });
-    
-    app.get('/api/users/:id/projects', (req, res) => {
-      const userId = req.params.id;
-    
-      //ดึงชื่อเต็มของผู้ใช้จากตาราง users
-      const userSql = 'SELECT first_name, last_name FROM users WHERE id = ?';
-      db.query(userSql, [userId], (err, userResults) => {
-        if (err) {
-          console.error('Error fetching user for projects:', err);
-          return res.status(500).json({ message: 'Database error fetching user' });
-        }
-        if (userResults.length === 0) {
-          return res.status(404).json({ message: 'User not found' });
-        }
-    
-        const user = userResults[0];
-        const userFullName = `${user.first_name} ${user.last_name}`; // ชื่อเต็มของผู้ใช้ที่เข้าสู่ระบบ
-    
-        // Step 2: ดึงข้อมูลโปรเจกต์ทั้งหมดจากตาราง documents โดยใช้ชื่อเต็ม
-        // *** แก้ไข: เพิ่ม is_active เข้าไปใน SELECT statement ***
-        const projectsSql = `
-          SELECT
-            id,
-            title,
-            approval_status,
-            is_active, 
-            created_at AS submitted_date 
-          FROM documents
-          WHERE 
-            author LIKE ? OR          -- เป็นผู้เขียนหลัก
-            advisorName LIKE ? OR     -- เป็นอาจารย์ที่ปรึกษา
-            coAdvisorName LIKE ?      -- เป็นอาจารย์ที่ปรึกษาร่วม
-          ORDER BY created_at DESC
-        `;
-    
-        // ใช้ userFullName เป็นค่าค้นหาสำหรับทุกเงื่อนไข
-        const values = [userFullName, userFullName, userFullName];
-    
-        db.query(projectsSql, values, (err, projectsResults) => {
-          if (err) {
-            console.error('Error fetching user projects:', err);
-            return res.status(500).json({ message: 'Database error fetching projects' });
-          }
-          res.json(projectsResults);
-        });
-      });
-    });
-    
-    // ===============================================
-    // API for Authentication
-    // ===============================================
-    app.post('/api/login', (req, res) => {
-      const { username, password } = req.body;
-    
-      if (!username || !password) {
-        return res.status(400).json({ message: 'โปรดระบุชื่อผู้ใช้และรหัสผ่าน' });
-      }
-      
-      const sql = 'SELECT id, username, password, role, first_name, last_name,is_active FROM users WHERE username = ?';
-      db.query(sql, [username], (err, results) => {
-        if (err) {
-          console.error('Database query error:', err);
-          return res.status(500).json({ message: 'เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์' });
-        }
-    
-        if (results.length === 0) {
-          return res.status(401).json({ message: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง' });
-        }
-    
-        const user = results[0];
-        
-        if (user.password !== password) {
-          return res.status(401).json({ message: 'รหัสผ่านไม่ถูกต้อง' });
-        }
-        if (user.is_active === 0) {
-          return res.status(403).json({ message: 'บัญชีผู้ใช้ถูกระงับ กรุณาติดต่อผู้ดูแลระบบ' });
-        }
-        
-        res.status(200).json({ 
-          message: 'Login สำเร็จ', 
-          user: { 
-            id: user.id, 
-            username: user.username,
-            role: user.role,
-            first_name: user.first_name,
-            last_name: user.last_name,
-            is_active: user.is_active
-          } 
-        });
-      });
-    });
-    
-    
-    // ===============================================
-    // API for Documents
-    // ===============================================
-    
-    // (ไฟล์ server.js)
-    
-    app.get('/api/documents', (req, res) => {
-        // 1. อ่านค่า Search และ Filters จาก req.query
-        const searchTerm = req.query.search || '';
-        const departmentFilter = req.query.department || '';
-        const yearFilter = req.query.year || ''; // ปีเป็น ค.ศ. (เช่น 2024)
-        const typeFilter = req.query.type || '';
-        const statusFilter = req.query.status || ''; 
-        const limit = req.query.limit || null; // อ่านค่า limit
-    
-        let sql = 'SELECT * FROM documents';
-        let values = [];
-    
-        // 2. สร้าง Array สำหรับเก็บเงื่อนไข WHERE
-        let whereConditions = [];
-    
-        // 3. (แก้ไข) เพิ่มเงื่อนไขสถานะ (Status)
-        // ถ้า statusFilter เป็น 'active' หรือ ไม่ได้ระบุ Filter (ค่า default)
-        if (statusFilter === 'active' || !statusFilter) {
-            // ให้แสดงเฉพาะโปรเจกต์ที่อนุมัติแล้ว (approved) และ เปิดแสดงผล (is_active = TRUE)
-            whereConditions.push("approval_status = 'approved'");
-            whereConditions.push("is_active = TRUE");
-        }
-        // ถ้าในอนาคตมีการส่ง statusFilter ค่าอื่นมา (เช่น 'all', 'pending')
-        // โค้ดส่วนนี้จะไม่กรอง ทำให้สามารถแสดงผลทุกสถานะได้ (ถ้าผู้ใช้มีสิทธิ์)
-    
-        // 4. (ถ้ามี) เพิ่มเงื่อนไขการค้นหา (Search)
-        if (searchTerm) {
-            const searchPattern = `%${searchTerm}%`;
-            whereConditions.push(`(
-                author LIKE ? OR
-                title LIKE ? OR
-                title_eng LIKE ? OR
-                abstract LIKE ? OR
-                keywords LIKE ? OR
-                document_type LIKE ? OR
-                department LIKE ? OR
-                advisorName LIKE ? OR
-                coAdvisorName LIKE ?
-            )`);
-            // เพิ่มค่าสำหรับ Search เข้าไปใน values
-            values.push(searchPattern); // author
-            values.push(searchPattern); // title
-            values.push(searchPattern); // title_eng
-            values.push(searchPattern); // abstract
-            values.push(searchPattern); // keywords
-            values.push(searchPattern); // document_type
-            values.push(searchPattern); // department
-            values.push(searchPattern); // advisorName
-            values.push(searchPattern); // coAdvisorName
-        }
-    
-        // 5. (ถ้ามี) เพิ่มเงื่อนไข Filter: สาขา (Department)
-        if (departmentFilter) {
-            whereConditions.push("department = ?");
-            values.push(departmentFilter);
-        }
-    
-        // 6. (ถ้ามี) เพิ่มเงื่อนไข Filter: ปี (Year) - ใช้ปี ค.ศ. ที่ส่งมา
-        if (yearFilter) {
-            whereConditions.push("publish_year = ?");
-            values.push(yearFilter); // ใช้ค่าปี ค.ศ. ได้เลย
-        }
-    
-        // 7. (ถ้ามี) เพิ่มเงื่อนไข Filter: ประเภท (Type) - (!!! แก้ไข !!!)
-        if (typeFilter) {
-            // (แก้ไข) เปลี่ยนจาก = (เท่ากับ) เป็น LIKE (ค้นหาว่ามีคำนั้นอยู่ข้างในหรือไม่)
-            // This allows finding "Website" inside "Website, Game"
-            whereConditions.push("document_type LIKE ?");
-            values.push(`%${typeFilter}%`); // เพิ่ม % (wildcard) รอบๆค่าที่ค้นหา
-        }
-    
-        // 8. ประกอบร่าง SQL
-        if (whereConditions.length > 0) {
-            sql += ' WHERE ' + whereConditions.join(' AND ');
-        }
-    
-        // 9. เรียงลำดับ
-        sql += ' ORDER BY created_at DESC';
-    
-        // 10. (เพิ่ม) เพิ่มการจำกัดจำนวน (LIMIT) ถ้ามีการส่งค่ามา
-        if (limit && !isNaN(parseInt(limit))) {
-            sql += ' LIMIT ?';
-            values.push(parseInt(limit));
-        }
-    
-        console.log("Executing SQL:", db.format(sql, values)); // Log SQL ที่จะรัน (สำหรับ Debug)
-    
-        // 11. รัน Query
-        db.query(sql, values, (err, results) => {
-            if (err) {
-                console.error('Database query error:', err);
-                return res.status(500).json({ message: 'Error fetching documents' });
-            }
-            res.json(results);
-        });
-    });
-    
-    app.get('/api/documents/:id', (req, res) => {
-      const documentId = req.params.id;
-      const sql = `
-        SELECT
-          id, title, title_eng, author, department, advisorName,
-          abstract, keywords, thai_sh, supportAgency, tools, field,
-          publisher, publish_year, scan_date, display_date, document_type,
-          mime_type, profile_image, language, publication_year, status,
-          created_at, updated_at, file_paths
-        FROM documents
-        WHERE id = ?;
-      `;
-      db.query(sql, [documentId], (err, results) => {
-        if (err) {
-          console.error('Error fetching document by ID from database:', err);
-          return res.status(500).json({ message: 'เกิดข้อผิดพลาดในการดึงข้อมูลเอกสาร' });
-        }
-        if (results.length > 0) {
-          res.status(200).json(results[0]);
-        } else {
-          res.status(404).json({ message: 'ไม่พบเอกสาร' });
-        }
-      });
-    });
-    
-    app.delete('/api/documents/:id', (req, res) => {
-      const documentId = req.params.id;
-      const sql = 'DELETE FROM documents WHERE id = ?';
-      db.query(sql, [documentId], (err, result) => {
-        if (err) {
-          console.error('Error deleting document from database:', err);
-          return res.status(500).json({ message: 'เกิดข้อผิดพลาดในการลบเอกสาร' });
-        }
-        if (result.affectedRows === 0) {
-          return res.status(404).json({ message: 'ไม่พบเอกสารที่ต้องการลบ' });
-        }
-        res.status(200).json({ message: 'ลบเอกสารเรียบร้อยแล้ว' });
-      });
-    });
-    
-    // --- (แก้ไข) ส่วน Multer Setup ---
-    const storage = multer.diskStorage({
-      destination: function (req, file, cb) {
-        cb(null, 'uploads/');
-      },
-      filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + '-' + file.originalname);
-      },
-    });
-    
-    // (เพิ่ม) สร้าง Map ของนามสกุลไฟล์ที่อนุญาต
-    const allowedExtensions = {
-        'complete_pdf': ['.pdf'],
-        'complete_doc': ['.docx'], //บังคับ .docx เท่านั้น
-        'article_files': ['.pdf'],
-        'program_files': ['.zip', '.rar', '.exe'],
-        'web_files': ['.zip'],
-        'poster_files': ['.psd', '.jpg', '.jpeg'],
-        'certificate_files': ['.pdf', '.jpg', '.jpeg', '.png']
-    };
-    
-    //สร้างฟังก์ชัน fileFilter
-    const fileFilter = (req, file, cb) => {
-        const fieldName = file.fieldname;
-        const allowed = allowedExtensions[fieldName];
-    
-        if (!allowed) {
-            // ถ้า fieldname ไม่ตรงกับที่เรากำหนดไว้
-            return cb(new Error(`Invalid field name ${fieldName}`), false);
-        }
-    
-        const ext = path.extname(file.originalname).toLowerCase();
-    
-        if (allowed.includes(ext)) {
-            // นามสกุลไฟล์ถูกต้อง
-            cb(null, true);
-        } else {
-            // (สำคัญ) นามสกุลไฟล์ไม่ถูกต้อง
-            cb(new Error(`ไม่อนุญาตให้อัปโหลดไฟล์ ${ext} สำหรับช่องนี้ (รองรับเฉพาะ ${allowed.join(', ')})`), false);
-        }
-    };
-    
-    // (แก้ไข) เพิ่ม fileFilter เข้าไปใน multer
-    const upload = multer({ 
-        storage: storage,
-        fileFilter: fileFilter 
-    });
-    
-    //สร้างmiddleware สำหรับ upload.fields
-    // เพื่อให้เราสามารถดักจับ error ได้
-    const uploadMiddleware = upload.fields([
-        { name: 'complete_pdf', maxCount: 10 },
-        { name: 'complete_doc', maxCount: 10 },
-        { name: 'article_files', maxCount: 10 }, 
-        { name: 'program_files', maxCount: 1 }, 
-        { name: 'web_files', maxCount: 2 },
-        { name: 'poster_files', maxCount: 5 },
-        { name: 'certificate_files', maxCount: 5 }
-    ]);
-    
-    
-    // API Upload Project ---
-    app.post('/api/upload-project', (req, res) => {
-    
-        // (เพิ่ม) เรียกใช้ middleware ด้วยตนเองเพื่อดักจับ Error
-        uploadMiddleware(req, res, function (err) {
-            
-            // --- (เพิ่ม) ส่วนดักจับ Error จาก Multer และ fileFilter ---
-            if (err instanceof multer.MulterError) {
-                // Error ที่เกิดจาก Multer (เช่น ไฟล์เยอะเกิน)
-                console.error('Multer error:', err);
-                return res.status(400).json({ message: 'File upload error: ' + err.message });
-            } else if (err) {
-                // Error ที่เกิดจาก fileFilter (นามสกุลไฟล์ผิด)
-                console.error('File filter error:', err);
-                // ส่งข้อความ Error ที่เราตั้งไว้ใน fileFilter กลับไป
-                return res.status(400).json({ message: err.message }); 
-            }
-            // --- จบส่วนดักจับ Error ---
-    
-            // ถ้าไม่มี Error, โค้ดที่เหลือทำงานตามปกติ
-            console.log('Received body:', req.body);
-            console.log('Received files:', req.files);
-            
-            const {
-                document_type,
-                title,
-                title_eng,
-                author,
-                abstract,
-                advisorName,
-                department,
-                coAdvisorName,
-                keywords,
-                supportAgency
-            } = req.body;
-    
-            try {
-                // Build the JSON object for file paths
-                const filePathsJson = {
-                    complete_pdf: req.files['complete_pdf'] ? req.files['complete_pdf'].map(f => f.filename) : [],
-                    complete_doc: req.files['complete_doc'] ? req.files['complete_doc'].map(f => f.filename) : [],
-                    article_files: req.files['article_files'] ? req.files['article_files'].map(f => f.filename) : [],
-                    program_files: req.files['program_files'] ? req.files['program_files'].map(f => f.filename) : [],
-                    web_files: req.files['web_files'] ? req.files['web_files'].map(f => f.filename) : [],
-                    poster_files: req.files['poster_files'] ? req.files['poster_files'].map(f => f.filename) : [],
-                    certificate_files: req.files['certificate_files'] ? req.files['certificate_files'].map(f => f.filename) : [],
-                };
-    
-                const sql = `
-                    INSERT INTO documents (
-                        document_type, title, title_eng, author, abstract, keywords,
-                        advisorName, department, coAdvisorName, supportAgency,
-                        file_paths, 
-                        publish_year, scan_date, approval_status, is_active
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, YEAR(CURDATE()), CURDATE(), 'pending', FALSE);
-                `;
-    
-                const values = [
-                    document_type || null,
-                    title || null,
-                    title_eng || null,
-                    author || null,
-                    abstract || null,
-                    keywords || null,
-                    advisorName || null,
-                    department || null,
-                    coAdvisorName || null,
-                    supportAgency || null,
-                    JSON.stringify(filePathsJson)
-                ];
-    
-                db.query(sql, values, (err, result) => {
-                    if (err) {
-                        console.error('!!! DATABASE ERROR on upload !!!:', err);
-                        return res.status(500).json({ message: 'เกิดข้อผิดพลาดในการบันทึกข้อมูลลงฐานข้อมูล', error: err.message });
-                    }
-                    res.status(201).json({
-                        message: 'บันทึกข้อมูลและไฟล์เรียบร้อยแล้ว',
-                        projectId: result.insertId
-                    });
-                });
-            } catch (e) {
-                console.error('!!! UNEXPECTED SERVER ERROR in /api/upload-project !!!:', e);
-                res.status(500).json({ message: 'เกิดข้อผิดพลาดที่ไม่คาดคิดบนเซิร์ฟเวอร์', error: e.message });
-            }
-        }); // จบฟังก์ชัน uploadMiddleware
-    });
-    
-    app.get('/api/professor/documents/:id', (req, res) => {
-      const documentId = req.params.id;
-      const sql = "SELECT * FROM documents WHERE id = ?";
-      db.query(sql, [documentId], (err, results) => {
-        if (err) return res.status(500).json({ message: 'Database error' });
-        if (results.length === 0) return res.status(404).json({ message: 'Document not found' });
-        
-        // ดึงข้อมูลเอกสารออกมา
-        const document = results[0];
-        
-        // แปลง object file_paths กลับไปเป็น JSON string
-        // เพื่อให้ทำงานร่วมกับโค้ด JSON.parse ใน ProfessorDocumentDetails.jsx
-        let filePathsObject = {};
-        try {
-          if (document.file_paths) {
-            filePathsObject = JSON.parse(document.file_paths);
-          }
-        } catch (e) {
-          console.error("Could not parse file_paths JSON from DB:", e);
-        }
-    
-        // สร้าง object ใหม่ที่รวมข้อมูลเดิมและ file_paths ที่แปลงแล้ว
-        const documentWithJsonFiles = { 
-          ...document, 
-          file_paths: JSON.stringify(filePathsObject) 
-        };
-        
-        res.json(documentWithJsonFiles);
-      });
-    });
-    
-    app.get('/api/download/:filename', (req, res) => {
-        const { filename } = req.params;
-        const filePath = path.join(__dirname, 'uploads', filename);
-    
-        res.download(filePath, (err) => {
-            if (err) {
-                console.error("Error on file download:", err);
-                if (!res.headersSent) {
-                    res.status(404).send('File not found.');
-                }
-            }
-        });
-    });
-    app.put('/api/documents/:id/approval', (req, res) => {
-      const { id } = req.params;
-      const { approvalStatus } = req.body; // 'approved' or 'rejected'
-    
-      if (!['approved', 'rejected'].includes(approvalStatus)) {
-        return res.status(400).json({ message: 'Invalid approval status.' });
-      }
-    
-      let sql;
-      let values;
-      let successMessage;
-    
-      if (approvalStatus === 'approved') {
-        // --- โค้ดส่วน 'approved' ---
-        sql = `UPDATE documents 
-               SET approval_status = ?, is_active = TRUE, display_date = NOW() 
-               WHERE id = ?`;
-               // เราอนุญาตให้อนุมัติซ้ำได้ (เผื่อมาจาก 'rejected')
-        values = [approvalStatus, id];
-        successMessage = 'อนุมัติโครงงานเรียบร้อยแล้ว';
-      
-      } else { 
-        // --- !!! นี่คือส่วนที่แก้ไข !!! ---
-        // เปลี่ยนจาก DELETE เป็น UPDATE
-        sql = `UPDATE documents 
-               SET approval_status = ?, is_active = FALSE 
-               WHERE id = ?`;
-        values = [approvalStatus, id]; // approvalStatus คือ 'rejected'
-        successMessage = 'ปฏิเสธโครงงานเรียบร้อยแล้ว (ส่งกลับไปให้ผู้ใชแก้ไข)';
-        // --- จบส่วนที่แก้ไข ---
-      }
-    
-      db.query(sql, values, (err, result) => {
-        if (err) {
-          console.error('Database error on approval/rejection:', err);
-          return res.status(500).json({ message: 'Database error' });
-        }
-        if (result.affectedRows === 0) {
-          return res.status(404).json({ message: 'ไม่พบเอกสารหรือเอกสารถูกจัดการไปแล้ว' });
-        }
-        res.json({ message: successMessage });
-      });
-    });
-    
-    app.put('/api/documents/:id/toggle-active', (req, res) => {
-      const { id } = req.params;
-      const { isActive } = req.body;
-    
-      if (typeof isActive !== 'boolean') {
-        return res.status(400).json({ message: 'isActive must be a boolean.' });
-      }
-    
-      const sql = `UPDATE documents SET is_active = ? WHERE id = ? AND approval_status = 'approved'`;
-      const values = [isActive, id];
-    
-      db.query(sql, values, (err, result) => {
-        if (err) return res.status(500).json({ message: 'Database error' });
-        if (result.affectedRows === 0) return res.status(404).json({ message: 'Document not found or not approved.' });
-        res.json({ message: 'Active status toggled successfully.' });
-      });
-    });
-    
-    app.get('/api/admin/documents', (req, res) => {
-      const sql = `SELECT id, title, publish_year, approval_status, is_active FROM documents ORDER BY created_at DESC`;
-      db.query(sql, (err, results) => {
-        if (err) return res.status(500).json({ message: 'Database error' });
-        res.json(results);
-      });
-    });
-    
-    app.get('/api/advisors/search', (req, res) => {
-        const searchTerm = req.query.query || '';
-        if (searchTerm.length < 3) {
-            return res.json([]); // คืนค่าว่างถ้าคำค้นหาสั้นเกินไป
-        }
-    
+  } catch (err) {
+    console.error('Database query error:', err);
+    return res.status(500).json({ message: 'เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์' });
+  }
+});
+
+
+// ===============================================
+// API for Documents
+// ===============================================
+
+app.get('/api/documents', async (req, res) => {
+    const searchTerm = req.query.search || '';
+    const departmentFilter = req.query.department || '';
+    const yearFilter = req.query.year || '';
+    const typeFilter = req.query.type || '';
+    const statusFilter = req.query.status || ''; 
+    const limit = req.query.limit || null;
+
+    let sql = 'SELECT * FROM documents';
+    let values = [];
+    let whereConditions = [];
+    let paramIndex = 1; // <-- pg: สร้างตัวนับ Parameter
+
+    // (แก้ไข) เพิ่มเงื่อนไขสถานะ (Status)
+    if (statusFilter === 'active' || !statusFilter) {
+        whereConditions.push("approval_status = 'approved'");
+        whereConditions.push("is_active = TRUE"); // <-- pg: ใช้ TRUE
+    }
+
+    // (ถ้ามี) เพิ่มเงื่อนไขการค้นหา (Search)
+    if (searchTerm) {
         const searchPattern = `%${searchTerm}%`;
-        const sql = `
-            SELECT id, first_name, last_name 
-            FROM users 
-            WHERE role IN ('advisor', 'admin') 
-              AND (first_name LIKE ? OR last_name LIKE ?)
-            LIMIT 10;
-        `;
-        const values = [searchPattern, searchPattern];
-    
-        db.query(sql, values, (err, results) => {
-            if (err) {
-                console.error('Error fetching advisor suggestions:', err);
-                return res.status(500).json({ message: 'Database query failed' });
-            }
-            res.json(results);
-        });
-    });
-    
-    app.get('/api/project-details/:id', (req, res) => {
-      const projectId = req.params.id;
-      const sql = `
-        SELECT 
-          id, title, title_eng, author, abstract, keywords,
-          advisorName, department, coAdvisorName, supportAgency, document_type,
-          file_paths 
-        FROM documents 
-        WHERE id = ?
-      `;
-      
-      db.query(sql, [projectId], (err, results) => {
-        if (err) return res.status(500).json({ message: 'Database error' });
-        if (results.length === 0) return res.status(404).json({ message: 'Project not found' });
-        res.json(results[0]);
-      });
-    });
-    
-    
-    // (แก้ไข) แก้ไข PUT Route ให้ใช้ Middleware ที่ดักจับ Error ได้
-    app.put('/api/projects/:id', (req, res) => {
-      
-        // (เพิ่ม) เรียกใช้ middleware ด้วยตนเองเพื่อดักจับ Error
-        uploadMiddleware(req, res, function (err) {
-            
-            // --- (เพิ่ม) ส่วนดักจับ Error จาก Multer และ fileFilter ---
-            if (err instanceof multer.MulterError) {
-                console.error('Multer error on update:', err);
-                return res.status(400).json({ message: 'File upload error: ' + err.message });
-            } else if (err) {
-                console.error('File filter error on update:', err);
-                return res.status(400).json({ message: err.message }); 
-            }
-            // --- จบส่วนดักจับ Error ---
-    
-            // ถ้าไม่มี Error, โค้ดที่เหลือทำงานตามปกติ
-            const projectId = req.params.id;
-            const { 
-              title, title_eng, abstract, keywords, advisorName, 
-              department, coAdvisorName, supportAgency, document_type 
-            } = req.body; 
-    
-            const getSql = "SELECT file_paths, approval_status FROM documents WHERE id = ?";
-            
-            db.query(getSql, [projectId], (err, results) => {
-              if (err) return res.status(500).json({ message: 'Database error fetching project' });
-              if (results.length === 0) return res.status(404).json({ message: 'Project not found' }); 
-    
-              let existingFilePaths = {};
-              try {
-                existingFilePaths = JSON.parse(results[0].file_paths || '{}');
-              } catch (e) {
-                existingFilePaths = {};
-              }
-    
-              const currentStatus = results[0].approval_status;
-              const newStatus = (currentStatus === 'rejected') ? 'pending' : currentStatus;
-    
-              const hasNewFiles = req.files && Object.keys(req.files).length > 0;
-              if (hasNewFiles) {
-                  for (const fieldName in req.files) {
-                      existingFilePaths[fieldName] = req.files[fieldName].map(f => f.filename);
-                  }
-              }
-    
-              let updateSql = `
-                UPDATE documents SET 
-                  title = ?, title_eng = ?, abstract = ?, keywords = ?, advisorName = ?, 
-                  department = ?, coAdvisorName = ?, supportAgency = ?, document_type = ?,
-                  file_paths = ?, 
-                  approval_status = ?, 
-                  updated_at = NOW() 
-                WHERE id = ?
-              `;
-              let values = [
-                title, title_eng, abstract, keywords, advisorName, 
-                department, coAdvisorName, supportAgency, document_type,
-                JSON.stringify(existingFilePaths), 
-                newStatus, 
-                projectId
-              ];
-    
-              db.query(updateSql, values, (updateErr, result) => {
-                if (updateErr) {
-                  console.error("Error updating project:", updateErr);
-                  return res.status(500).json({ message: 'Failed to update project' });
-                }
-                
-                let message = 'Project updated successfully!';
-                if (newStatus === 'pending') {
-                    message = 'Project updated and resubmitted for approval successfully!';
-                }
-                
-                res.json({ message: message });
-              });
-            });
-        }); // จบฟังก์ชัน uploadMiddleware
-    });
-    
-    app.get('/api/student/documents/:id', (req, res) => {
-      const documentId = req.params.id;
-      const studentUserId = req.query.userId; // ID ของนักศึกษาที่ login
-    
-      if (!studentUserId) {
-        return res.status(400).json({ message: 'User ID is required' });
-      }
-    
-      // 1. ดึงข้อมูลเอกสาร
-      const documentSql = "SELECT * FROM documents WHERE id = ?";
-      db.query(documentSql, [documentId], (err, docResults) => {
-        if (err) return res.status(500).json({ message: 'Database error fetching document' });
-        if (docResults.length === 0) return res.status(404).json({ message: 'Document not found' });
-    
-        const document = docResults[0];
+        // <-- pg: ใช้ $1, $2, ...
+        whereConditions.push(`(
+            author LIKE $${paramIndex} OR
+            title LIKE $${paramIndex + 1} OR
+            title_eng LIKE $${paramIndex + 2} OR
+            abstract LIKE $${paramIndex + 3} OR
+            keywords LIKE $${paramIndex + 4} OR
+            document_type LIKE $${paramIndex + 5} OR
+            department LIKE $${paramIndex + 6} OR
+            advisorName LIKE $${paramIndex + 7} OR
+            coAdvisorName LIKE $${paramIndex + 8}
+        )`);
+        // เพิ่มค่า 9 ครั้ง
+        values.push(searchPattern, searchPattern, searchPattern, searchPattern, searchPattern, searchPattern, searchPattern, searchPattern, searchPattern);
+        paramIndex += 9; // เลื่อนตัวนับไป 9
+    }
+
+    // (ถ้ามี) เพิ่มเงื่อนไข Filter: สาขา (Department)
+    if (departmentFilter) {
+        whereConditions.push(`department = $${paramIndex}`); // <-- pg: ใช้ $...
+        values.push(departmentFilter);
+        paramIndex++;
+    }
+
+    // (ถ้ามี) เพิ่มเงื่อนไข Filter: ปี (Year)
+    if (yearFilter) {
+        whereConditions.push("publish_year = $1"); // <-- pg: ใช้ $...
+        values.push(yearFilter);
+        paramIndex++;
+    }
+
+    // (ถ้ามี) เพิ่มเงื่อนไข Filter: ประเภท (Type)
+    if (typeFilter) {
+        whereConditions.push("document_type LIKE $1"); // <-- pg: ใช้ $...
+        values.push(`%${typeFilter}%`);
+        paramIndex++;
+    }
+
+    // ประกอบร่าง SQL
+    if (whereConditions.length > 0) {
+        sql += ' WHERE ' + whereConditions.join(' AND ');
+    }
+
+    sql += ' ORDER BY created_at DESC';
+
+    // (เพิ่ม) เพิ่มการจำกัดจำนวน (LIMIT)
+    if (limit && !isNaN(parseInt(limit))) {
+        sql += ` LIMIT $${paramIndex}`; // <-- pg: ใช้ $...
+        values.push(parseInt(limit));
+    }
+
+    console.log("Executing SQL:", sql); // Log SQL
+    console.log("Values:", values);      // Log Values
+
+    try {
+        const results = await pool.query(sql, values); // <-- pg: ส่ง values เข้าไป
+        res.json(results.rows);
+    } catch (err) {
+        console.error('Database query error:', err);
+        return res.status(500).json({ message: 'Error fetching documents' });
+    }
+});
+
+app.get('/api/documents/:id', async (req, res) => {
+  const documentId = req.params.id;
+  const sql = `
+    SELECT
+      id, title, title_eng, author, department, advisorName,
+      abstract, keywords, thai_sh, supportAgency, tools, field,
+      publisher, publish_year, scan_date, display_date, document_type,
+      mime_type, profile_image, language, publication_year, status,
+      created_at, updated_at, file_paths
+    FROM documents
+    WHERE id = $1;
+  `; // <-- pg: ใช้ $1
+  
+  try {
+    const results = await pool.query(sql, [documentId]);
+    if (results.rows.length > 0) {
+      res.status(200).json(results.rows[0]);
+    } else {
+      res.status(404).json({ message: 'ไม่พบเอกสาร' });
+    }
+  } catch (err) {
+    console.error('Error fetching document by ID from database:', err);
+    return res.status(500).json({ message: 'เกิดข้อผิดพลาดในการดึงข้อมูลเอกสาร' });
+  }
+});
+
+app.delete('/api/documents/:id', async (req, res) => {
+  const documentId = req.params.id;
+  const sql = 'DELETE FROM documents WHERE id = $1'; // <-- pg: ใช้ $1
+  
+  try {
+    const result = await pool.query(sql, [documentId]);
+    if (result.rowCount === 0) { // <-- pg: ใช้ .rowCount
+      return res.status(404).json({ message: 'ไม่พบเอกสารที่ต้องการลบ' });
+    }
+    res.status(200).json({ message: 'ลบเอกสารเรียบร้อยแล้ว' });
+  } catch (err) {
+    console.error('Error deleting document from database:', err);
+    return res.status(500).json({ message: 'เกิดข้อผิดพลาดในการลบเอกสาร' });
+  }
+});
+
+// --- (ส่วน Multer Setup ไม่มีการเปลี่ยนแปลง) ---
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + '-' + file.originalname);
+  },
+});
+const allowedExtensions = {
+    'complete_pdf': ['.pdf'],
+    'complete_doc': ['.docx'],
+    'article_files': ['.pdf'],
+    'program_files': ['.zip', '.rar', '.exe'],
+    'web_files': ['.zip'],
+    'poster_files': ['.psd', '.jpg', '.jpeg'],
+    'certificate_files': ['.pdf', '.jpg', '.jpeg', '.png']
+};
+const fileFilter = (req, file, cb) => {
+    const fieldName = file.fieldname;
+    const allowed = allowedExtensions[fieldName];
+    if (!allowed) {
+        return cb(new Error(`Invalid field name ${fieldName}`), false);
+    }
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (allowed.includes(ext)) {
+        cb(null, true);
+    } else {
+        cb(new Error(`ไม่อนุญาตให้อัปโหลดไฟล์ ${ext} สำหรับช่องนี้ (รองรับเฉพาะ ${allowed.join(', ')})`), false);
+    }
+};
+const upload = multer({ 
+    storage: storage,
+    fileFilter: fileFilter 
+});
+const uploadMiddleware = upload.fields([
+    { name: 'complete_pdf', maxCount: 10 },
+    { name: 'complete_doc', maxCount: 10 },
+    { name: 'article_files', maxCount: 10 }, 
+    { name: 'program_files', maxCount: 1 }, 
+    { name: 'web_files', maxCount: 2 },
+    { name: 'poster_files', maxCount: 5 },
+    { name: 'certificate_files', maxCount: 5 }
+]);
+// --- (จบส่วน Multer Setup) ---
+
+
+// API Upload Project ---
+app.post('/api/upload-project', (req, res) => {
+
+    uploadMiddleware(req, res, async function (err) { // <-- (เพิ่ม async)
         
-        // 2. ดึงข้อมูลผู้ใช้ที่ล็อกอิน (เพื่อเช็ค Role และ ชื่อ)
-        // (แก้ไข) เพิ่ม `role` เข้ามาใน SQL
-        const userSql = "SELECT first_name, last_name, role FROM users WHERE id = ?";
-    
-        db.query(userSql, [studentUserId], (userErr, userResults) => {
-          if (userErr) return res.status(500).json({ message: 'Database error fetching user' });
-          if (userResults.length === 0) return res.status(404).json({ message: 'User not found' });
-    
-          const user = userResults[0];
-          const userFullName = `${user.first_name} ${user.last_name}`;
-    
-          // 3. ตรวจสอบสิทธิ์
-          //เพิ่มการตรวจสอบ role
-          const isRoleAdminOrProfessor = user.role === 'admin' || user.role === 'professor'; // (สันนิษฐานว่า role คือ 'professor')
-    
-          //เพิ่มการตรวจสอบการมีส่วนร่วม
-          const isAuthor = document.author === userFullName;
-          const isAdvisor = document.advisorName === userFullName;
-          const isCoAdvisor = document.coAdvisorName === userFullName;
-          const isInvolved = isAuthor || isAdvisor || isCoAdvisor;
-          
-          //ถ้าเป็น Admin/Professor หรือ มีส่วนเกี่ยวข้อง = ดูได้ทั้งหมด
-          const canSeeAllFiles = isRoleAdminOrProfessor || isInvolved;
-    
-          let allFiles = {};
-          try {
-            allFiles = JSON.parse(document.file_paths || '{}');
-          } catch (e) {
-            console.error("Could not parse file_paths JSON:", e);
-          }
-    
-          if (canSeeAllFiles) {
-            // 4. ถ้ามีสิทธิ์: ส่งข้อมูลไฟล์ทั้งหมดกลับไป
-            return res.json({ ...document, file_paths: JSON.stringify(allFiles) });
-          } else {
-            // 5. ถ้าไม่มีสิทธิ์ (เป็น student ที่ไม่ได้เกี่ยวข้อง): กรองข้อมูลไฟล์
-            // (แก้ไข) ส่งกลับไปเฉพาะ PDF ตามที่ผู้ใช้ร้องขอ
-            const filteredFiles = {
-              complete_pdf: allFiles.complete_pdf || []
+        if (err instanceof multer.MulterError) {
+            console.error('Multer error:', err);
+            return res.status(400).json({ message: 'File upload error: ' + err.message });
+        } else if (err) {
+            console.error('File filter error:', err);
+            return res.status(400).json({ message: err.message }); 
+        }
+
+        const {
+            document_type, title, title_eng, author, abstract,
+            advisorName, department, coAdvisorName, keywords, supportAgency
+        } = req.body;
+
+        try {
+            const filePathsJson = {
+                complete_pdf: req.files['complete_pdf'] ? req.files['complete_pdf'].map(f => f.filename) : [],
+                complete_doc: req.files['complete_doc'] ? req.files['complete_doc'].map(f => f.filename) : [],
+                article_files: req.files['article_files'] ? req.files['article_files'].map(f => f.filename) : [],
+                program_files: req.files['program_files'] ? req.files['program_files'].map(f => f.filename) : [],
+                web_files: req.files['web_files'] ? req.files['web_files'].map(f => f.filename) : [],
+                poster_files: req.files['poster_files'] ? req.files['poster_files'].map(f => f.filename) : [],
+                certificate_files: req.files['certificate_files'] ? req.files['certificate_files'].map(f => f.filename) : [],
             };
+
+            // (แก้ไข) เปลี่ยนไวยากรณ์ SQL เป็น PostgreSQL
+            const sql = `
+                INSERT INTO documents (
+                    document_type, title, title_eng, author, abstract, keywords,
+                    advisorName, department, coAdvisorName, supportAgency,
+                    file_paths, 
+                    publish_year, scan_date, approval_status, is_active
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, EXTRACT(YEAR FROM NOW()), CURRENT_DATE, 'pending', FALSE)
+                RETURNING id; 
+            `; // <-- pg: ใช้ $1..$11, EXTRACT/CURRENT_DATE, FALSE, และ RETURNING id
+
+            const values = [
+                document_type || null,
+                title || null,
+                title_eng || null,
+                author || null,
+                abstract || null,
+                keywords || null,
+                advisorName || null,
+                department || null,
+                coAdvisorName || null,
+                supportAgency || null,
+                JSON.stringify(filePathsJson) // pg รับ JSON string ได้ดี
+            ];
+
+            const result = await pool.query(sql, values); // <-- (แก้ไข) ใช้ await pool.query
             
-            // 6. ส่งข้อมูลโปรเจกต์กลับไปพร้อมกับ file_paths ที่ถูกกรองแล้ว
-            return res.json({ ...document, file_paths: JSON.stringify(filteredFiles) });
+            res.status(201).json({
+                message: 'บันทึกข้อมูลและไฟล์เรียบร้อยแล้ว',
+                projectId: result.rows[0].id // <-- (แก้ไข) อ่าน ID จาก .rows[0].id
+            });
+
+        } catch (e) {
+            console.error('!!! DATABASE/SERVER ERROR on upload !!!:', e);
+            res.status(500).json({ message: 'เกิดข้อผิดพลาดในการบันทึกข้อมูลลงฐานข้อมูล', error: e.message });
+        }
+    });
+});
+
+app.get('/api/professor/documents/:id', async (req, res) => {
+  const documentId = req.params.id;
+  const sql = "SELECT * FROM documents WHERE id = $1"; // <-- pg: ใช้ $1
+  
+  try {
+    const results = await pool.query(sql, [documentId]);
+    if (results.rows.length === 0) return res.status(404).json({ message: 'Document not found' });
+    
+    const document = results.rows[0];
+    
+    // (โค้ดส่วนนี้ถูกต้อง ไม่ต้องแก้ไขตรรกะ)
+    let filePathsObject = {};
+    try {
+      if (document.file_paths) {
+        // pg อาจจะคืนค่าเป็น object มาแล้ว แต่ JSON.parse(string) ก็ยังปลอดภัย
+        filePathsObject = (typeof document.file_paths === 'string') 
+                            ? JSON.parse(document.file_paths) 
+                            : document.file_paths;
+      }
+    } catch (e) {
+      console.error("Could not parse file_paths JSON from DB:", e);
+    }
+
+    const documentWithJsonFiles = { 
+      ...document, 
+      file_paths: JSON.stringify(filePathsObject) 
+    };
+    
+    res.json(documentWithJsonFiles);
+  } catch (err) {
+    return res.status(500).json({ message: 'Database error' });
+  }
+});
+
+// (API for Download ไม่มีการเปลี่ยนแปลง)
+app.get('/api/download/:filename', (req, res) => {
+    const { filename } = req.params;
+    const filePath = path.join(__dirname, 'uploads', filename);
+
+    res.download(filePath, (err) => {
+        if (err) {
+            console.error("Error on file download:", err);
+            if (!res.headersSent) {
+                res.status(404).send('File not found.');
+            }
+        }
+    });
+});
+
+app.put('/api/documents/:id/approval', async (req, res) => {
+  const { id } = req.params;
+  const { approvalStatus } = req.body; 
+
+  if (!['approved', 'rejected'].includes(approvalStatus)) {
+    return res.status(400).json({ message: 'Invalid approval status.' });
+  }
+
+  let sql;
+  let values;
+  let successMessage;
+
+  if (approvalStatus === 'approved') {
+    sql = `UPDATE documents 
+           SET approval_status = $1, is_active = TRUE, display_date = NOW() 
+           WHERE id = $2`; // <-- pg: $1, $2, TRUE
+    values = [approvalStatus, id];
+    successMessage = 'อนุมัติโครงงานเรียบร้อยแล้ว';
+  
+  } else { 
+    sql = `UPDATE documents 
+           SET approval_status = $1, is_active = FALSE 
+           WHERE id = $2`; // <-- pg: $1, $2, FALSE
+    values = [approvalStatus, id]; // approvalStatus คือ 'rejected'
+    successMessage = 'ปฏิเสธโครงงานเรียบร้อยแล้ว (ส่งกลับไปให้ผู้ใชแก้ไข)';
+  }
+
+  try {
+    const result = await pool.query(sql, values);
+    if (result.rowCount === 0) { // <-- pg: .rowCount
+      return res.status(404).json({ message: 'ไม่พบเอกสารหรือเอกสารถูกจัดการไปแล้ว' });
+    }
+    res.json({ message: successMessage });
+  } catch (err) {
+    console.error('Database error on approval/rejection:', err);
+    return res.status(500).json({ message: 'Database error' });
+  }
+});
+
+app.put('/api/documents/:id/toggle-active', async (req, res) => {
+  const { id } = req.params;
+  const { isActive } = req.body;
+
+  if (typeof isActive !== 'boolean') {
+    return res.status(400).json({ message: 'isActive must be a boolean.' });
+  }
+
+  const sql = `UPDATE documents SET is_active = $1 WHERE id = $2 AND approval_status = 'approved'`; // <-- pg: $1, $2
+  const values = [isActive, id];
+
+  try {
+    const result = await pool.query(sql, values);
+    if (result.rowCount === 0) return res.status(404).json({ message: 'Document not found or not approved.' }); // <-- pg: .rowCount
+    res.json({ message: 'Active status toggled successfully.' });
+  } catch (err) {
+    return res.status(500).json({ message: 'Database error' });
+  }
+});
+
+app.get('/api/admin/documents', async (req, res) => {
+  const sql = `SELECT id, title, publish_year, approval_status, is_active FROM documents ORDER BY created_at DESC`;
+  try {
+    const results = await pool.query(sql);
+    res.json(results.rows); // <-- pg: .rows
+  } catch (err) {
+    return res.status(500).json({ message: 'Database error' });
+  }
+});
+
+app.get('/api/advisors/search', async (req, res) => {
+    const searchTerm = req.query.query || '';
+    if (searchTerm.length < 3) {
+        return res.json([]);
+    }
+
+    const searchPattern = `%${searchTerm}%`;
+    const sql = `
+        SELECT id, first_name, last_name 
+        FROM users 
+        WHERE role IN ('advisor', 'admin') 
+          AND (first_name LIKE $1 OR last_name LIKE $2)
+        LIMIT 10;
+    `; // <-- pg: $1, $2
+    const values = [searchPattern, searchPattern];
+
+    try {
+        const results = await pool.query(sql, values);
+        res.json(results.rows); // <-- pg: .rows
+    } catch (err) {
+        console.error('Error fetching advisor suggestions:', err);
+        return res.status(500).json({ message: 'Database query failed' });
+    }
+});
+
+app.get('/api/project-details/:id', async (req, res) => {
+  const projectId = req.params.id;
+  const sql = `
+    SELECT 
+      id, title, title_eng, author, abstract, keywords,
+      advisorName, department, coAdvisorName, supportAgency, document_type,
+      file_paths 
+    FROM documents 
+    WHERE id = $1
+  `; // <-- pg: $1
+  
+  try {
+    const results = await pool.query(sql, [projectId]);
+    if (results.rows.length === 0) return res.status(404).json({ message: 'Project not found' });
+    res.json(results.rows[0]); // <-- pg: .rows[0]
+  } catch (err) {
+    return res.status(500).json({ message: 'Database error' });
+  }
+});
+
+
+app.put('/api/projects/:id', (req, res) => {
+  
+    uploadMiddleware(req, res, async function (err) { // <-- (เพิ่ม async)
+        
+        if (err instanceof multer.MulterError) {
+            console.error('Multer error on update:', err);
+            return res.status(400).json({ message: 'File upload error: ' + err.message });
+        } else if (err) {
+            console.error('File filter error on update:', err);
+            return res.status(400).json({ message: err.message }); 
+        }
+
+        const projectId = req.params.id;
+        const { 
+          title, title_eng, abstract, keywords, advisorName, 
+          department, coAdvisorName, supportAgency, document_type 
+        } = req.body; 
+
+        try {
+          const getSql = "SELECT file_paths, approval_status FROM documents WHERE id = $1"; // <-- pg: $1
+          const results = await pool.query(getSql, [projectId]);
+
+          if (results.rows.length === 0) return res.status(404).json({ message: 'Project not found' }); 
+
+          let existingFilePaths = {};
+          try {
+            existingFilePaths = (typeof results.rows[0].file_paths === 'string')
+                                ? JSON.parse(results.rows[0].file_paths || '{}')
+                                : (results.rows[0].file_paths || {});
+          } catch (e) {
+            existingFilePaths = {};
           }
-        });
-      });
+
+          const currentStatus = results.rows[0].approval_status;
+          const newStatus = (currentStatus === 'rejected') ? 'pending' : currentStatus;
+
+          const hasNewFiles = req.files && Object.keys(req.files).length > 0;
+          if (hasNewFiles) {
+              for (const fieldName in req.files) {
+                  existingFilePaths[fieldName] = req.files[fieldName].map(f => f.filename);
+              }
+          }
+
+          let updateSql = `
+            UPDATE documents SET 
+              title = $1, title_eng = $2, abstract = $3, keywords = $4, advisorName = $5, 
+              department = $6, coAdvisorName = $7, supportAgency = $8, document_type = $9,
+              file_paths = $10, 
+              approval_status = $11, 
+              updated_at = NOW() 
+            WHERE id = $12
+          `; // <-- pg: $1..$12
+          let values = [
+            title, title_eng, abstract, keywords, advisorName, 
+            department, coAdvisorName, supportAgency, document_type,
+            JSON.stringify(existingFilePaths), 
+            newStatus, 
+            projectId
+          ];
+
+          await pool.query(updateSql, values); // <-- (แก้ไข) ใช้ await pool.query
+          
+          let message = 'Project updated successfully!';
+          if (newStatus === 'pending') {
+              message = 'Project updated and resubmitted for approval successfully!';
+          }
+          
+          res.json({ message: message });
+
+        } catch (updateErr) {
+          console.error("Error updating project:", updateErr);
+          return res.status(500).json({ message: 'Failed to update project' });
+        }
     });
+});
+
+app.get('/api/student/documents/:id', async (req, res) => {
+  const documentId = req.params.id;
+  const studentUserId = req.query.userId; 
+
+  if (!studentUserId) {
+    return res.status(400).json({ message: 'User ID is required' });
+  }
+
+  try {
+    // 1. ดึงข้อมูลเอกสาร
+    const documentSql = "SELECT * FROM documents WHERE id = $1"; // <-- pg: $1
+    const docResults = await pool.query(documentSql, [documentId]);
+    if (docResults.rows.length === 0) return res.status(404).json({ message: 'Document not found' });
+
+    const document = docResults.rows[0];
     
-    
-    // Start Server
-    app.listen(port, () => {
-      console.log(`Server running on port ${port}`);
-    });
-    
+    // 2. ดึงข้อมูลผู้ใช้ที่ล็อกอิน
+    const userSql = "SELECT first_name, last_name, role FROM users WHERE id = $1"; // <-- pg: $1
+    const userResults = await pool.query(userSql, [studentUserId]);
+    if (userResults.rows.length === 0) return res.status(404).json({ message: 'User not found' });
+
+    const user = userResults.rows[0];
+    const userFullName = `${user.first_name} ${user.last_name}`;
+
+    // 3. ตรวจสอบสิทธิ์ (ตรรกะเดิมถูกต้อง)
+    const isRoleAdminOrProfessor = user.role === 'admin' || user.role === 'advisor'; // <-- (แก้ไข) 'professor' เป็น 'advisor' ให้ตรงกับ DB
+    const isAuthor = document.author === userFullName;
+    const isAdvisor = document.advisorName === userFullName;
+    const isCoAdvisor = document.coAdvisorName === userFullName;
+    const isInvolved = isAuthor || isAdvisor || isCoAdvisor;
+    const canSeeAllFiles = isRoleAdminOrProfessor || isInvolved;
+
+    let allFiles = {};
+    try {
+      allFiles = (typeof document.file_paths === 'string')
+                    ? JSON.parse(document.file_paths || '{}')
+                    : (document.file_paths || {});
+    } catch (e) {
+      console.error("Could not parse file_paths JSON:", e);
+    }
+
+    if (canSeeAllFiles) {
+      return res.json({ ...document, file_paths: JSON.stringify(allFiles) });
+    } else {
+      const filteredFiles = {
+        complete_pdf: allFiles.complete_pdf || []
+      };
+      return res.json({ ...document, file_paths: JSON.stringify(filteredFiles) });
+    }
+  } catch (err) {
+    return res.status(500).json({ message: 'Database error', error: err.message });
+  }
+});
+
+
+// Start Server
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
