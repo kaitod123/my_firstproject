@@ -15,20 +15,32 @@
     // ทำให้ Express สามารถเข้าถึงไฟล์ในโฟลเดอร์ uploads ได้โดยตรง
     app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); 
     
-    const db = mysql.createConnection({
-      host: 'localhost',
-      user: 'root',
-      password: '12345678',
-      database: 'project'
-    });
-    
-    db.connect(err => {
-      if (err) {
-        console.error('Error connecting to MySQL database:', err);
-        return;
-      }
-      console.log('Connected to MySQL database');
-    });
+    // 1. เปลี่ยนมาใช้ 'pg'
+const { Pool } = require('pg');
+
+// 2. สร้าง Pool ใหม่
+const pool = new Pool({
+  // 3. อ่าน 'DATABASE_URL' จาก Environment ที่เราตั้งค่าบน Render
+  connectionString: process.env.DATABASE_URL, 
+  
+  // 4. (สำคัญมาก) เพิ่มส่วนนี้เพื่อให้เชื่อมต่อกับ Render DB ได้
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
+
+// 5. ทดสอบการเชื่อมต่อ
+pool.connect((err, client, release) => {
+  if (err) {
+    // นี่คือ Error ที่คุณจะเห็นถ้าตั้งค่า ENV ผิด
+    return console.error('Error acquiring client', err.stack); 
+  }
+  console.log('Connected to PostgreSQL database successfully!'); // <-- เราอยากเห็นข้อความนี้
+  release();
+});
+
+// อย่าลืม export 'pool' ไปใช้ในส่วนอื่นๆ ของแอป
+// module.exports = pool;
     
     // ===============================================
     // API for Users (CRUD Operations)
