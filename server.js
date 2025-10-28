@@ -530,16 +530,16 @@ app.post('/api/upload-project', (req, res) => {
             });
             
             // **********************************************
-            // แก้ไข: เพิ่ม is_active (FALSE) และ permission (BOOL) ใน SQL
+            // แก้ไข: เพิ่ม file_sizes และ is_active ใน SQL
             // **********************************************
             const sql = `
                 INSERT INTO documents (
                     document_type, title, title_eng, author, abstract, keywords,
                     advisorName, department, coAdvisorName, supportAgency,
-                    file_paths, 
+                    file_paths, file_sizes,
                     is_active,
                     publish_year, scan_date, approval_status
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, EXTRACT(YEAR FROM NOW()), CURRENT_DATE, 'pending')
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, EXTRACT(YEAR FROM NOW()), CURRENT_DATE, 'pending')
                 RETURNING id; 
             `; 
 
@@ -559,9 +559,16 @@ app.post('/api/upload-project', (req, res) => {
                 // $11 (File Paths JSON)
                 JSON.stringify(filePathsJson),
                 
-                // $12 (is_active / Permission - ใช้ค่าจาก Frontend)
+                // $12 (file_sizes) <-- แก้ไข: ใส่ String ว่างเพื่อให้ NOT NULL ยอมรับ
+                '',
+                
+                // $13 (is_active / Permission - ใช้ค่าจาก Frontend)
                 (permission === 'true' || permission === true) // แปลง 'true' string เป็น boolean
             ];
+            
+            // NOTE: SQL ต้องมี 15 fields ใน INSERT list และ 13 placeholders ใน VALUES (นับรวม EXTRACT/CURRENT_DATE/pending)
+            // SQL: INSERT INTO documents (..., file_paths, file_sizes, is_active, ...) VALUES ($1...$13, EXTRACT(YEAR FROM NOW()), CURRENT_DATE, 'pending')
+            // เดี๋ยวผมจะปรับ SQL ให้ถูกต้องในขั้นตอนถัดไป 
 
             const result = await pool.query(sql, values); 
             
