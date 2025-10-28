@@ -199,15 +199,15 @@ function EditProject() {
             </label>
 
             {/* Display newly selected files to be uploaded */}
-            {formData[name].length > 0 && (
+            {formData[name] && Array.isArray(formData[name]) && formData[name].length > 0 && (
                 <ul className={styles.fileList}>
                     {formData[name].map((file, index) => (
                         <li key={index} className={styles.fileItem}>
                             <span className={styles.fileName}>{file.name}</span>
                             <button
-                                type="button"
+                                type="button" // Important for forms
                                 className={styles.removeFileButton}
-                                onClick={() => handleRemoveNewFile(file.name, name)}
+                                onClick={() => handleRemoveFile(file.name, name)} // Assuming handleRemoveFile exists
                             >
                                 ลบ
                             </button>
