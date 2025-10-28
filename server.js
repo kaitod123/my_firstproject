@@ -425,7 +425,8 @@ const allowedExtensions = {
     'program_files': ['.zip', '.rar', '.exe'],
     'web_files': ['.zip'],
     'poster_files': ['.psd', '.jpg', '.jpeg'],
-    'certificate_files': ['.pdf', '.jpg', '.jpeg', '.png']
+    'certificate_files': ['.pdf', '.jpg', '.jpeg', '.png'],
+    'front_face': ['.jpeg']
 };
 const fileFilter = (req, file, cb) => {
     const fieldName = file.fieldname;
@@ -451,7 +452,8 @@ const uploadMiddleware = upload.fields([
     { name: 'program_files', maxCount: 1 }, 
     { name: 'web_files', maxCount: 2 },
     { name: 'poster_files', maxCount: 5 },
-    { name: 'certificate_files', maxCount: 5 }
+    { name: 'certificate_files', maxCount: 5 },
+    { name: 'front_face', maxCount: 1 }
 ]);
 // --- (จบส่วน Multer Setup) ---
 

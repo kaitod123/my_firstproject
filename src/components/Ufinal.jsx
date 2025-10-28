@@ -173,8 +173,9 @@ const handleFileChange = (e) => {
         // (ส่วนที่เหลือของฟังก์ชันเหมือนเดิม)
         const data = new FormData();
         const fileKeys = [
-            'complete_pdf', 'complete_doc', 'article_files', 'program_files', 
-            'web_files', 'poster_files', 'certificate_files','front_face'
+         'complete_pdf', 'complete_doc', 'article_files', 'program_files', 
+         'web_files', 'poster_files', 'certificate_files',
+         'front_face' 
         ];
 
         // Append text data
