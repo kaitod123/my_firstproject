@@ -19,7 +19,7 @@ const ProfessorDocumentDetails = () => {
       setLoading(true);
       setError(null); // --- (เพิ่ม)
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/advisor/documents/${documentId}`);
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/professor/documents/${documentId}`);
         if (!response.ok) {
            throw new Error(`HTTP error! status: ${response.status}`); // --- (แก้ไข)
         }
