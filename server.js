@@ -606,7 +606,7 @@ app.get('/api/professor/documents/:id', async (req, res) => {
                             : document.file_paths;
       }
     } catch (e) {
-      console.error("Could not parse file_paths JSON from DB:", e);
+      console.error("Could not parse file_paths JSON:", e);
     }
 
     const documentWithJsonFiles = { 
@@ -641,7 +641,7 @@ app.get('/api/download/:filename', async (req, res) => {
 });
 
 app.put('/api/documents/:id/approval', async (req, res) => {
-  const { id } = req.params;
+  const documentId = req.params.id;
   const { approvalStatus } = req.body; 
 
   if (!['approved', 'rejected'].includes(approvalStatus)) {
@@ -656,14 +656,14 @@ app.put('/api/documents/:id/approval', async (req, res) => {
     sql = `UPDATE documents 
            SET approval_status = $1, is_active = TRUE, display_date = NOW() 
            WHERE id = $2`; // <-- pg: $1, $2, TRUE
-    values = [approvalStatus, id];
+    values = [approvalStatus, documentId];
     successMessage = 'อนุมัติโครงงานเรียบร้อยแล้ว';
   
   } else { 
     sql = `UPDATE documents 
            SET approval_status = $1, is_active = FALSE 
            WHERE id = $2`; // <-- pg: $1, $2, FALSE
-    values = [approvalStatus, id]; // approvalStatus คือ 'rejected'
+    values = [approvalStatus, documentId]; // approvalStatus คือ 'rejected'
     successMessage = 'ปฏิเสธโครงงานเรียบร้อยแล้ว (ส่งกลับไปให้ผู้ใชแก้ไข)';
   }
 
@@ -678,6 +678,53 @@ app.put('/api/documents/:id/approval', async (req, res) => {
     return res.status(500).json({ message: 'Database error' });
   }
 });
+
+
+// **********************************************
+// แก้ไข: เพิ่ม Route Handler ที่ขาดหายไป (อนุมัติ)
+// **********************************************
+app.put('/documents/:id/approval', async (req, res) => {
+    // โยนการเรียกไปที่ Route ที่ถูกต้อง
+    // Note: ควรตรวจสอบสิทธิ์ผู้ใช้ก่อนเสมอว่า user เป็น admin/advisor
+    const documentId = req.params.id;
+    const { approvalStatus } = req.body; 
+
+    if (!['approved', 'rejected'].includes(approvalStatus)) {
+        return res.status(400).json({ message: 'Invalid approval status.' });
+    }
+
+    let sql;
+    let values;
+    let successMessage;
+
+    if (approvalStatus === 'approved') {
+        sql = `UPDATE documents 
+               SET approval_status = $1, is_active = TRUE, display_date = NOW() 
+               WHERE id = $2`;
+        values = [approvalStatus, documentId];
+        successMessage = 'อนุมัติโครงงานเรียบร้อยแล้ว';
+    } else { 
+        sql = `UPDATE documents 
+               SET approval_status = $1, is_active = FALSE 
+               WHERE id = $2`;
+        values = [approvalStatus, documentId];
+        successMessage = 'ปฏิเสธโครงงานเรียบร้อยแล้ว';
+    }
+
+    try {
+        const result = await pool.query(sql, values);
+        if (result.rowCount === 0) {
+            return res.status(404).json({ message: 'ไม่พบเอกสารหรือเอกสารถูกจัดการไปแล้ว' });
+        }
+        res.json({ message: successMessage });
+    } catch (err) {
+        console.error('Database error on approval/rejection via non-api route:', err);
+        return res.status(500).json({ message: 'Database error' });
+    }
+});
+// **********************************************
+// จบการแก้ไข
+
 
 app.put('/api/documents/:id/toggle-active', async (req, res) => {
   const { id } = req.params;
@@ -709,6 +756,19 @@ app.get('/api/admin/documents', async (req, res) => {
   }
 });
 
+app.get('/admin/documents', async (req, res) => {
+    // โยนการเรียกไปที่ Route ที่ถูกต้อง
+    // Note: ควรตรวจสอบสิทธิ์ผู้ใช้ก่อนเสมอว่า user เป็น admin หรือไม่
+    const sql = `SELECT id, title, publish_year, approval_status, is_active FROM documents ORDER BY created_at DESC`;
+    try {
+        const results = await pool.query(sql);
+        res.json(results.rows); // <-- pg: .rows
+    } catch (err) {
+        console.error('Error fetching admin documents via non-api route:', err);
+        return res.status(500).json({ message: 'Database error' });
+    }
+});
+
 app.get('/api/advisors/search', async (req, res) => {
     const searchTerm = req.query.query || '';
     if (searchTerm.length < 3) {
@@ -722,7 +782,7 @@ app.get('/api/advisors/search', async (req, res) => {
         WHERE role IN ('advisor', 'admin') 
           AND (first_name LIKE $1 OR last_name LIKE $2)
         LIMIT 10;
-    `; // <-- pg: $1, $2
+    `; // <-- pg: ใช้ $1, $2
     const values = [searchPattern, searchPattern];
 
     try {
