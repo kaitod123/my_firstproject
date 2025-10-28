@@ -87,7 +87,7 @@ const DeleteDashboard = () => {
         setLoading(true);
         try {
             // The API call now correctly targets the admin endpoint.
-            const response = await axios.get(`${import.meta.env.VITE_API_URL}/admin/documents`);
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/documents`);
             setProjects(response.data);
             setError(null);
         } catch (err) {
