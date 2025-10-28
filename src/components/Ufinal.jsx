@@ -4,7 +4,7 @@ import styles from '../styles/Ufinal1.module.css';
 
 function Ufinal() {
 const [formData, setFormData] = useState({
-        document_type: '',
+        document_type: [],
         title: '',
         title_eng: '',
         author: '',
@@ -23,6 +23,7 @@ const [formData, setFormData] = useState({
         web_files: [],
         poster_files: [],
         certificate_files: [],
+        front_face: [],
     });
 
     const [advisorSuggestions, setAdvisorSuggestions] = useState([]);
@@ -79,23 +80,32 @@ const [formData, setFormData] = useState({
     }, []);
 
 const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
+    const { name, value, type, checked } = e.target;
 
-        // ตรวจสอบว่าเป็น checkbox 'permission' หรือไม่
-        if (name === 'permission' && type === 'checkbox') {
-            setFormData(prevState => ({
-                ...prevState,
-                [name]: checked // ใชสถานะ checked (true/false)
-            }));
-        } 
-        // สำหรับ input อื่นๆ ทั้งหมด (text, textarea, และ checkbox ของ document_type)
-        else {
-            setFormData(prevState => ({
-                ...prevState,
-                [name]: value // ใช้ค่า value (เหมือนเดิม)
-            }));
+    if (type === 'checkbox') {
+        // --- ส่วนจัดการ Checkbox ---
+        if (name === 'permission') {
+            // สำหรับ checkbox 'permission' (อันเดียว)
+            setFormData(prevState => ({ ...prevState, [name]: checked }));
+        } else if (name === 'document_type') {
+            // สำหรับ checkbox 'document_type' (หลายอัน)
+            setFormData(prevState => {
+                const currentTypes = prevState.document_type || []; // เอา Array เดิมมา (หรือ Array ว่าง ถ้ายังไม่มี)
+                if (checked) {
+                    // ถ้าถูกเลือก ให้เพิ่ม value เข้าไปใน Array
+                    return { ...prevState, document_type: [...currentTypes, value] };
+                } else {
+                    // ถ้าถูกยกเลิก ให้กรอง value นั้นออกจาก Array
+                    return { ...prevState, document_type: currentTypes.filter(type => type !== value) };
+                }
+            });
         }
-    };
+    } else {
+        // --- สำหรับ Input อื่นๆ (text, radio, textarea) ---
+        setFormData(prevState => ({ ...prevState, [name]: value }));
+    }
+};
+
 const handleFileChange = (e) => {
     const { name, files, accept } = e.target; // <-- อ่าน accept มาด้วย
     
@@ -164,13 +174,21 @@ const handleFileChange = (e) => {
         const data = new FormData();
         const fileKeys = [
             'complete_pdf', 'complete_doc', 'article_files', 'program_files', 
-            'web_files', 'poster_files', 'certificate_files'
+            'web_files', 'poster_files', 'certificate_files','front_face'
         ];
 
         // Append text data
         for (const key in formData) {
             if (!fileKeys.includes(key)) {
-                data.append(key, formData[key]);
+                 // *** แก้ไข: แปลง document_type (Array) เป็น String คั่นด้วยคอมมา ***
+                if (key === 'document_type') {
+                    const documentTypesString = Array.isArray(formData.document_type) 
+                        ? formData.document_type.join(',') // Join Array เป็น String
+                        : ''; 
+                    data.append(key, documentTypesString);
+                } else {
+                    data.append(key, formData[key]);
+                }
             }
         }
 
