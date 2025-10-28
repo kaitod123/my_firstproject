@@ -27,9 +27,9 @@ const LoginForm = () => {
       // !!! IMPORTANT CHECK !!!
       if (response.ok) { 
         // --- Only access data.user if login was successful ---
-        alert('Login สำเร็จ!');
+        console.log('Login สำเร็จ!');
         const userRole = data.user.role; 
-        localStorage.setItem('user', JSON.stringify(data.user)); 
+        localStorage.setItem('user', JSON.stringify(data.user));
         
         // Navigation logic...
         if (userRole === 'admin') {
@@ -44,7 +44,7 @@ const LoginForm = () => {
       } else {
         // --- Handle failed login (401 Unauthorized) ---
         // Just display the error message from the backend
-        setError(data.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ'); 
+        setError(data.message || 'Login failed'); 
         // !!! DO NOT try to access data.user here !!!
       }
     } catch (err) {
