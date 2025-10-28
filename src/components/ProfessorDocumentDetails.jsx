@@ -236,6 +236,13 @@ const ProfessorDocumentDetails = () => {
           )}
         </div>
       </div>
+            <footer className={styles.footer}>
+                <p className={styles.footerText}>© 2023 University Project Hub</p>
+                <div className={styles.footerLinks}>
+                  <a href="#" className={styles.footerLink}>Contact Us</a>
+                  <a href="#" className={styles.footerLink}>Privacy Policy</a>
+                </div>
+            </footer>
     </div>
   );
 };
