@@ -15,7 +15,7 @@ const LoginForm = () => {
     setError(''); // ล้างข้อผิดพลาดเก่า
 
     try {
-      const response = await fetch('https://my-project-backend-cc73.onrender.com/login', { // *** ตรวจสอบ URL นี้ให้ตรงกับ Backend ของคุณ ***
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/login`, { // *** แก้ไข URL และ Endpoint ให้ถูกต้อง ***
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

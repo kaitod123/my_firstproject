@@ -32,13 +32,10 @@ function EditProject() {
     const [error, setError] = useState(null);
     const [successMessage, setSuccessMessage] = useState('');
 
-    const API_BASE_URL = 'https://my-project-backend-cc73.onrender.com';
-    fetch(`${API_URL}/api/documents?limit=4`);
-
     useEffect(() => {
         const fetchProjectDetails = async () => {
             try {
-                const response = await fetch(`${API_BASE_URL}/project-details/${id}`);
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/project-details/${id}`);
                 if (!response.ok) throw new Error('Failed to fetch project details.');
                 
                 const data = await response.json();
@@ -158,7 +155,7 @@ function EditProject() {
         });
         
         try {
-            const response = await fetch(`${API_BASE_URL}/projects/${id}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/projects/${id}`, {
                 method: 'PUT',
                 body: data, 
             });

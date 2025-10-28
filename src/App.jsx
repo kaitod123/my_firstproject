@@ -19,7 +19,7 @@ import EditProfilePage from './components/EditProfilePage'; // Import EditProfil
 import StudentDocumentDetails from './components/StudentDocumentDetails';
 import ProfessorDocumentDetails from './components/ProfessorDocumentDetails';
 // ตอนเรียก ค่อยใส่ Endpoint
-fetch(`${API_URL}/api/documents?limit=4`);
+
 // คอมโพเนนต์ Layout หลักที่จะมี Header อยู่ด้านบน
 const MainLayout = () => {
   return (

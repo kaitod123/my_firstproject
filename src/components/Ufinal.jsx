@@ -27,8 +27,6 @@ const [formData, setFormData] = useState({
 
     const [advisorSuggestions, setAdvisorSuggestions] = useState([]);
     const [coAdvisorSuggestions, setCoAdvisorSuggestions] = useState([]);
-    const API_BASE_URL = 'https://my-project-backend-cc73.onrender.com/api/documents?limit=4'; // Define API URLดึงข้อมูลชื่ออาจารย์ที่ปรึกษาแบบอัตโนมัติ
-    fetch(`${API_URL}/api/documents?limit=4`);
 
     const handleAdvisorSearch = async (e) => {
         const { name, value } = e.target;
@@ -43,7 +41,7 @@ const [formData, setFormData] = useState({
 
         try {
             // เรียก API ใหม่เพื่อค้นหารายชื่ออาจารย์
-            const response = await fetch(`${API_BASE_URL}/api/advisors/search?query=${encodeURIComponent(value)}`);
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/advisors/search?query=${encodeURIComponent(value)}`);
             if (!response.ok) throw new Error("Failed to fetch advisors");
             const data = await response.json();
 

@@ -51,14 +51,11 @@ const ProjectCard = ({ project, onApprove, onReject, onToggleActive }) => {
 const ApprovalDashboard = () => {
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
-    const API_URL = 'https://my-project-backend-cc73.onrender.com';
-// ตอนเรียก ค่อยใส่ Endpoint
-    fetch(`${API_URL}/api/documents?limit=4`);
 
     const fetchProjects = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await axios.get(`${API_URL}/admin/documents`);
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/admin/documents`);
             setProjects(response.data);
         } catch (err) {
             console.error(err);
@@ -77,7 +74,7 @@ const ApprovalDashboard = () => {
         
         if (!window.confirm(`คุณแน่ใจหรือไม่ที่จะ '${actionText}' โปรเจกต์ ID: ${id}?`)) return;
         try {
-            await axios.put(`${API_URL}/documents/${id}/approval`, { approvalStatus: status });
+            await axios.put(`${import.meta.env.VITE_API_URL}/documents/${id}/approval`, { approvalStatus: status });
             fetchProjects();
         } catch (error) {
             alert('เกิดข้อผิดพลาดในการอัปเดตสถานะการอนุมัติ');
@@ -88,7 +85,7 @@ const ApprovalDashboard = () => {
         const action = newActiveState ? 'เปิดการแสดงผล' : 'ซ่อน';
         if (!window.confirm(`คุณต้องการ '${action}' โปรเจกต์ ID: ${id} หรือไม่?`)) return;
         try {
-            await axios.put(`${API_URL}/documents/${id}/toggle-active`, { isActive: newActiveState });
+            await axios.put(`${import.meta.env.VITE_API_URL}/documents/${id}/toggle-active`, { isActive: newActiveState });
             fetchProjects();
         } catch (error) {
             alert('เกิดข้อผิดพลาดในการสลับสถานะการใช้งาน');

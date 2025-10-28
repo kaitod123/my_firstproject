@@ -19,9 +19,6 @@ function EditProfilePage() {
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState('');
 
-    const API_BASE_URL = 'https://my-project-backend-cc73.onrender.com';
-    fetch(`${API_URL}/api/documents?limit=4`);
-
     // 1. แก้ไข useEffect เพื่อตรวจสอบ id
     useEffect(() => {
         const fetchUserData = async () => {
@@ -35,7 +32,7 @@ function EditProfilePage() {
                 }
                 
                 // ดึงข้อมูลทั้งหมดที่จำเป็นในการแสดงผล 
-                const response = await fetch(`${API_BASE_URL}/users/${id}`); 
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/users/${id}`); 
                 if (!response.ok) throw new Error('Failed to fetch user data.');
                 const data = await response.json();
                 
@@ -85,7 +82,7 @@ function EditProfilePage() {
         
         try {
             // ส่งเฉพาะ ID และรหัสผ่านใหม่ไปยัง Backend
-            const response = await fetch(`${API_BASE_URL}/users/${id}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/users/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dataToUpdate) // ส่งแค่ { password: '...' }

@@ -24,8 +24,6 @@ const DocumentManagementSystem = () => {
   const [typeFilter, setTypeFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const API_BASE_URL = 'https://my-project-backend-cc73.onrender.com';
-  fetch(`${API_URL}/api/documents?limit=4`);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -90,7 +88,7 @@ const DocumentManagementSystem = () => {
         }
         if (typeFilter) queryParams.append('type', typeFilter); 
 
-        const response = await fetch(`${API_BASE_URL}/api/documents?${queryParams.toString()}`);
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/documents?${queryParams.toString()}`);
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);

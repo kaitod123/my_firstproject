@@ -82,15 +82,12 @@ const DeleteDashboard = () => {
     const navigate = useNavigate();
 
     // FIX #2: The API_URL constant is now the base path, preventing URL duplication.
-    const API_URL = 'https://my-project-backend-cc73.onrender.com';
-// ตอนเรียก ค่อยใส่ Endpoint
-fetch(`${API_URL}/api/documents?limit=4`);
-
+    fetch(`${import.meta.env.VITE_API_URL}/api/documents`);
     const fetchProjects = useCallback(async () => {
         setLoading(true);
         try {
             // The API call now correctly targets the admin endpoint.
-            const response = await axios.get(`${API_URL}/admin/documents`);
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/admin/documents`);
             setProjects(response.data);
             setError(null);
         } catch (err) {
@@ -109,7 +106,7 @@ fetch(`${API_URL}/api/documents?limit=4`);
         if (!window.confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบโปรเจกต์ ID: ${id} ออกจากระบบอย่างถาวร?`)) return;
         try {
             // URL is now correctly constructed from the base API_URL
-            await axios.delete(`${API_URL}/documents/${id}`);
+            await axios.delete(`${import.meta.env.VITE_API_URL}/documents/${id}`);
             fetchProjects(); 
         } catch (error) {
             alert('เกิดข้อผิดพลาดในการลบโปรเจกต์');
@@ -124,7 +121,7 @@ fetch(`${API_URL}/api/documents?limit=4`);
         if (!window.confirm(`คุณต้องการ '${actionText}' โปรเจกต์ ID: ${id} หรือไม่?`)) return;
         try {
             // URL is now correctly constructed
-            await axios.put(`${API_URL}/documents/${id}/approval`, { approvalStatus: status });
+            await axios.put(`${import.meta.env.VITE_API_URL}/documents/${id}/approval`, { approvalStatus: status });
             fetchProjects();
         } catch (error) {
             alert('เกิดข้อผิดพลาดในการอัปเดตสถานะ');
@@ -137,7 +134,7 @@ fetch(`${API_URL}/api/documents?limit=4`);
         if (!window.confirm(`คุณต้องการ '${action}' โปรเจกต์ ID: ${id} หรือไม่?`)) return;
         try {
             // URL is now correctly constructed
-            await axios.put(`${API_URL}/documents/${id}/toggle-active`, { isActive: newActiveState });
+            await axios.put(`${import.meta.env.VITE_API_URL}/documents/${id}/toggle-active`, { isActive: newActiveState });
             fetchProjects();
         } catch (error) {
             alert('เกิดข้อผิดพลาดในการสลับสถานะ');

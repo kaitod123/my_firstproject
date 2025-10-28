@@ -34,9 +34,7 @@ const ProjectStatus = () => {
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const API_BASE_URL = 'https://my-project-backend-cc73.onrender.com';
-    fetch(`${API_URL}/api/documents?limit=4`);
-    
+
     useEffect(() => {
         const fetchUserProjects = async () => {
             const userData = JSON.parse(localStorage.getItem('user'));
@@ -47,7 +45,7 @@ const ProjectStatus = () => {
             }
 
             try {
-                const response = await fetch(`${API_BASE_URL}/users/${userData.id}/projects`);
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/users/${userData.id}/projects`);
                 if (!response.ok) {
                     throw new Error('ไม่สามารถดึงข้อมูลโครงงานได้');
                 }

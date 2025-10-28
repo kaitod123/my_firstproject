@@ -10,14 +10,13 @@ const DocumentDetails = () => {
   const [document, setDocument] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const API_BASE_URL = 'https://my-project-backend-cc73.onrender.com/api/documents?limit=4';
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchDocumentDetails = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`${API_BASE_URL}/api/documents/${documentId}`);
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/documents/${documentId}`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -78,7 +77,7 @@ const DocumentDetails = () => {
   const renderDownloadLink = (fileName) => {
     if (!fileName) return <span className={tableStyles.noFile}>-</span>;
     return (
-      <a href={`${API_BASE_URL}/api/download/${fileName}`} className={tableStyles.downloadLink} download>
+      <a href={`${import.meta.env.VITE_API_URL}/api/download/${fileName}`} className={tableStyles.downloadLink} download>
         <Download size={16} /> ดาวน์โหลด
       </a>
     );

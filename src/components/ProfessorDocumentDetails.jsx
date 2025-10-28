@@ -11,7 +11,6 @@ const ProfessorDocumentDetails = () => {
   const [document, setDocument] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null); // --- (เพิ่ม) 2. เพิ่ม state สำหรับ error ---
-  const API_BASE_URL = 'https://my-project-backend-cc73.onrender.com/api/documents?limit=4';
   const navigate = useNavigate(); // --- (เพิ่ม) 3. Initialize navigate ---
 
 
@@ -20,7 +19,7 @@ const ProfessorDocumentDetails = () => {
       setLoading(true);
       setError(null); // --- (เพิ่ม)
       try {
-        const response = await fetch(`${API_BASE_URL}/api/professor/documents/${documentId}`);
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/professor/documents/${documentId}`);
         if (!response.ok) {
            throw new Error(`HTTP error! status: ${response.status}`); // --- (แก้ไข)
         }
@@ -126,7 +125,7 @@ const ProfessorDocumentDetails = () => {
   const renderDownloadLink = (fileName) => {
     if (!fileName) return <span className={tableStyles.noFile}>-</span>;
     return (
-      <a href={`${API_BASE_URL}/api/download/${fileName}`} className={tableStyles.downloadLink} download>
+      <a href={`${import.meta.env.VITE_API_URL}/api/download/${fileName}`} className={tableStyles.downloadLink} download>
         <Download size={16} /> ดาวน์โหลด
       </a>
     );

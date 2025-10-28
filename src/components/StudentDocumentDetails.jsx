@@ -10,7 +10,6 @@ const StudentDocumentDetails = () => {
   const [document, setDocument] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null); // --- (เพิ่ม) 2. เพิ่ม state สำหรับ error ---
-  const API_BASE_URL = 'https://my-project-backend-cc73.onrender.com/api/documents?limit=4';
   const navigate = useNavigate(); // --- (เพิ่ม) 3. Initialize navigate ---
 
   useEffect(() => {
@@ -28,7 +27,7 @@ const StudentDocumentDetails = () => {
       const userId = userData.id;
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/student/documents/${documentId}?userId=${userId}`);
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/student/documents/${documentId}?userId=${userId}`);
         
         if (!response.ok) {
            throw new Error(`HTTP error! status: ${response.status}`); // --- (แก้ไข)
@@ -142,7 +141,7 @@ const StudentDocumentDetails = () => {
   const renderDownloadLink = (fileName) => {
     if (!fileName) return <span className={tableStyles.noFile}>-</span>;
     return (
-      <a href={`${API_BASE_URL}/api/download/${fileName}`} className={tableStyles.downloadLink} download>
+      <a href={`${import.meta.env.VITE_API_URL}/api/download/${fileName}`} className={tableStyles.downloadLink} download>
         <Download size={16} /> ดาวน์โหลด
       </a>
     );

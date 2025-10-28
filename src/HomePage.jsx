@@ -9,16 +9,14 @@ const HomePage = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
-const API_URL = 'https://my-project-backend-cc73.onrender.com';
-// ตอนเรียก ค่อยใส่ Endpoint
-fetch(`${API_URL}/api/documents?limit=4`);
+
 
   useEffect(() => {
     const fetchLatestProjects = async () => {
       setLoading(true);
       try {
         // Now using the limit parameter which is handled by the server
-        const response = await fetch(`${API_BASE_URL}/api/documents?limit=4`);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/documents?limit=4`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
