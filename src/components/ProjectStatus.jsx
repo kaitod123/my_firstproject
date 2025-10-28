@@ -45,7 +45,7 @@ const ProjectStatus = () => {
             }
 
             try {
-                const response = await fetch(`${import.meta.env.VITE_API_URL}/users/${userData.id}/projects`);
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/${userData.id}/projects`);
                 if (!response.ok) {
                     throw new Error('ไม่สามารถดึงข้อมูลโครงงานได้');
                 }

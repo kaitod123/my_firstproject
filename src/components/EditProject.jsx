@@ -155,7 +155,7 @@ function EditProject() {
         });
         
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/projects/${id}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/projects/${id}`, {
                 method: 'PUT',
                 body: data, 
             });
