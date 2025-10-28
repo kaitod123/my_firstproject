@@ -1,7 +1,7 @@
 // src/components/LoginForm.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import styles from "../styles/loginform.module.css";
+import styles from "../styles/LoginForm.module.css";
 
 const LoginForm = () => {
   const [username, setUsername] = useState('');
