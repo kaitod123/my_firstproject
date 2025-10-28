@@ -1,5 +1,5 @@
 // server.js (เวอร์ชันแก้ไข PostgreSQL และ S3 - ใช้ ES Module)
-import 'dotenv/config'; // <-- เปลี่ยน require('dotenv').config() เป็น import
+import 'dotenv/config'; 
 import AWS from 'aws-sdk';
 import multer from 'multer';
 import multerS3 from 'multer-s3';
@@ -7,15 +7,13 @@ import multerS3 from 'multer-s3';
 // 1. ดึงค่าจาก Environment Variables
 const S3_BUCKET = process.env.S3_BUCKET_NAME;
 const AWS_REGION = process.env.AWS_REGION;
-
-import pg from 'pg'; // <-- เปลี่ยน require('pg') เป็น import
+import pg from 'pg'; 
 const { Pool } = pg; 
 
-import express from 'express'; // <-- เปลี่ยน require('express') เป็น import
-import bodyParser from 'body-parser'; // <-- เปลี่ยน require('body-parser') เป็น import
-import cors from 'cors'; // <-- เปลี่ยน require('cors') เป็น import
-// import multer from 'multer'; // ถูก import ด้านบนแล้ว
-import path from 'path'; // <-- เปลี่ยน require('path') เป็น import
+import express from 'express'; 
+import bodyParser from 'body-parser'; 
+import cors from 'cors'; 
+import path from 'path'; 
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -33,7 +31,7 @@ const s3 = new AWS.S3({
 const corsOptions = {
   origin: 'https://my-firstprojectdeploysohard.onrender.com' 
 };
-app.use(cors(corsOptions)); // <--- ใช้ตัวแปรนี้
+app.use(cors(corsOptions)); 
     
 // ตั้งค่าการเชื่อมต่อ PostgreSQL (อ่านจาก DATABASE_URL)
 const pool = new Pool({
@@ -462,81 +460,95 @@ const uploadMiddleware = upload.fields([
 ]);
 
 // --- API Upload Project (แก้ไขให้ถูกต้อง) ---
-// ใช้ uploadMiddleware เป็น middleware โดยตรงเพื่อจัดการไฟล์และ body data
-app.post('/api/upload-project', uploadMiddleware, async (req, res) => {
+app.post('/api/upload-project', (req, res) => {
     
-    // ตรวจสอบ Multer Error ที่อาจเกิดขึ้นระหว่าง uploadMiddleware
-    // (req.files จะถูกเติมโดย Multer หากไม่มี error)
-    if (!req.files && req.fileValidationError) {
-        console.error('File Validation Error:', req.fileValidationError);
-        return res.status(400).json({ message: req.fileValidationError });
-    }
-
-    const {
-        document_type, title, title_eng, author, abstract,
-        advisorName, department, coAdvisorName, keywords, supportAgency,
-        permission // <-- รับค่า permission มาด้วย (แต่ไม่ได้ใช้ใน DB ในตัวอย่างนี้)
-    } = req.body;
-
-    try {
-        const uploadedFiles = req.files; 
+    // ใช้ Multer Middleware และจับ Error ด้วยตัวเอง
+    uploadMiddleware(req, res, async (err) => {
         
-        // สร้าง Object ที่เก็บ S3 URL เพื่อบันทึกลงฐานข้อมูล
-        const filePathsJson = {};
-        const fileFields = [
-            'complete_pdf', 'complete_doc', 'article_files', 'program_files', 
-            'web_files', 'poster_files', 'certificate_files', 'front_face'
-        ];
-
-        fileFields.forEach(field => {
-            if (uploadedFiles[field]) {
-                // ใช้ .map(f => f.location) เพื่อเก็บ S3 URL ที่ Multer S3 สร้างให้
-                filePathsJson[field] = uploadedFiles[field].map(f => f.location);
-            } else {
-                filePathsJson[field] = [];
+        if (err) {
+            console.error('Multer/S3 Error:', err);
+            // ถ้าเป็น MulterError (เช่น File Too Large, Invalid Field) หรือ S3 Error (เช่น Key/Region ผิด)
+            let errorMessage = 'เกิดข้อผิดพลาดในการอัปโหลดไฟล์';
+            let statusCode = 500;
+            
+            if (err instanceof multer.MulterError) {
+                errorMessage = 'Multer Error: ' + err.message;
+                statusCode = 400; 
+            } else if (err.code === 'NetworkingError' || err.code === 'InvalidAccessKeyId' || err.code === 'NoSuchKey') {
+                 // S3-specific errors
+                errorMessage = 'S3 Connection Error: กรุณาตรวจสอบ AWS Keys และ Bucket Name';
+                statusCode = 500;
+            } else if (err.message && (err.message.includes("key") || err.message.includes("region"))) {
+                 // Generic AWS error message
+                errorMessage = 'AWS Configuration Error: ' + err.message;
+                statusCode = 500;
             }
-        });
-        
-        // (แก้ไข) เปลี่ยนไวยากรณ์ SQL เป็น PostgreSQL
-        const sql = `
-            INSERT INTO documents (
-                document_type, title, title_eng, author, abstract, keywords,
-                advisorName, department, coAdvisorName, supportAgency,
-                file_paths, 
-                publish_year, scan_date, approval_status, is_active
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, EXTRACT(YEAR FROM NOW()), CURRENT_DATE, 'pending', FALSE)
-            RETURNING id; 
-        `; // <-- pg: ใช้ $1..$11, EXTRACT/CURRENT_DATE, FALSE, และ RETURNING id
 
-        const values = [
-            Array.isArray(document_type) ? document_type.join(',') : document_type, // แปลง Array (ถ้ามี) เป็น String
-            title || null,
-            title_eng || null,
-            author || null,
-            abstract || null,
-            keywords || null,
-            advisorName || null,
-            department || null,
-            coAdvisorName || null,
-            supportAgency || null,
-            JSON.stringify(filePathsJson) // pg รับ JSON string ได้ดี
-        ];
-
-        const result = await pool.query(sql, values); 
-        
-        res.status(201).json({
-            message: 'บันทึกข้อมูลและไฟล์เรียบร้อยแล้ว',
-            projectId: result.rows[0].id
-        });
-
-    } catch (e) {
-        console.error('!!! DATABASE/SERVER ERROR on upload !!!:', e);
-        // ตรวจสอบว่า Error มาจาก Multer หรือไม่ (ถ้ามีปัญหาการเชื่อมต่อ S3)
-        if (e.code === 'NetworkingError' || e.code === 'InvalidAccessKeyId') {
-            return res.status(500).json({ message: 'Error: Cannot connect to AWS S3. Check Keys/Region.', error: e.message });
+            // คืนค่าเป็น JSON 400 หรือ 500 แทน HTML
+            return res.status(statusCode).json({ message: errorMessage, errorDetails: err.message });
         }
-        res.status(500).json({ message: 'เกิดข้อผิดพลาดในการบันทึกข้อมูลลงฐานข้อมูล', error: e.message });
-    }
+        
+        // --- ส่วนประมวลผลฐานข้อมูล (รันเมื่อไม่มี Error) ---
+        const {
+            document_type, title, title_eng, author, abstract,
+            advisorName, department, coAdvisorName, keywords, supportAgency,
+            permission
+        } = req.body;
+
+        try {
+            const uploadedFiles = req.files; 
+            
+            const filePathsJson = {};
+            const fileFields = [
+                'complete_pdf', 'complete_doc', 'article_files', 'program_files', 
+                'web_files', 'poster_files', 'certificate_files', 'front_face'
+            ];
+
+            fileFields.forEach(field => {
+                if (uploadedFiles[field]) {
+                    // ใช้ .map(f => f.location) เพื่อเก็บ S3 URL
+                    filePathsJson[field] = uploadedFiles[field].map(f => f.location);
+                } else {
+                    filePathsJson[field] = [];
+                }
+            });
+            
+            const sql = `
+                INSERT INTO documents (
+                    document_type, title, title_eng, author, abstract, keywords,
+                    advisorName, department, coAdvisorName, supportAgency,
+                    file_paths, 
+                    publish_year, scan_date, approval_status, is_active
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, EXTRACT(YEAR FROM NOW()), CURRENT_DATE, 'pending', FALSE)
+                RETURNING id; 
+            `; 
+
+            const values = [
+                Array.isArray(document_type) ? document_type.join(',') : document_type, 
+                title || null,
+                title_eng || null,
+                author || null,
+                abstract || null,
+                keywords || null,
+                advisorName || null,
+                department || null,
+                coAdvisorName || null,
+                supportAgency || null,
+                JSON.stringify(filePathsJson) 
+            ];
+
+            const result = await pool.query(sql, values); 
+            
+            res.status(201).json({
+                message: 'บันทึกข้อมูลและไฟล์เรียบร้อยแล้ว',
+                projectId: result.rows[0].id
+            });
+
+        } catch (e) {
+            console.error('!!! DATABASE ERROR on upload !!!:', e);
+            res.status(500).json({ message: 'เกิดข้อผิดพลาดในการบันทึกข้อมูลลงฐานข้อมูล', error: e.message });
+        }
+    });
 });
 // --- (จบ API Upload Project) ---
 
