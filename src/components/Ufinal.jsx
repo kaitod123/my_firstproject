@@ -96,14 +96,39 @@ const handleChange = (e) => {
             }));
         }
     };
-    const handleFileChange = (e) => {
-        const { name, files } = e.target;
+const handleFileChange = (e) => {
+    const { name, files, accept } = e.target; // <-- อ่าน accept มาด้วย
+    
+    // 1. แปลง accept string เป็น array ของนามสกุลที่อนุญาต (ตัวพิมพ์เล็ก)
+    // เช่น ".pdf,.jpg,.jpeg" -> [".pdf", ".jpg", ".jpeg"]
+    const allowedExtensions = accept.split(',').map(ext => ext.trim().toLowerCase());
+
+    // 2. กรองไฟล์ที่ผู้ใช้เลือก เฉพาะไฟล์ที่มีนามสกุลถูกต้อง
+    const validFiles = Array.from(files).filter(file => {
+        // เอานามสกุลไฟล์ (ตัวพิมพ์เล็ก) เช่น ".pdf"
+        const fileExtension = file.name.slice(file.name.lastIndexOf('.')).toLowerCase(); 
+        // ตรวจสอบว่านามสกุลอยู่ในรายการที่อนุญาตหรือไม่
+        return allowedExtensions.includes(fileExtension);
+    });
+
+    // 3. (ทางเลือก) แจ้งเตือนถ้ามีไฟล์ที่ไม่ถูกต้องถูกเลือก
+    if (validFiles.length < files.length) {
+        const invalidCount = files.length - validFiles.length;
+        alert(`${invalidCount} ไฟล์ที่คุณเลือกมีนามสกุลไม่ถูกต้องสำหรับช่องนี้ และจะไม่ถูกเพิ่ม (ช่องนี้รองรับเฉพาะ: ${accept})`);
+    }
+
+    // 4. อัปเดต State เฉพาะไฟล์ที่ถูกต้อง
+    if (validFiles.length > 0) {
         setFormData(prevState => ({
             ...prevState,
-            // Use spread syntax to append new files to the existing array
-            [name]: [...prevState[name], ...Array.from(files)],
+            // เพิ่มไฟล์ที่ถูกต้องเข้าไปใน Array เดิม
+            [name]: [...prevState[name], ...validFiles], 
         }));
-    };
+    }
+    
+    // (สำคัญ) เคลียร์ค่า input เพื่อให้ผู้ใช้สามารถเลือกไฟล์เดิมซ้ำได้ ถ้าเผลอลบไป
+    e.target.value = null; 
+};
 
     const handleRemoveFile = (fileName, fileType) => {
         setFormData(prevState => ({
