@@ -5,6 +5,5 @@ package-lock.json
 *.exe
 
 # ไม่ต้องติดตามทุกอย่างในโฟลเดอร์ uploads
-/uploads/
 #ไม่นำไฟล์เข้าgithub
 .env
