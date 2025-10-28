@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.11",
+    "aws-sdk": "^2.1692.0",
     "axios": "^1.10.0",
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.0",
@@ -22,6 +23,7 @@
     "gh-pages": "^6.3.0",
     "lucide-react": "^0.525.0",
     "multer": "^2.0.2",
+    "multer-s3": "^3.0.1",
     "mysql2": "^3.14.1",
     "pg": "^8.16.3",
     "react": "^19.1.0",

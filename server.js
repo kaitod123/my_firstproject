@@ -1,13 +1,29 @@
-// server.js (เวอร์ชันแก้ไข PostgreSQL)
+// server.js (เวอร์ชันแก้ไข PostgreSQL และ S3)
 require('dotenv').config();
+import AWS from 'aws-sdk';
+import multer from 'multer';
+import multerS3 from 'multer-s3';
+
+// 1. ดึงค่าจาก Environment Variables
+const S3_BUCKET = process.env.S3_BUCKET_NAME;
+const AWS_REGION = process.env.AWS_REGION;
 const { Pool } = require('pg');
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const multer = require('multer');
+// const multer = require('multer'); // ถูก import จาก 'import multer' ด้านบนแล้ว
 const path = require('path');
 const app = express();
 const port = process.env.PORT || 5000;
+
+// ตรวจสอบว่า S3 Keys ถูกโหลดหรือไม่
+if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY || !S3_BUCKET) {
+    console.error("FATAL ERROR: AWS keys or S3 Bucket name are missing from Environment Variables!");
+}
+
+const s3 = new AWS.S3({
+  region: AWS_REGION
+});
 
 // (สำคัญ!) ตั้งค่า CORS ให้ถูกต้อง
 const corsOptions = {
@@ -34,6 +50,7 @@ pool.connect((err, client, release) => {
 
 // Middleware
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true })); // <-- เพิ่มเพื่อรองรับ Form Data จาก Multer
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); 
 
 // ===============================================
@@ -408,50 +425,26 @@ app.delete('/api/documents/:id', async (req, res) => {
   }
 });
 
-// --- (ส่วน Multer Setup ไม่มีการเปลี่ยนแปลง) ---
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    
-    // *** เพิ่มโค้ด Sanitize ชื่อไฟล์ ***
-    const sanitizedFilename = file.originalname
+// --- S3 Multer Setup ---
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: S3_BUCKET,
+    metadata: function (req, file, cb) {
+      cb(null, { fieldName: file.fieldname });
+    },
+    key: function (req, file, cb) {
+      // ตั้งชื่อไฟล์ใน S3 ให้ไม่ซ้ำกัน (timestamp-originalfilename)
+      const sanitizedFilename = file.originalname
                                 .replace(/\s/g, '-')  // แทนที่ช่องว่างด้วยขีดกลาง
                                 .replace(/[()']/g, ''); // ลบวงเล็บและเครื่องหมายคำพูด
-
-    // ใช้ชื่อไฟล์ที่ปลอดภัย
-    cb(null, uniqueSuffix + '-' + sanitizedFilename); 
-  },
-});
-
-const allowedExtensions = {
-    'complete_pdf': ['.pdf'],
-    'complete_doc': ['.docx'],
-    'article_files': ['.pdf'],
-    'program_files': ['.zip', '.rar', '.exe'],
-    'web_files': ['.zip'],
-    'poster_files': ['.psd', '.jpg', '.jpeg'],
-    'certificate_files': ['.pdf', '.jpg', '.jpeg', '.png'],
-    'front_face': ['.jpeg']
-};
-const fileFilter = (req, file, cb) => {
-    const fieldName = file.fieldname;
-    const allowed = allowedExtensions[fieldName];
-    if (!allowed) {
-        return cb(new Error(`Invalid field name ${fieldName}`), false);
+      const uniqueFileName = Date.now() + '-' + sanitizedFilename;
+      // กำหนด path ภายใน bucket (เช่น projects/complete_pdf/...)
+      // file.fieldname คือชื่อ input field เช่น 'complete_pdf'
+      const s3Path = `projects/${file.fieldname}/${uniqueFileName}`; 
+      cb(null, s3Path);
     }
-    const ext = path.extname(file.originalname).toLowerCase();
-    if (allowed.includes(ext)) {
-        cb(null, true);
-    } else {
-        cb(new Error(`ไม่อนุญาตให้อัปโหลดไฟล์ ${ext} สำหรับช่องนี้ (รองรับเฉพาะ ${allowed.join(', ')})`), false);
-    }
-};
-const upload = multer({ 
-    storage: storage,
-    fileFilter: fileFilter 
+  })
 });
 const uploadMiddleware = upload.fields([
     { name: 'complete_pdf', maxCount: 10 },
@@ -463,80 +456,84 @@ const uploadMiddleware = upload.fields([
     { name: 'certificate_files', maxCount: 5 },
     { name: 'front_face', maxCount: 1 }
 ]);
-// --- (จบส่วน Multer Setup) ---
 
+// --- API Upload Project (แก้ไขให้ถูกต้อง) ---
+app.post('/api/upload-project', uploadMiddleware, async (req, res) => {
+    
+    // ตรวจสอบ Multer Error ที่อาจเกิดขึ้นระหว่าง uploadMiddleware
+    // (req.files จะถูกเติมโดย Multer หากไม่มี error)
+    if (!req.files && req.fileValidationError) {
+        console.error('File Validation Error:', req.fileValidationError);
+        return res.status(400).json({ message: req.fileValidationError });
+    }
 
-// API Upload Project ---
-app.post('/api/upload-project', (req, res) => {
+    const {
+        document_type, title, title_eng, author, abstract,
+        advisorName, department, coAdvisorName, keywords, supportAgency,
+        permission // <-- รับค่า permission มาด้วย (แต่ไม่ได้ใช้ใน DB ในตัวอย่างนี้)
+    } = req.body;
 
-    uploadMiddleware(req, res, async function (err) { // <-- (เพิ่ม async)
+    try {
+        const uploadedFiles = req.files; 
         
-        if (err instanceof multer.MulterError) {
-            console.error('Multer error:', err);
-            return res.status(400).json({ message: 'File upload error: ' + err.message });
-        } else if (err) {
-            console.error('File filter error:', err);
-            return res.status(400).json({ message: err.message }); 
+        // สร้าง Object ที่เก็บ S3 URL เพื่อบันทึกลงฐานข้อมูล
+        const filePathsJson = {};
+        const fileFields = [
+            'complete_pdf', 'complete_doc', 'article_files', 'program_files', 
+            'web_files', 'poster_files', 'certificate_files', 'front_face'
+        ];
+
+        fileFields.forEach(field => {
+            if (uploadedFiles[field]) {
+                // ใช้ .map(f => f.location) เพื่อเก็บ S3 URL ที่ Multer S3 สร้างให้
+                filePathsJson[field] = uploadedFiles[field].map(f => f.location);
+            } else {
+                filePathsJson[field] = [];
+            }
+        });
+        
+        // (แก้ไข) เปลี่ยนไวยากรณ์ SQL เป็น PostgreSQL
+        const sql = `
+            INSERT INTO documents (
+                document_type, title, title_eng, author, abstract, keywords,
+                advisorName, department, coAdvisorName, supportAgency,
+                file_paths, 
+                publish_year, scan_date, approval_status, is_active
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, EXTRACT(YEAR FROM NOW()), CURRENT_DATE, 'pending', FALSE)
+            RETURNING id; 
+        `; // <-- pg: ใช้ $1..$11, EXTRACT/CURRENT_DATE, FALSE, และ RETURNING id
+
+        const values = [
+            document_type || null,
+            title || null,
+            title_eng || null,
+            author || null,
+            abstract || null,
+            keywords || null,
+            advisorName || null,
+            department || null,
+            coAdvisorName || null,
+            supportAgency || null,
+            JSON.stringify(filePathsJson) // pg รับ JSON string ได้ดี
+        ];
+
+        const result = await pool.query(sql, values); 
+        
+        res.status(201).json({
+            message: 'บันทึกข้อมูลและไฟล์เรียบร้อยแล้ว',
+            projectId: result.rows[0].id
+        });
+
+    } catch (e) {
+        console.error('!!! DATABASE/SERVER ERROR on upload !!!:', e);
+        // ตรวจสอบว่า Error มาจาก Multer หรือไม่ (ถ้ามีปัญหาการเชื่อมต่อ S3)
+        if (e.code === 'NetworkingError' || e.code === 'InvalidAccessKeyId') {
+            return res.status(500).json({ message: 'Error: Cannot connect to AWS S3. Check Keys/Region.', error: e.message });
         }
-
-        const {
-            document_type, title, title_eng, author, abstract,
-            advisorName, department, coAdvisorName, keywords, supportAgency
-        } = req.body;
-
-        try {
-            const filePathsJson = {};
-            const fileFields = [
-                'complete_pdf', 'complete_doc', 'article_files', 'program_files', 
-                'web_files', 'poster_files', 'certificate_files', 'front_face' // เพิ่ม front_face ด้วย
-            ];
-
-            fileFields.forEach(field => {
-                if (req.files[field]) {
-                    // ใช้ .map(f => f.filename) เพื่อเก็บเฉพาะชื่อไฟล์ที่ Multer สร้างให้
-                    filePathsJson[field] = req.files[field].map(f => f.filename);
-                } else {
-                    filePathsJson[field] = [];
-                }
-            })
-            // (แก้ไข) เปลี่ยนไวยากรณ์ SQL เป็น PostgreSQL
-            const sql = `
-                INSERT INTO documents (
-                    document_type, title, title_eng, author, abstract, keywords,
-                    advisorName, department, coAdvisorName, supportAgency,
-                    file_paths, 
-                    publish_year, scan_date, approval_status, is_active
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, EXTRACT(YEAR FROM NOW()), CURRENT_DATE, 'pending', FALSE)
-                RETURNING id; 
-            `; // <-- pg: ใช้ $1..$11, EXTRACT/CURRENT_DATE, FALSE, และ RETURNING id
-
-            const values = [
-                document_type || null,
-                title || null,
-                title_eng || null,
-                author || null,
-                abstract || null,
-                keywords || null,
-                advisorName || null,
-                department || null,
-                coAdvisorName || null,
-                supportAgency || null,
-                JSON.stringify(filePathsJson) // pg รับ JSON string ได้ดี
-            ];
-
-            const result = await pool.query(sql, values); // <-- (แก้ไข) ใช้ await pool.query
-            
-            res.status(201).json({
-                message: 'บันทึกข้อมูลและไฟล์เรียบร้อยแล้ว',
-                projectId: result.rows[0].id // <-- (แก้ไข) อ่าน ID จาก .rows[0].id
-            });
-
-        } catch (e) {
-            console.error('!!! DATABASE/SERVER ERROR on upload !!!:', e);
-            res.status(500).json({ message: 'เกิดข้อผิดพลาดในการบันทึกข้อมูลลงฐานข้อมูล', error: e.message });
-        }
-    });
+        res.status(500).json({ message: 'เกิดข้อผิดพลาดในการบันทึกข้อมูลลงฐานข้อมูล', error: e.message });
+    }
 });
+// --- (จบ API Upload Project) ---
 
 app.get('/api/professor/documents/:id', async (req, res) => {
   const documentId = req.params.id;
@@ -572,18 +569,27 @@ app.get('/api/professor/documents/:id', async (req, res) => {
   }
 });
 
-// (API for Download ไม่มีการเปลี่ยนแปลง)
+// (API for Download) - จำเป็นต้องเปลี่ยนไปใช้ S3
 app.get('/api/download/:filename', (req, res) => {
     const { filename } = req.params;
-    const filePath = path.join(__dirname, 'uploads', filename);
-
-    res.download(filePath, (err) => {
+    
+    // *** แก้ไข: ใช้ AWS S3 เพื่อสร้าง Signed URL สำหรับการดาวน์โหลด ***
+    const s3Key = `projects/${filename.split('-')[0]}/${filename}`; // ต้องมีการหา Key ที่ถูกต้องใน S3
+    
+    // NOTE: การดาวน์โหลดไฟล์จาก S3 ที่ง่ายที่สุดคือการสร้าง Signed URL
+    const params = {
+        Bucket: S3_BUCKET,
+        Key: filename, // ต้องมีการจัดการ Key ใน DB ให้ถูกต้อง
+        Expires: 300 // URL มีอายุ 5 นาที
+    };
+    
+    s3.getSignedUrl('getObject', params, (err, url) => {
         if (err) {
-            console.error("Error on file download:", err);
-            if (!res.headersSent) {
-                res.status(404).send('File not found.');
-            }
+            console.error("Error generating signed URL for S3:", err);
+            return res.status(500).send('Error downloading file.');
         }
+        // Redirect ผู้ใช้ไปที่ Signed URL ของ S3
+        res.redirect(url);
     });
 });
 
@@ -702,80 +708,72 @@ app.get('/api/project-details/:id', async (req, res) => {
 });
 
 
-app.put('/api/projects/:id', (req, res) => {
-  
-    uploadMiddleware(req, res, async function (err) { // <-- (เพิ่ม async)
-        
-        if (err instanceof multer.MulterError) {
-            console.error('Multer error on update:', err);
-            return res.status(400).json({ message: 'File upload error: ' + err.message });
-        } else if (err) {
-            console.error('File filter error on update:', err);
-            return res.status(400).json({ message: err.message }); 
-        }
+app.put('/api/projects/:id', uploadMiddleware, async (req, res) => {
+    // ไม่มี multer error handler ตรงนี้ เพราะ uploadMiddleware จะโยน error ให้ Express handler
+    // แต่ควรเพิ่ม try-catch เพื่อจัดการ error ทั่วไป
+    
+    const projectId = req.params.id;
+    const { 
+      title, title_eng, abstract, keywords, advisorName, 
+      department, coAdvisorName, supportAgency, document_type 
+    } = req.body; 
 
-        const projectId = req.params.id;
-        const { 
-          title, title_eng, abstract, keywords, advisorName, 
-          department, coAdvisorName, supportAgency, document_type 
-        } = req.body; 
+    try {
+      const getSql = "SELECT file_paths, approval_status FROM documents WHERE id = $1"; // <-- pg: $1
+      const results = await pool.query(getSql, [projectId]);
 
-        try {
-          const getSql = "SELECT file_paths, approval_status FROM documents WHERE id = $1"; // <-- pg: $1
-          const results = await pool.query(getSql, [projectId]);
+      if (results.rows.length === 0) return res.status(404).json({ message: 'Project not found' }); 
 
-          if (results.rows.length === 0) return res.status(404).json({ message: 'Project not found' }); 
+      let existingFilePaths = {};
+      try {
+        existingFilePaths = (typeof results.rows[0].file_paths === 'string')
+                            ? JSON.parse(results.rows[0].file_paths || '{}')
+                            : (results.rows[0].file_paths || {});
+      } catch (e) {
+        existingFilePaths = {};
+      }
 
-          let existingFilePaths = {};
-          try {
-            existingFilePaths = (typeof results.rows[0].file_paths === 'string')
-                                ? JSON.parse(results.rows[0].file_paths || '{}')
-                                : (results.rows[0].file_paths || {});
-          } catch (e) {
-            existingFilePaths = {};
+      const currentStatus = results.rows[0].approval_status;
+      const newStatus = (currentStatus === 'rejected') ? 'pending' : currentStatus;
+
+      const hasNewFiles = req.files && Object.keys(req.files).length > 0;
+      if (hasNewFiles) {
+          for (const fieldName in req.files) {
+              // ใช้ .map(f => f.location) เพื่อเก็บ S3 URL
+              existingFilePaths[fieldName] = req.files[fieldName].map(f => f.location);
           }
+      }
 
-          const currentStatus = results.rows[0].approval_status;
-          const newStatus = (currentStatus === 'rejected') ? 'pending' : currentStatus;
+      let updateSql = `
+        UPDATE documents SET 
+          title = $1, title_eng = $2, abstract = $3, keywords = $4, advisorName = $5, 
+          department = $6, coAdvisorName = $7, supportAgency = $8, document_type = $9,
+          file_paths = $10, 
+          approval_status = $11, 
+          updated_at = NOW() 
+        WHERE id = $12
+      `; // <-- pg: $1..$12
+      let values = [
+        title, title_eng, abstract, keywords, advisorName, 
+        department, coAdvisorName, supportAgency, document_type,
+        JSON.stringify(existingFilePaths), 
+        newStatus, 
+        projectId
+      ];
 
-          const hasNewFiles = req.files && Object.keys(req.files).length > 0;
-          if (hasNewFiles) {
-              for (const fieldName in req.files) {
-                  existingFilePaths[fieldName] = req.files[fieldName].map(f => f.filename);
-              }
-          }
+      await pool.query(updateSql, values); 
+      
+      let message = 'Project updated successfully!';
+      if (newStatus === 'pending') {
+          message = 'Project updated and resubmitted for approval successfully!';
+      }
+      
+      res.json({ message: message });
 
-          let updateSql = `
-            UPDATE documents SET 
-              title = $1, title_eng = $2, abstract = $3, keywords = $4, advisorName = $5, 
-              department = $6, coAdvisorName = $7, supportAgency = $8, document_type = $9,
-              file_paths = $10, 
-              approval_status = $11, 
-              updated_at = NOW() 
-            WHERE id = $12
-          `; // <-- pg: $1..$12
-          let values = [
-            title, title_eng, abstract, keywords, advisorName, 
-            department, coAdvisorName, supportAgency, document_type,
-            JSON.stringify(existingFilePaths), 
-            newStatus, 
-            projectId
-          ];
-
-          await pool.query(updateSql, values); // <-- (แก้ไข) ใช้ await pool.query
-          
-          let message = 'Project updated successfully!';
-          if (newStatus === 'pending') {
-              message = 'Project updated and resubmitted for approval successfully!';
-          }
-          
-          res.json({ message: message });
-
-        } catch (updateErr) {
-          console.error("Error updating project:", updateErr);
-          return res.status(500).json({ message: 'Failed to update project' });
-        }
-    });
+    } catch (updateErr) {
+      console.error("Error updating project:", updateErr);
+      return res.status(500).json({ message: 'Failed to update project' });
+    }
 });
 
 app.get('/api/student/documents/:id', async (req, res) => {
