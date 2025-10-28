@@ -147,8 +147,9 @@ const handleFileChange = (e) => {
         }));
     };
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (e) => {
         // --- START: Validation Check ---
+        if (e) e.preventDefault();
         const missingFields = [];
         
         // 1. ตรวจสอบ Text Inputs
@@ -173,9 +174,9 @@ const handleFileChange = (e) => {
         // (ส่วนที่เหลือของฟังก์ชันเหมือนเดิม)
         const data = new FormData();
         const fileKeys = [
-         'complete_pdf', 'complete_doc', 'article_files', 'program_files', 
-         'web_files', 'poster_files', 'certificate_files',
-         'front_face' 
+            'complete_pdf', 'complete_doc', 'article_files', 'program_files', 
+            'web_files', 'poster_files', 'certificate_files',
+            'front_face' // <-- เพิ่มบรรทัดนี้
         ];
 
         // Append text data
@@ -258,6 +259,7 @@ const handleFileChange = (e) => {
     );
 
     return (
+        <form onSubmit={handleSubmit}>
         <div className={styles.pageContainer}>
             <div className={styles.uploadCard}>
                 <h1 className={styles.pageTitle}>ส่งคำขออัพโหลด</h1>
@@ -476,13 +478,12 @@ const handleFileChange = (e) => {
                     </Link>
                     <button 
                         className={styles.submitButton} 
-                        onClick={handleSubmit}
                     >
                         บันทึก
                     </button>
                 </div>
             </div>
-            
+        
             {/* Footer */}
             <footer className={styles.footer}>
                 <p className={styles.footerText}>© 2023 University Project Hub </p>
@@ -492,6 +493,7 @@ const handleFileChange = (e) => {
                 </div>
             </footer>
         </div>
+        </form>
     );
 }
 
