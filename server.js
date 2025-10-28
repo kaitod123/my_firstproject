@@ -849,3 +849,24 @@ app.get('/api/student/documents/:id', async (req, res) => {
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
+
+// **********************************************
+// GLOBAL ERROR HANDLER (ไว้ล่างสุดก่อน Start Server)
+// **********************************************
+// นี่คือ Handler ที่รับ Multer Error (หรือ Error อื่นๆ ที่ไม่ถูกจับ)
+app.use((err, req, res, next) => {
+    if (err instanceof multer.MulterError) {
+        console.error('Global Multer Error Handler:', err.message);
+        return res.status(400).json({ 
+            message: 'Multer Error: ' + err.message,
+            errorDetails: err.code
+        });
+    }
+    
+    // สำหรับ Error อื่นๆ ที่ไม่คาดคิด (รวมถึง S3 Connection Errors)
+    console.error('Global Internal Server Error:', err.stack);
+    res.status(500).json({
+        message: 'Internal Server Error: ' + (err.message || 'Unknown Server Error'),
+        errorDetails: err.stack
+    });
+});
