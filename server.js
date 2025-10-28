@@ -743,7 +743,7 @@ app.get('/api/project-details/:id', async (req, res) => {
       file_paths 
     FROM documents 
     WHERE id = $1
-  `; // <-- pg: $1
+  `; // <-- pg: ใช้ $1
   
   try {
     const results = await pool.query(sql, [projectId]);
