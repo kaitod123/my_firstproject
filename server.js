@@ -485,16 +485,20 @@ app.post('/api/upload-project', (req, res) => {
         } = req.body;
 
         try {
-            const filePathsJson = {
-                complete_pdf: req.files['complete_pdf'] ? req.files['complete_pdf'].map(f => f.filename) : [],
-                complete_doc: req.files['complete_doc'] ? req.files['complete_doc'].map(f => f.filename) : [],
-                article_files: req.files['article_files'] ? req.files['article_files'].map(f => f.filename) : [],
-                program_files: req.files['program_files'] ? req.files['program_files'].map(f => f.filename) : [],
-                web_files: req.files['web_files'] ? req.files['web_files'].map(f => f.filename) : [],
-                poster_files: req.files['poster_files'] ? req.files['poster_files'].map(f => f.filename) : [],
-                certificate_files: req.files['certificate_files'] ? req.files['certificate_files'].map(f => f.filename) : [],
-            };
+            const filePathsJson = {};
+            const fileFields = [
+                'complete_pdf', 'complete_doc', 'article_files', 'program_files', 
+                'web_files', 'poster_files', 'certificate_files', 'front_face' // เพิ่ม front_face ด้วย
+            ];
 
+            fileFields.forEach(field => {
+                if (req.files[field]) {
+                    // ใช้ .map(f => f.filename) เพื่อเก็บเฉพาะชื่อไฟล์ที่ Multer สร้างให้
+                    filePathsJson[field] = req.files[field].map(f => f.filename);
+                } else {
+                    filePathsJson[field] = [];
+                }
+            })
             // (แก้ไข) เปลี่ยนไวยากรณ์ SQL เป็น PostgreSQL
             const sql = `
                 INSERT INTO documents (
