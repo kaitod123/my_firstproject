@@ -7,8 +7,8 @@ import multerS3 from 'multer-s3';
 // 1. ดึงค่าจาก Environment Variables
 const S3_BUCKET = process.env.S3_BUCKET_NAME;
 const AWS_REGION = process.env.AWS_REGION;
-import pg from 'pg'; 
-const { Pool } = pg; 
+import pkg from 'pg'; 
+const { Pool } = pkg; // <--- แก้ไขการ Import pg ให้เข้ากับ ES Module
 
 import express from 'express'; 
 import bodyParser from 'body-parser'; 
