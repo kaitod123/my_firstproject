@@ -185,9 +185,10 @@ const handleFileChange = (e) => {
         console.log('กำลังส่ง FormData ที่มี keys:', [...data.keys()]);
         try {
             // NOTE: Ensure your backend endpoint is expecting these new field names.
-            const response = await fetch('https://my-project-backend-cc73.onrender.com/upload-project', {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/upload-project`, { // Added /api/
                 method: 'POST',
                 body: data,
+                // ไม่ต้องใส่ Header 'Content-Type' สำหรับ FormData
             });
 
             const result = await response.json();
@@ -428,7 +429,7 @@ const handleFileChange = (e) => {
                     </div>
 
                      {/* --- Row 4 (Single Column) --- */}
-                    <div>
+                    <div className={styles.twoColumnGrid}>
                         <FileUploadZone name="certificate_files" title="ไฟล์ใบผ่านการอบรม (ถ้ามี)" hint="รองรับไฟล์ .pdf, .jpg, .png" accept=".pdf,.jpg,.jpeg,.png" />
                         <FileUploadZone name="front_face" title="หน้าปก" hint="รองรับไฟล์ .jpeg" accept=".jpeg" />
                     </div>
