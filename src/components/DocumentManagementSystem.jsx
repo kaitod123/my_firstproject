@@ -188,8 +188,8 @@ const DocumentManagementSystem = () => {
         
         if (userRole === 'student') {
             navigate(`/student/documents/${doc.id}`); 
-        } else if (userRole === 'admin' || userRole === 'professor') {
-            navigate(`/professor/documents/${doc.id}`);
+        } else if (userRole === 'admin' || userRole === 'advisor') {
+            navigate(`/advisor/documents/${doc.id}`);
         } else {
             navigate(`/documents/${doc.id}`);
         }

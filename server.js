@@ -586,7 +586,7 @@ app.post('/api/upload-project', (req, res) => {
 });
 // --- (จบ API Upload Project) ---
 
-app.get('/api/professor/documents/:id', async (req, res) => {
+app.get('/api/advisor/documents/:id', async (req, res) => {
   const documentId = req.params.id;
   const sql = "SELECT * FROM documents WHERE id = $1"; // <-- pg: ใช้ $1
   

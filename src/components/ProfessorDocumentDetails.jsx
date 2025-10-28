@@ -19,7 +19,7 @@ const ProfessorDocumentDetails = () => {
       setLoading(true);
       setError(null); // --- (เพิ่ม)
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/professor/documents/${documentId}`);
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/advisor/documents/${documentId}`);
         if (!response.ok) {
            throw new Error(`HTTP error! status: ${response.status}`); // --- (แก้ไข)
         }
@@ -64,7 +64,7 @@ const ProfessorDocumentDetails = () => {
             case 'rar': fileGroup.rar = fileName; break;
             case 'exe': fileGroup.exe = fileName; break;
             case 'psd': fileGroup.psd = fileName; break;
-            case 'jpg':
+            case 'jpg': fileGroup.jpg = fileName; break;
             case 'jpeg': fileGroup.jpg = fileName; break;
             default: 
                 break;
