@@ -1,0 +1,343 @@
+/* Ufinal1.module.css */
+
+/* General Styles */
+
+
+/* Page Container */
+.pageContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+        background-color: #f8f9fa; /* Light grey background */
+    font-family: 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    margin: 0;
+    padding: 0;
+    color: #343a40; /* Dark text color for readability */
+}
+
+/* Main Form Card */
+.uploadCard {
+    background-color: #ffffff; /* White card background */
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    width: 100%;
+    max-width: 900px; /* Max width for a PC-optimized layout */
+    margin-bottom: 20px;
+}
+
+/* Headers & Titles */
+.pageTitle {
+    font-size: 2.2rem;
+    font-weight: 600;
+    color: #212529;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.section {
+    margin-bottom: 30px;
+}
+
+.sectionTitle {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #495057;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+/* Form Elements */
+.inputGroup {
+    margin-bottom: 20px;
+}
+
+.label {
+    display: block;
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.inputField,
+.textarea {
+    width: 100%;
+    border: 2px solid #e5e7eb; /* เพิ่มขอบ */
+    background-color: #ffffff;
+    font-size: 1rem;
+    color: #374151; /* ข้อความเข้ม */
+    outline: none;
+    padding: 12px;
+    border-radius: 8px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.inputField:focus,
+.textarea:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 rgb(122, 124, 126) rgba(0, 123, 255, 0.25);
+}
+
+.textarea {
+    resize: vertical;
+}
+
+/* Grid Layout for PC */
+.twoColumnGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50px;
+}
+
+/* Radio & Checkbox Styles (Modern) */
+.radioGroup {
+    margin-bottom: 20px;
+}
+.cardRadioGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+.cardRadio {
+    display: block;
+    cursor: pointer;
+    background-color: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+.cardRadio input[type="radio"]{
+    display: none;
+}
+.cardRadio input[type = "checkbox"] {
+    display: none;
+}
+.cardRadio input[type="radio"]:checked + .cardRadioText {
+    color: #007bff;
+    font-weight: 600;
+}
+.cardRadio input[type = "checkbox"]:checked + .cardRadioText {
+    color: #007bff;
+    font-weight: 600;
+}
+.cardRadio input[type="radio"]:checked ~ .cardRadioText {
+    border: 2px solid #007bff;
+    background-color: #eaf5ff;
+}
+.cardRadio input[type = "checkbox"]:checked ~ .cardRadioText {
+    border: 2px solid #007bff;
+    background-color: #eaf5ff;
+}
+.cardRadio:hover {
+    border-color: #adb5bd;
+}
+.checkboxGroup {
+    margin-top: 20px;
+}
+.checkboxLabel {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 1rem;
+    color: #495057;
+}
+.checkboxInput {
+    margin-right: 10px;
+}
+
+/* File Upload */
+.fileDropzone {
+    border: 2px dashed #ced4da;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    transition: border-color 0.3s ease;
+}
+
+.fileButton {
+    display: inline-block;
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+
+.fileButton:hover {
+    background-color: #0056b3;
+}
+.fileButton input[type="file"] {
+    display: none;
+}
+.fileHint {
+    font-size: 0.8rem;
+    color: #adb5bd;
+    margin-top: 5px;
+}
+
+/* Buttons */
+.buttonGroup {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.submitButton,
+.linkButton {
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+.submitButton {
+    background-color: #007bff;
+    color: white;
+    border: none;
+}
+
+.submitButton:hover {
+    background-color: #0056b3;
+}
+
+.suggestionsList {
+    list-style: none;
+    padding: 0;
+    margin: 5px 0 0 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: absolute; /* เพื่อให้ suggestions อยู่เหนือ content อื่นๆ */
+    z-index: 10;
+    width: 98%; /* ขยายเต็มความกว้างของ input */
+}
+
+.suggestionsList li {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+}
+
+.suggestionsList li:hover {
+    background-color: #f4f4f4;
+    color: #4f46e5;
+}
+
+.inputGroup {
+    position: relative; /* สำคัญสำหรับ position: absolute ของ suggestionsList */
+}
+
+.linkButton {
+    background-color: transparent;
+    color: #6c757d;
+    border: 2px solid #ced4da;
+}
+
+.linkButton:hover {
+    border-color: #495057;
+    color: #495057;
+}
+
+/* Footer */
+.footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 20px 600px;
+    background-color: #e9ecef; /* Light gray footer */
+    color: #495057;
+    font-size: 0.9rem;
+    border-top: 1px solid #dee2e6;
+    margin-top: auto;
+}
+
+.footerLinks {
+    display: flex;
+    gap: 15px;
+    margin-left: 20px;
+}
+
+.footerLink {
+    color: #6c757d;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footerLink:hover {
+    color: #007bff;
+}
+.fileList {
+    list-style-type: none;
+    padding: 0;
+    margin-top: 15px;
+    text-align: left;
+}
+
+.fileItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #e9ecef;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+}
+
+.fileName {
+    color: #343a40;
+    font-weight: 500;
+    word-break: break-all;
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+.removeFileButton {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: background-color 0.2s ease;
+}
+
+.removeFileButton:hover {
+    background-color: #c82333;
+}
+.twoColumnGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50px;
+}
+
+.threeColumnGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 50px; /* Adjust gap as needed */
+    margin-bottom: 20px; /* Add some space below the grid */
+}
+
+
+@media (max-width: 768px) {
+    .twoColumnGrid, .threeColumnGrid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}

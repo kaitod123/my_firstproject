@@ -1,0 +1,78 @@
+/* src/styles/LoginForm.module.css */
+
+.loginContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #363636;
+  padding: 30px 600px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.loginForm {
+  background-color: #fff;
+  padding:20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  width: 36vh;
+  max-width: 100%;
+  min-height: 100%;
+  text-align: center;
+  
+}
+
+.loginForm h2 {
+  margin-bottom: 30px;
+  color: #333;
+  font-size: 28px;
+}
+
+.inputGroup {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.inputGroup label {
+  display: block;
+  margin-bottom: 8px;
+  color: #555;
+  font-weight: bold;
+}
+
+.inputField {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+  box-sizing: border-box; /* สำคัญเพื่อให้ padding ไม่ดันกว้างออกไป */
+}
+
+.inputField:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+.loginButton {
+  background-color: #007bff;
+  color: white;
+  padding: 12px 25px;
+  border: none;
+  border-radius: 5px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: 100%;
+}
+
+.loginButton:hover {
+  background-color: #0056b3;
+}
+
+.error {
+  color: #dc3545;
+  margin-bottom: 15px;
+  font-size: 14px;
+}

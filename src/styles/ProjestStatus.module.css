@@ -1,0 +1,131 @@
+/* Main container for the Project Status page */
+.body{
+    background-color: #f0f2f5;
+}
+.container {
+    max-width: 1500px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: white;
+    border-radius: 8px;
+    min-height: 70vh;
+    
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #111827;
+}
+
+.projectList {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.projectCard {
+    background-color: #fff;
+    border: 1px solid rgb(0, 0, 0);
+    border-radius: 8px;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: box-shadow 0.2s ease-in-out;
+}
+
+.projectCard:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.projectTitle {
+    margin: 0 0 0.5rem 0;
+    color: #374151;
+}
+
+.submittedDate {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-top: 0.75rem;
+}
+
+.badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #fff;
+}
+
+.pending { background-color: #f59e0b; } /* Amber 500 */
+.approved { background-color: #10b981; } /* Emerald 500 */
+.hidden { background-color: #6b7280; } /* Gray 500 */
+
+/* --- เพิ่มคลาสนี้เข้าไป --- */
+.rejected { background-color: #ef4444; } /* Red 500 */
+
+.cardActions .editButton {
+    background-color: #3b82f6; /* Blue 500 */
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.cardActions .editButton:hover {
+    background-color: #2563eb; /* Blue 600 */
+}
+
+.error { color: #ef4444; } /* Red 500 */
+
+.footer {
+    text-align: center;
+    padding: 2rem 1rem;
+    margin-top: 2rem;
+    background-color: #1f2937;
+    color: #d1d5db;
+}
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 600px;
+  background-color: #e0e0e0; /* Even darker background for footer */
+  color: #888; /* Lighter grey text */
+  font-size: 0.9rem;
+  margin-top: auto; /* Push footer to the bottom */
+}
+.footerText {
+  margin: 0;
+}
+
+.footerLinks {
+  display: flex;
+  gap: 10px;
+}
+
+.footerLink {
+  color: #a0a0a0;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footerLink:hover {
+  color: #fff;
+}
+.editButton {
+    background-color: #f9a825; /* Yellow */
+    color: #ffffff;
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.editButton:hover {
+    background-color: #f59e0b; /* Darker Yellow */
+}

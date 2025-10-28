@@ -1,0 +1,119 @@
+/* EditProfilePage.module.css */
+
+.pageContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f2f5;
+    padding: 2rem;
+    flex-direction: column;
+}
+
+.editContainer {
+    width: 100%;
+    max-width: 600px;
+    padding: 2.5rem;
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+}
+
+.editContainer h1 {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #1f2937;
+    font-size: 1.875rem;
+}
+
+.editForm {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+}
+
+.formGroup label {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.formGroup input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.formGroup input:focus {
+    outline: none;
+    border-color: #3b82f6; /* blue-500 */
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+.buttonGroup {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.submitButton, .cancelButton {
+    flex-grow: 1;
+    padding: 0.8rem;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.submitButton {
+    background-color: #3b82f6; /* blue-500 */
+    color: white;
+}
+.submitButton:hover {
+    background-color: #2563eb; /* blue-600 */
+}
+
+.cancelButton {
+    background-color: #e5e7eb;
+    color: #374151;
+}
+.cancelButton:hover {
+    background-color: #d1d5db;
+}
+
+.errorMessage, .successMessage {
+    text-align: center;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+}
+
+.errorMessage {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+
+.successMessage {
+    background-color: #dcfce7;
+    color: #166534;
+}
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 600px;
+  background-color: #e0e0e0; /* Even darker background for footer */
+  color: #888; /* Lighter grey text */
+  font-size: 0.9rem;
+  margin-top: auto; /* Push footer to the bottom */
+}

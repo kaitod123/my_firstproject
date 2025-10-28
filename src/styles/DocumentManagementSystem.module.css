@@ -1,0 +1,385 @@
+/* DocumentManagementSystem.module.css */
+
+.container {
+  min-height: 100vh;
+  /* ปรับให้เป็นโทนสีขาว/เทาอ่อนที่นุ่มนวลและสว่างขึ้น */
+  background: linear-gradient(135deg, #f7f9fc, #eef1f6); 
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.wrapper {
+  max-width: 1550px; /* เพิ่ม max-width ให้รองรับจอใหญ่ */
+  margin: 0 auto;
+  padding: 32px 16px;
+}
+
+.header {
+  background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+  color: white;
+  border-radius: 16px; /* ความโค้งมนของมุมส่วนหัว */
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  padding: 48px 530px;
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 16px;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 1.25rem;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.searchSection {
+  background-color: #ffffff;
+  border-radius: 16px; /* ทำให้โค้งมนมากขึ้น */
+  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.08); /* ปรับเงาให้นุ่มนวลขึ้น */
+  padding: 30px; /* เพิ่ม padding */
+  margin-bottom: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* ระยะห่างระหว่าง Search Bar และ Filter */
+}
+.searchBar {
+  display: flex;
+  gap: 10px; /* ระยะห่างระหว่าง input และ button */
+  width: 100%;
+  max-width: 900px; /* จำกัดความกว้างของแถบค้นหา */
+
+}
+
+.searchInput {
+    width: 100%;
+    padding: 1rem 1rem 1rem 3.5rem;
+    border: 2px solid #e5e7eb; /* เพิ่มขอบ */
+    border-radius: 50px;
+    background-color: #ffffff;
+    font-size: 1rem;
+    color: #374151; /* ข้อความเข้ม */
+    outline: none;
+    transition: all 0.3s ease;
+
+}
+
+.searchInput:focus {
+  border-color: #3b82f6; /* สีฟ้าสว่างขึ้นเมื่อโฟกัส */
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); /* เพิ่ม ring effect */
+}
+
+.searchButton {
+  padding: 12px 24px;
+  background: #3b82f6; /* ไล่เฉดสี */
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600; /* ตัวหนาขึ้น */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease-in-out;
+  flex-shrink: 0; /* ป้องกันไม่ให้ปุ่มหด */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.searchButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.15);
+}
+
+
+.filterContainer {
+  display: flex;
+  gap: 20px; /* ระยะห่างระหว่าง select */
+  align-items: center;
+  flex-wrap: wrap;
+  padding-top: 15px; /* เพิ่มระยะห่างด้านบน */
+  border-top: 1px solid #f3f4f6; /* เพิ่มเส้นแบ่งเบาๆ */
+}
+
+.filterLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px; /* ปรับขนาดให้ใหญ่ขึ้น */
+  font-weight: 600;
+  color: #374151; /* สีเข้มขึ้น */
+}
+
+.select {
+  padding: 10px 14px; /* ปรับขนาด */
+  border: 1px solid #d1d5db;
+  border-radius: 10px; /* โค้งมนขึ้น */
+  font-size: 15px;
+  outline: none;
+  cursor: pointer;
+  background-color: #f9fafb; /* สีพื้นหลังอ่อน */
+  color: #1f2937;
+  transition: border-color 0.2s;
+}
+
+.select:hover {
+  border-color: #a7a9ac;
+}
+
+.select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+
+.statNumber {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.statLabel {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.documentsGrid {
+  /* ปรับให้รองรับการ์ดหลายขนาด/จอ */
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  display: grid; 
+}
+
+.documentCard {
+  background-color: #ffffff;
+  border-radius: 12px; /* ความโค้งมนของมุมการ์ดเอกสาร */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  border: 1px solid #f3f4f6;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.documentCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.cardHeader {
+  height: 4px;
+  background:#3b82f6;
+}
+
+.cardContent {
+  padding: 24px; /* ระยะขอบของเนื้อหาภายในการ์ดเอกสาร */
+}
+
+.cardTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: #000000ac;
+  margin-bottom: 16px; /* ระยะห่างระหว่างชื่อเอกสารและรายละเอียด */
+  line-height: 1.4;
+}
+
+.cardDetails {
+  margin-bottom: 16px;
+}
+
+.cardDetail {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #000000ac;
+  margin-bottom: 8px; /* ระยะห่างระหว่างรายละเอียด */
+}
+
+.cardIcon {
+  width: 16px;
+  height: 16px;
+  color: #6366f1;
+}
+
+.filesSection {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 16px;
+}
+
+.filesTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: #000000ac;
+  margin-bottom: 8px;
+}
+
+.fileItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px; /* ปรับขนาด */
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.fileIcon {
+  width: 12px;
+  height: 12px;
+  color: #10b981;
+}
+
+.categories {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px; /* เพิ่มระยะห่างระหว่างแท็ก */
+}
+
+.categoryTag {
+  padding: 6px 12px;
+  background: #eef2ff; /* สีพื้นหลังอ่อน */
+  color: #4f46e5; /* สีข้อความม่วงเข้ม */
+  font-size: 12px;
+  border-radius: 20px; /* ทำให้กลมมน */
+  font-weight: 500;
+  border: 1px solid #c7d2fe;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 0;
+  text-align: center;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid #f3f4f6;
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.noResults {
+  text-align: center;
+  padding: 48px 0;
+  width: 100%; /* กว้างเต็มหน้าจอ */
+  min-width: 1460px; /* ป้องกันไม่ให้แคบเกินไป */
+  display: flex; /* ใช้ flex */
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.noResultsIcon {
+  width: 64px; /* Corrected from 642px */
+  height: 64px;
+  color: #d1d5db;
+  margin: 0 auto 16px;
+}
+
+.noResultsTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.noResultsText {
+  color: #6b7280;
+}
+
+/* Navbar specific styles */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #3b82f6 0%, #3b82f6 100%);
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+}
+
+.navbarLeft {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.navbarLogo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.navbarLogo:hover {
+  background: linear-gradient(135deg, rgb(40, 121, 249) 0%, rgb(40, 121, 249) 100%); /* Adjusted for consistency */
+  border-radius: 8px; /* Add some rounding on hover for visual appeal */
+}
+
+.navbarMenu {
+  display: flex;
+  gap: 12px;
+}
+
+.navbarButton {
+  background: transparent;
+  color: white;
+  border: none;
+  cursor: pointer;
+  padding: 8px 12px; /* Added padding for better click area */
+  border-radius: 4px; /* Slight rounding */
+  transition: background 0.2s;
+}
+
+.navbarButton:hover {
+  background: rgba(255, 255, 255, 0.2); /* Subtle hover background */
+}
+
+.navbarRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.userIcon {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.profileIconNavbar {
+  width: 35px;
+  height: 35px;
+  object-fit: contain;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 600px;
+  background-color: #e0e0e0; /* Even darker background for footer */
+  color: #888; /* Lighter grey text */
+  font-size: 0.9rem;
+  margin-top: auto; /* Push footer to the bottom */
+}

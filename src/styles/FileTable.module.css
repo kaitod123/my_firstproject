@@ -1,0 +1,70 @@
+/* src/styles/FileTable.module.css */
+.fileTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.fileTable th,
+.fileTable td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: left;
+  vertical-align: middle;
+  /* เพิ่ม white-space เพื่อไม่ให้ข้อความในเซลล์ตัดคำ */
+  white-space: nowrap;
+}
+
+.fileTable th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+.fileTableName {
+  font-weight: 500;
+}
+
+.downloadLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background-color: #007bff;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  font-size: 14px;
+}
+
+.downloadLink:hover {
+  background-color: #0056b3;
+}
+
+.noFile {
+  color: #888;
+}
+
+/* --- เพิ่มส่วนนี้เข้าไป --- */
+.fileTableContainer {
+  overflow-x: auto; /* เปิดใช้งานการเลื่อนในแนวนอน */
+  padding-bottom: 10px; /* เพิ่มพื้นที่ด้านล่างสำหรับ scrollbar */
+  -webkit-overflow-scrolling: touch; /* ทำให้การเลื่อนลื่นขึ้นบนมือถือ */
+}
+
+/* อาจจะต้องกำหนดความกว้างขั้นต่ำให้ตาราง เพื่อให้การเลื่อนทำงานได้ดี */
+
+.filesList {
+  display: flex; /* จัดเรียง item เป็นแถวแนวนอน */
+  flex-direction: row; /* กำหนดทิศทางเป็นแนวนอน (ปกติเป็น default อยู่แล้ว) */
+  overflow-x: auto; /* เปิดใช้งานการเลื่อนแนวนอน */
+  white-space: nowrap; /* ป้องกันไม่ให้ item ตัดขึ้นบรรทัดใหม่ */
+  gap: 12px; /* เพิ่มระยะห่างระหว่างไฟล์ */
+  padding: 4px;
+  padding-bottom: 15px; /* เพิ่มพื้นที่สำหรับ scrollbar */
+}
+
+/* แก้ไข class ที่มีอยู่แล้วเพื่อให้ทำงานกับ flexbox ได้ดี */
+.fileItem {
+  flex-shrink: 0; 
+  }

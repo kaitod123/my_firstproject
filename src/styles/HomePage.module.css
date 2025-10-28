@@ -1,0 +1,257 @@
+/* HomePage.module.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+.homepageContainer {
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: #f7f9fc; /* เปลี่ยนเป็นพื้นหลังที่สว่างและนุ่มนวลขึ้น */
+    padding: 2rem;
+    flex-direction: column;
+}
+
+.contentBox {
+    width: 90%;
+    max-width: 1200px;
+    /* ใช้สีที่สว่างและนุ่มนวล (ยังคงความรู้สึก Neumorphism เล็กน้อย) */
+    background: #f7f9fc; /* เปลี่ยนเป็นพื้นหลังที่สว่างและนุ่มนวลขึ้น */
+    border-radius: 20px;
+
+    padding: 3rem 2rem;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+.logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.logo img {
+    height: 40px;
+    margin-right: 10px;
+}
+
+.logo h1 {
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.searchBar {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto 2.5rem;
+}
+
+.searchBar input {
+    width: 100%;
+    padding: 1rem 1rem 1rem 3.5rem;
+    border: 2px solid #e5e7eb; /* เพิ่มขอบ */
+    border-radius: 50px;
+    background-color: #ffffff;
+    font-size: 1rem;
+    color: #374151; /* ข้อความเข้ม */
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.searchBar input::placeholder {
+    color: #9ca3af; /* สีเทาอ่อนลง */
+}
+
+.searchBar input:focus {
+    /* เปลี่ยนเงาเป็นขอบสีม่วง/น้ำเงินเพื่อให้เข้ากัน */
+    border-color: #4f46e5; 
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2); 
+}
+
+.searchIcon {
+    position: absolute;
+    left: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #90a4ae;
+}
+
+.projectsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.projectCard {
+    background-color: #e6eaf0;
+    border-radius: 15px;
+    padding: 1rem;
+    box-shadow: 8px 8px 16px #c2c9d4, -8px -8px 16px #ffffff;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.projectCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 12px 12px 24px #c2c9d4, -12px -12px 24px #ffffff;
+}
+
+.projectHeader {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 3px 3px 6px #c2c9d4, -3px -3px 6px #ffffff;
+}
+
+.projectInfo {
+    text-align: left;
+}
+
+.projectInfo h3 {
+    margin: 0 0 0.2rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #4a5568;
+}
+
+.projectInfo p {
+    margin: 0 0 0.5rem;
+    font-size: 0.9rem;
+    color: #718096;
+}
+
+.discoverBtn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 20px;
+    background-color: #e6eaf0;
+    box-shadow: 4px 4px 8px #c2c9d4, -4px -4px 8px #ffffff;
+    color: #718096;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.discoverBtn:hover {
+    box-shadow: inset 2px 2px 5px #c2c9d4, inset -2px -2px 5px #ffffff;
+    color: #555;
+}
+
+.projectImage {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 5px 5px 10px #c2c9d4, -5px -5px 10px #ffffff;
+}
+
+.browseMore {
+    display: inline-block;
+    margin-top: 2rem;
+    font-size: 1rem;
+    color: #4a5568;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.browseMore:hover {
+    color: #2c5282;
+}
+
+.latestProjectsContainer {
+    width: 90%;
+    max-width: 1200px;
+    text-align: center;
+    padding: 2rem;
+    background-color: #e6eaf0;
+    border-radius: 20px;
+    box-shadow: 10px 10px 20px #c2c9d4, -10px -10px 20px #ffffff;
+}
+
+.latestProjectsContainer h2 {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 2rem;
+}
+
+.latestProjectsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.latestProjectCard {
+    background-color: #fff;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 4px 4px 8px rgba(0,0,0,0.1);
+    text-align: left;
+    transition: transform 0.2s ease;
+}
+
+.latestProjectCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 6px 6px 12px rgba(0,0,0,0.15);
+}
+
+.latestProjectCard h3 {
+    font-size: 1.2rem;
+    color: #333;
+    margin-top: 0;
+}
+
+.latestProjectCard p {
+    font-size: 0.9rem;
+    color: #666;
+    margin: 0.5rem 0;
+}
+
+.error {
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+.footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 20.7%;
+    padding: 20px 600px;
+    background-color: #e9ecef; /* Light gray footer */
+    color: #495057;
+    font-size: 0.9rem;
+    border-top: 1px solid #dee2e6;
+    margin-top: auto;
+}
+
+.footerLinks {
+    display: flex;
+    gap: 15px;
+    margin-left: 20px;
+}
+
+.footerLink {
+    color: #6c757d;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footerLink:hover {
+    color: #007bff;
+}

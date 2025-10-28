@@ -1,0 +1,152 @@
+/* General Body Styling */
+.profilebody {
+    font-family: 'Inter', sans-serif;
+    background-color: #f0f2f5; /* dark blue-gray background */
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    flex-direction: column; 
+    min-height: 100vh;
+    padding: 1rem;
+}
+
+/* The main card container */
+.profilecard {
+    background-color: #ffffff;
+    border-radius: 1.5rem; /* 24px */
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    width: 100%;
+    max-width: 24rem; /* 384px */
+    padding: 2rem; /* 32px */
+    align-items: center; /* จัดให้อยู่ตรงกลางแนวนอน */
+    flex-direction: column;
+    gap: 2rem; /* 32px */
+}
+
+/* Profile Header Section */
+.profileheader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem; /* 16px */
+}
+
+/* Circular Avatar */
+.profileavatar {
+    background-color: #e5e7eb; /* gray-200 */
+    color: #4b5563; /* gray-600 */
+    width: 8rem; /* 128px */
+    height: 8rem; /* 128px */
+    border-radius: 9999px; /* full */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.25rem; /* 36px */
+    font-weight: 700;
+}
+
+.textcenter {
+    text-align: center;
+}
+
+.username {
+    font-size: 1.5rem; /* 24px */
+    font-weight: 700;
+    color: #1f2937; /* gray-800 */
+}
+
+.userrole {
+    font-size: 1rem; /* 16px */
+    color: #6b7280; /* gray-500 */
+}
+
+/* Action Buttons Section */
+.actionbuttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem; /* 12px */
+}
+
+.btn {
+    width: 100%;
+    padding: 0.75rem 0;
+    border-radius: 0.75rem; /* 12px */
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btnprimary {
+    background-color: #2dd4bf; /* teal-400 */
+    color: #ffffff;
+}
+
+.btnprimary:hover {
+    background-color: #14b8a6; /* teal-500 */
+}
+
+.btnsecondary {
+    background-color: #ffffff;
+    border: 1px solid #d1d5db; /* gray-300 */
+    color: #374151; /* gray-700 */
+}
+
+.btnsecondary:hover {
+    background-color: #f9fafb; /* gray-50 */
+}
+
+/* Project Summary Section */
+.projectsummary {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem; /* 24px */
+}
+
+.summarytitle {
+    font-size: 1.25rem; /* 20px */
+    font-weight: 700;
+    color: #1f2937; /* gray-800 */
+}
+
+.summarystats {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.statitem {
+    text-align: left;
+}
+
+.summaryvalue {
+    color: #10b981; /* emerald-500 */
+    font-weight: 700;
+    font-size: 3rem; /* 48px */
+    line-height: 1;
+}
+
+.summarylabel {
+    font-size: 0.875rem; /* 14px */
+    color: #6b7280; /* gray-500 */
+}
+
+/* Loading and Error States */
+.loadingcontainer, .errorcontainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: white;
+    font-size: 1.25rem;
+}
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 600px;
+  background-color: #e0e0e0; /* Even darker background for footer */
+  color: #888; /* Lighter grey text */
+  font-size: 0.9rem;
+  margin-top: auto; /* Push footer to the bottom */
+}

@@ -1,0 +1,85 @@
+/* approvalDashboard.module.css */
+/* Base styles can be copied from statusDashboard.module.css */
+.body {
+    background-color: #f4f7f9;
+    font-family: 'Sarabun', sans-serif;
+    padding: 20px;
+}
+.dashboardContainer {
+    max-width: 1400px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    padding: 32px;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.07);
+}
+.projectsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+    color: black;
+}
+.projectCard {
+    border: 1px solid #000000;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+}
+.cardContent {
+    padding: 20px;
+    flex-grow: 1;
+}
+.cardContent h4 {
+    margin-top: 0;
+    margin-bottom: 12px;
+}
+.statusInfo {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.badge {
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: white;
+    text-transform: capitalize;
+}
+.badge.pending { background-color: #f59e0b; }
+.badge.approved { background-color: #16a34a; }
+.badge.rejected { background-color: #dc2626; }
+.badge.active { background-color: #2563eb; }
+.badge.inactive { background-color: #64748b; }
+.cardActions {
+    padding: 15px 20px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.btn {
+    flex: 1;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+    text-align: center;
+    text-decoration: none;
+    color: white;
+    min-width: 100px;
+}
+.approveBtn { background-color: #16a34a; }
+.approveBtn:hover { background-color: #15803d; }
+.rejectBtn { background-color: #dc2626; }
+.rejectBtn:hover { background-color: #b91c1c; }
+.deactivateBtn { background-color: #f97316; }
+.deactivateBtn:hover { background-color: #ea580c; }
+.activateBtn { background-color: #2563eb; }
+.activateBtn:hover { background-color: #1d4ed8; }
+.viewBtn { background-color: #64748b; color: white; }
+.viewBtn:hover { background-color: #475569; }
+.backButton { display: block; margin-bottom: 20px; text-decoration: none; }

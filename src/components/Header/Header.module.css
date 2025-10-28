@@ -1,0 +1,213 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  background: #3b82f6; /* ใช้สีจาก DocumentManagementSystem.jsx ที่มีให้ */
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  /* margin-bottom: 24px; */ /* ลบ margin-bottom ออก ถ้า Header จะถูกวางใน Layout Component */
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.navLeft {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.menuIcon {
+  width: 40px; /* ปรับขนาดให้เท่ากับใน DocumentManagementSystem.jsx */
+  height: 40px;
+  object-fit: contain;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 5px;
+  transition: background-color 0.2s ease;
+}
+
+.menuIcon:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.navLinksExpanded {
+  display: flex;
+  gap: 12px;
+}
+
+.navButton {
+  background: transparent;
+  color: white;
+  border: none;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 5px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  font-weight: 500;
+}
+
+.navButton:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.navButton:active {
+  transform: translateY(0);
+}
+
+.navRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: relative; /* เพิ่มเพื่อให้ Dropdown ของ Profile อยู่ในตำแหน่งที่ถูกต้อง */
+}
+
+.searchInputWrapperNavbar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background-color: #4a5568; /* สีพื้นหลังช่องค้นหา */
+  border-radius: 20px;
+  padding: 4px 12px;
+  width: 250px;
+  border: 1px solid #e5e7eb; /* เพิ่ม border เพื่อให้เหมือนใน DocumentManagementSystem.jsx */
+}
+
+.searchIconNavbar {
+  color: #a0aec0;
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+}
+
+.searchInputNavbar {
+  background: none;
+  border: none;
+  outline: none;
+  color: white;
+  width: 100%;
+  padding: 4px 0;
+  font-size: 0.95rem;
+}
+
+.searchInputNavbar::placeholder {
+  color: #cbd5e0;
+}
+
+.profileIconNavbar {
+  width: 40px; /* ขนาดไอคอนโปรไฟล์ให้เท่ากัน */
+  height: 40px;
+  object-fit: contain;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.profileIconNavbar:hover {
+  transform: scale(1.05);
+}
+
+/* --- Profile Menu Dropdown Styles (NEW) --- */
+.profileMenuDropdown {
+  position: absolute;
+  top: 55px; /* ปรับตำแหน่งให้ Dropdown อยู่ด้านล่างไอคอนโปรไฟล์ */
+  right: 0;
+  background-color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 1000;
+  min-width: 150px;
+  display: flex;
+  flex-direction: column;
+}
+
+.profileAvatar {
+  height: 40px;
+  width: 40px;
+  border-radius: 50%; /* ทำให้เป็นวงกลม */
+  background-color: #007bff; /* สีพื้นหลัง (สีฟ้า) */
+  color: white; /* สีตัวอักษร */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease; /* (แก้ไข) transition */
+  
+  /* --- (เพิ่ม) กรอบ --- */
+  border: 2px solid #0056b3; /* เพิ่มกรอบสีน้ำเงินเข้ม */
+}
+.profileAvatar:hover {
+  background-color: #0056b3; /* สีเข้มขึ้นเมื่อ hover */
+  border-color: #004a99; /* (เพิ่ม) ทำให้กรอบเข้มขึ้นด้วย */
+}
+
+.profileMenuButton {
+  padding: 10px 15px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #333;
+  font-size: 15px;
+  width: 100%;
+  transition: background-color 0.2s ease;
+}
+
+.profileMenuButton:hover {
+  background-color: #f0f0f0;
+}
+
+.logoutButton {
+  color: #dc2626; /* สีแดงสำหรับการออกจากระบบ */
+}
+
+/* Responsive Adjustments for Header */
+@media (max-width: 768px) {
+  .navbar {
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding: 10px 15px;
+  }
+
+  .navLeft {
+    width: auto;
+    gap: 10px;
+  }
+
+  .navLinksExpanded {
+    flex-direction: column;
+    width: 100%;
+    margin-top: 10px;
+    align-items: flex-start;
+    gap: 5px;
+  }
+
+  .navButton {
+    width: 100%;
+    text-align: left;
+    padding: 10px 15px;
+  }
+
+  .navRight {
+    width: auto;
+    justify-content: flex-end;
+    margin-top: 0;
+  }
+
+  .searchInputWrapperNavbar {
+    width: 180px;
+    order: 2;
+  }
+
+  .profileIconNavbar {
+    order: 3;
+  }
+}
