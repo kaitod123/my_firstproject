@@ -45,8 +45,8 @@ function UserProfile() {
         const fetchData = async () => {
             try {
                 const [profileResponse, summaryResponse] = await Promise.all([
-                    fetch(`${import.meta.env.VITE_API_URL}/users/${userId}/profile`, { signal }),
-                    fetch(`${import.meta.env.VITE_API_URL}/users/${userId}/summary`, { signal })
+                    fetch(`${import.meta.env.VITE_API_URL}/api/users/${userId}/profile`),
+                    fetch(`${import.meta.env.VITE_API_URL}/api/users/${userId}/summary`)
                 ]);
 
                 if (!profileResponse.ok || !summaryResponse.ok) {

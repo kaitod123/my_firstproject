@@ -258,8 +258,7 @@ app.post('/api/login', async (req, res) => {
       return res.status(403).json({ message: 'บัญชีผู้ใช้ถูกระงับ กรุณาติดต่อผู้ดูแลระบบ' });
     }
     
-    res.status(200).json({ 
-      message: 'Login สำเร็จ', 
+    res.status(200).json({  
       user: { 
         id: user.id, 
         username: user.username,

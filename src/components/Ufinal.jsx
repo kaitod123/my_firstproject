@@ -404,6 +404,7 @@ const handleChange = (e) => {
                      {/* --- Row 4 (Single Column) --- */}
                     <div>
                         <FileUploadZone name="certificate_files" title="ไฟล์ใบผ่านการอบรม (ถ้ามี)" hint="รองรับไฟล์ .pdf, .jpg, .png" accept=".pdf,.jpg,.jpeg,.png" />
+                        <FileUploadZone name="front_face" title="หน้าปก" hint="รองรับไฟล์ .jpeg" accept=".jpeg" />
                     </div>
                     <div className={styles.checkboxGroup}>
                         <label className={styles.label}>ยืนยันสิทธิ์ต่างๆ</label>
