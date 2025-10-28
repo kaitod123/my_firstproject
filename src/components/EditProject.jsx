@@ -32,7 +32,7 @@ function EditProject() {
     const [error, setError] = useState(null);
     const [successMessage, setSuccessMessage] = useState('');
 
-    const API_BASE_URL = 'http://localhost:5000/api';
+    const API_BASE_URL = 'https://my-project-backend-cc73.onrender.com/api/documents?limit=4/api';
 
     useEffect(() => {
         const fetchProjectDetails = async () => {

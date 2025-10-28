@@ -9,7 +9,7 @@ const HomePage = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
-  const API_BASE_URL = 'http://localhost:5000';
+  const API_BASE_URL = 'https://my-project-backend-cc73.onrender.com/api/documents?limit=4';
 
   useEffect(() => {
     const fetchLatestProjects = async () => {

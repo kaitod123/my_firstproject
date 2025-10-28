@@ -82,7 +82,7 @@ const DeleteDashboard = () => {
     const navigate = useNavigate();
 
     // FIX #2: The API_URL constant is now the base path, preventing URL duplication.
-    const API_URL = 'http://localhost:5000/api';
+    const API_URL = 'https://my-project-backend-cc73.onrender.com/api/documents?limit=4/api';
 
     const fetchProjects = useCallback(async () => {
         setLoading(true);

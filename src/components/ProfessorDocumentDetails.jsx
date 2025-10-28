@@ -11,7 +11,7 @@ const ProfessorDocumentDetails = () => {
   const [document, setDocument] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null); // --- (เพิ่ม) 2. เพิ่ม state สำหรับ error ---
-  const API_BASE_URL = 'http://localhost:5000';
+  const API_BASE_URL = 'https://my-project-backend-cc73.onrender.com/api/documents?limit=4';
   const navigate = useNavigate(); // --- (เพิ่ม) 3. Initialize navigate ---
 
 

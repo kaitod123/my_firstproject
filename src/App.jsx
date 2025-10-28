@@ -18,7 +18,7 @@ import EditProject from './components/EditProject';
 import EditProfilePage from './components/EditProfilePage'; // Import EditProfilePage component
 import StudentDocumentDetails from './components/StudentDocumentDetails';
 import ProfessorDocumentDetails from './components/ProfessorDocumentDetails';
-
+fetch('https://my-project-backend-cc73.onrender.com/api/documents?limit=4')
 // คอมโพเนนต์ Layout หลักที่จะมี Header อยู่ด้านบน
 const MainLayout = () => {
   return (

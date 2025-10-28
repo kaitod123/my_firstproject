@@ -19,7 +19,7 @@ const  AdminDashboard = () => {
   useEffect(() => {
     const fetchUserCounts = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/users');
+        const response = await axios.get('https://my-project-backend-cc73.onrender.com/api/documents?limit=4/api/users');
         const users = response.data;
 
         // 3. ใช้วิธี reduce เพื่อนับจำนวนผู้ใช้ในแต่ละ role จากข้อมูลที่ได้มา
