@@ -1,14 +1,18 @@
 // server.js (เวอร์ชันแก้ไข PostgreSQL และ S3 - ใช้ ES Module)
 import 'dotenv/config'; 
-import AWS from 'aws-sdk';
 import multer from 'multer';
 import multerS3 from 'multer-s3';
 
-// 1. ดึงค่าจาก Environment Variables
+// **********************************************
+// IMPORT AWS SDK V3 (ใหม่)
+// **********************************************
+import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'; // สำหรับ API Download
+
 const S3_BUCKET = process.env.S3_BUCKET_NAME;
 const AWS_REGION = process.env.AWS_REGION;
 import pkg from 'pg'; 
-const { Pool } = pkg; // <--- แก้ไขการ Import pg ให้เข้ากับ ES Module
+const { Pool } = pkg; 
 
 import express from 'express'; 
 import bodyParser from 'body-parser'; 
@@ -23,9 +27,17 @@ if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY || !S3_
     console.error("FATAL ERROR: AWS keys or S3 Bucket name are missing from Environment Variables!");
 }
 
-const s3 = new AWS.S3({
-  region: AWS_REGION
+// **********************************************
+// กำหนด S3 Client (V3)
+// **********************************************
+const s3Client = new S3Client({
+  region: AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  }
 });
+
 
 // (สำคัญ!) ตั้งค่า CORS ให้ถูกต้อง
 const corsOptions = {
@@ -430,7 +442,7 @@ app.delete('/api/documents/:id', async (req, res) => {
 // --- S3 Multer Setup ---
 const upload = multer({
   storage: multerS3({
-    s3: s3,
+    s3: s3Client, // <--- แก้ไขตรงนี้: ใช้ s3Client (V3)
     bucket: S3_BUCKET,
     metadata: function (req, file, cb) {
       cb(null, { fieldName: file.fieldname });
@@ -598,24 +610,23 @@ app.get('/api/professor/documents/:id', async (req, res) => {
 });
 
 // (API for Download) - จำเป็นต้องเปลี่ยนไปใช้ S3
-app.get('/api/download/:filename', (req, res) => {
+app.get('/api/download/:filename', async (req, res) => {
     const { filename } = req.params;
     
     // NOTE: การดาวน์โหลดไฟล์จาก S3 ที่ง่ายที่สุดคือการสร้าง Signed URL
-    const params = {
+    const command = new GetObjectCommand({
         Bucket: S3_BUCKET,
         Key: filename, // Key คือ S3 Path/Filename ที่บันทึกไว้
-        Expires: 300 // URL มีอายุ 5 นาที
-    };
+    });
     
-    s3.getSignedUrl('getObject', params, (err, url) => {
-        if (err) {
-            console.error("Error generating signed URL for S3:", err);
-            return res.status(500).send('Error downloading file.');
-        }
+    try {
+        const url = await getSignedUrl(s3Client, command, { expiresIn: 300 }); // URL มีอายุ 5 นาที
         // Redirect ผู้ใช้ไปที่ Signed URL ของ S3
         res.redirect(url);
-    });
+    } catch (err) {
+        console.error("Error generating signed URL for S3:", err);
+        return res.status(500).send('Error downloading file.');
+    }
 });
 
 app.put('/api/documents/:id/approval', async (req, res) => {
