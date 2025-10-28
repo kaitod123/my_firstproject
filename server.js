@@ -257,7 +257,18 @@ app.post('/api/login', async (req, res) => {
     if (user.is_active === false) { // <-- pg: ใช้ boolean false
       return res.status(403).json({ message: 'บัญชีผู้ใช้ถูกระงับ กรุณาติดต่อผู้ดูแลระบบ' });
     }
-
+    
+    res.status(200).json({ 
+      message: 'Login สำเร็จ', 
+      user: { 
+        id: user.id, 
+        username: user.username,
+        role: user.role,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        is_active: user.is_active
+      } 
+    });
   } catch (err) {
     console.error('Database query error:', err);
     return res.status(500).json({ message: 'เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์' });

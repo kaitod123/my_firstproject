@@ -26,7 +26,6 @@ const LoginForm = () => {
       const data = await response.json();
 
      if (response.ok) { // หากการล็อกอินสำเร็จ (HTTP status 2xx)
-        alert('Login สำเร็จ!');
         
         // *** แก้ไข: เข้าถึง role จาก data.user.role ***
         const userRole = data.user.role; 
