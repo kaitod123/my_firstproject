@@ -32,7 +32,7 @@ function EditProfilePage() {
                 }
                 
                 // ดึงข้อมูลทั้งหมดที่จำเป็นในการแสดงผล 
-                const response = await fetch(`${import.meta.env.VITE_API_URL}/users/${id}`); 
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/${id}`); 
                 if (!response.ok) throw new Error('Failed to fetch user data.');
                 const data = await response.json();
                 
@@ -82,7 +82,7 @@ function EditProfilePage() {
         
         try {
             // ส่งเฉพาะ ID และรหัสผ่านใหม่ไปยัง Backend
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/users/${id}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dataToUpdate) // ส่งแค่ { password: '...' }

@@ -11,45 +11,41 @@ const LoginForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    setError(''); // ล้างข้อผิดพลาดเก่า
+    setError('');
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/login`, { // *** แก้ไข URL และ Endpoint ให้ถูกต้อง ***
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password}),
-      });
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/login`, { 
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username, password}),
+          });
 
       const data = await response.json();
 
-     if (response.ok) { // หากการล็อกอินสำเร็จ (HTTP status 2xx)
-        
-        // *** แก้ไข: เข้าถึง role จาก data.user.role ***
+      // !!! IMPORTANT CHECK !!!
+      if (response.ok) { 
+        // --- Only access data.user if login was successful ---
+        alert('Login สำเร็จ!');
         const userRole = data.user.role; 
-        // เก็บข้อมูลผู้ใช้ไว้ใน localStorage หรือ Context API
         localStorage.setItem('user', JSON.stringify(data.user)); 
         
-        // สร้างเงื่อนไขเพื่อนำทางตาม role
+        // Navigation logic...
         if (userRole === 'admin') {
-          // ถ้าเป็น admin ให้ไปหน้า Admin Dashboard (ใช้ /documents)
-          navigate('/AdminDashboard'); // เปลี่ยนเส้นทางไปยังหน้า Admin Dashboard
-        } else if (userRole === 'student') {
-          // ถ้าเป็น student ให้ไปหน้า Student Dashboard (หน้าใหม่ที่ต้องสร้าง)
-          navigate('/'); // เปลี่ยนเส้นทางไปยังหน้าเอกสาร
-        }else if(userRole == 'advisor'){
-          navigate('/')
+          navigate('/AdminDashboard'); 
+        } else if (userRole === 'student' || userRole === 'advisor') { // Combine student & advisor
+          navigate('/'); 
         } else {
-          // กรณี role ไม่ตรงกับเงื่อนไขที่กำหนด
-          alert('Role ไม่ถูกต้อง');
           setError('Role ไม่ถูกต้อง');
         }
+        // --- End of successful login block ---
 
       } else {
-        // กรณีล็อกอินไม่สำเร็จ (เช่น รหัสผ่านผิด)
-        setError(data.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
+        // --- Handle failed login (401 Unauthorized) ---
+        // Just display the error message from the backend
+        setError(data.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ'); 
+        // !!! DO NOT try to access data.user here !!!
       }
     } catch (err) {
       console.error('Login error:', err);
