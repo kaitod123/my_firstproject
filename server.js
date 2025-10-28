@@ -484,8 +484,12 @@ app.post('/api/upload-project', (req, res) => {
             let statusCode = 500;
             
             if (err instanceof multer.MulterError) {
-                errorMessage = 'Multer Error: ' + err.message;
+                errorMessage = `Multer Error (${err.code}): ${err.message}`;
                 statusCode = 400; 
+            } else if (err.Code === 'AccessDenied') { // ใช้ err.Code สำหรับ AWS S3 AccessDenied
+                 // S3-specific errors
+                errorMessage = 'S3 Access Denied: กรุณาตรวจสอบ IAM Policy และชื่อ Bucket ใน Render Env Var';
+                statusCode = 403; // แก้เป็น 403 Forbidden
             } else if (err.code === 'NetworkingError' || err.code === 'InvalidAccessKeyId' || err.code === 'NoSuchKey') {
                  // S3-specific errors
                 errorMessage = 'S3 Connection Error: กรุณาตรวจสอบ AWS Keys และ Bucket Name';
