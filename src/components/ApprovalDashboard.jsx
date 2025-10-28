@@ -51,7 +51,9 @@ const ProjectCard = ({ project, onApprove, onReject, onToggleActive }) => {
 const ApprovalDashboard = () => {
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
-    const API_URL = 'https://my-project-backend-cc73.onrender.com/api/documents?limit=4/api';
+    const API_URL = 'https://my-project-backend-cc73.onrender.com';
+// ตอนเรียก ค่อยใส่ Endpoint
+    fetch(`${API_URL}/api/documents?limit=4`);
 
     const fetchProjects = useCallback(async () => {
         setLoading(true);

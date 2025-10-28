@@ -28,6 +28,7 @@ const [formData, setFormData] = useState({
     const [advisorSuggestions, setAdvisorSuggestions] = useState([]);
     const [coAdvisorSuggestions, setCoAdvisorSuggestions] = useState([]);
     const API_BASE_URL = 'https://my-project-backend-cc73.onrender.com/api/documents?limit=4'; // Define API URLดึงข้อมูลชื่ออาจารย์ที่ปรึกษาแบบอัตโนมัติ
+    fetch(`${API_URL}/api/documents?limit=4`);
 
     const handleAdvisorSearch = async (e) => {
         const { name, value } = e.target;
@@ -161,7 +162,7 @@ const handleChange = (e) => {
         console.log('กำลังส่ง FormData ที่มี keys:', [...data.keys()]);
         try {
             // NOTE: Ensure your backend endpoint is expecting these new field names.
-            const response = await fetch('https://my-project-backend-cc73.onrender.com/api/documents?limit=4/api/upload-project', {
+            const response = await fetch('https://my-project-backend-cc73.onrender.com/upload-project', {
                 method: 'POST',
                 body: data,
             });

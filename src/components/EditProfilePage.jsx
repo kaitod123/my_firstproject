@@ -19,7 +19,8 @@ function EditProfilePage() {
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState('');
 
-    const API_BASE_URL = 'https://my-project-backend-cc73.onrender.com/api/documents?limit=4/api';
+    const API_BASE_URL = 'https://my-project-backend-cc73.onrender.com';
+    fetch(`${API_URL}/api/documents?limit=4`);
 
     // 1. แก้ไข useEffect เพื่อตรวจสอบ id
     useEffect(() => {

@@ -314,7 +314,6 @@ app.get('/api/documents', async (req, res) => {
             advisorName LIKE $${paramIndex + 7} OR
             coAdvisorName LIKE $${paramIndex + 8}
         )`);
-        // เพิ่มค่า 9 ครั้ง
         values.push(searchPattern, searchPattern, searchPattern, searchPattern, searchPattern, searchPattern, searchPattern, searchPattern, searchPattern);
         paramIndex += 9; // เลื่อนตัวนับไป 9
     }
@@ -328,14 +327,16 @@ app.get('/api/documents', async (req, res) => {
 
     // (ถ้ามี) เพิ่มเงื่อนไข Filter: ปี (Year)
     if (yearFilter) {
-        whereConditions.push("publish_year = $1"); // <-- pg: ใช้ $...
+        // !!! (แก้ไขแล้ว) เปลี่ยน $1 เป็น $${paramIndex} !!!
+        whereConditions.push(`publish_year = $${paramIndex}`); 
         values.push(yearFilter);
         paramIndex++;
     }
 
     // (ถ้ามี) เพิ่มเงื่อนไข Filter: ประเภท (Type)
     if (typeFilter) {
-        whereConditions.push("document_type LIKE $1"); // <-- pg: ใช้ $...
+        // !!! (แก้ไขแล้ว) เปลี่ยน $1 เป็น $${paramIndex} !!!
+        whereConditions.push(`document_type LIKE $${paramIndex}`); 
         values.push(`%${typeFilter}%`);
         paramIndex++;
     }

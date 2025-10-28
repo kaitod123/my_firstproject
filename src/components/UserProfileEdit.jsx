@@ -17,7 +17,8 @@ function UserProfile() {
     // --- Configuration ---
     // In a real app, get userId from auth context, props, or URL params.
     const [userId, setUserId] = useState(null);
-    const API_BASE_URL = 'https://my-project-backend-cc73.onrender.com/api/documents?limit=4/api';
+    const API_BASE_URL = 'https://my-project-backend-cc73.onrender.com';
+    fetch(`${API_URL}/api/documents?limit=4`);
 
 
     useEffect(() => {
