@@ -492,7 +492,7 @@ app.post('/api/upload-project', (req, res) => {
         const {
             document_type, title, title_eng, author, abstract,
             advisorName, department, coAdvisorName, keywords, supportAgency,
-            permission
+            permission // <-- ดึง permission ออกมาแล้ว
         } = req.body;
 
         try {
@@ -513,17 +513,22 @@ app.post('/api/upload-project', (req, res) => {
                 }
             });
             
+            // **********************************************
+            // แก้ไข: เพิ่ม is_active (FALSE) และ permission (BOOL) ใน SQL
+            // **********************************************
             const sql = `
                 INSERT INTO documents (
                     document_type, title, title_eng, author, abstract, keywords,
                     advisorName, department, coAdvisorName, supportAgency,
                     file_paths, 
-                    publish_year, scan_date, approval_status, is_active
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, EXTRACT(YEAR FROM NOW()), CURRENT_DATE, 'pending', FALSE)
+                    is_active,
+                    publish_year, scan_date, approval_status
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, EXTRACT(YEAR FROM NOW()), CURRENT_DATE, 'pending')
                 RETURNING id; 
             `; 
 
             const values = [
+                // $1 - $10 (Form Data)
                 Array.isArray(document_type) ? document_type.join(',') : document_type, 
                 title || null,
                 title_eng || null,
@@ -534,7 +539,12 @@ app.post('/api/upload-project', (req, res) => {
                 department || null,
                 coAdvisorName || null,
                 supportAgency || null,
-                JSON.stringify(filePathsJson) 
+                
+                // $11 (File Paths JSON)
+                JSON.stringify(filePathsJson),
+                
+                // $12 (is_active / Permission - ใช้ค่าจาก Frontend)
+                (permission === 'true' || permission === true) // แปลง 'true' string เป็น boolean
             ];
 
             const result = await pool.query(sql, values); 
@@ -546,7 +556,8 @@ app.post('/api/upload-project', (req, res) => {
 
         } catch (e) {
             console.error('!!! DATABASE ERROR on upload !!!:', e);
-            res.status(500).json({ message: 'เกิดข้อผิดพลาดในการบันทึกข้อมูลลงฐานข้อมูล', error: e.message });
+            // ถ้า Error ยังเป็น 500 อยู่ แสดงว่ามาจากการ Insert ผิดพลาด
+            res.status(500).json({ message: 'เกิดข้อผิดพลาดในการบันทึกข้อมูลลงฐานข้อมูล (INSERT FAILED)', error: e.message });
         }
     });
 });
