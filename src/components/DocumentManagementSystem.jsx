@@ -1,6 +1,6 @@
 // src/components/DocumentManagementSystem.jsx
 import React, { useState, useEffect } from 'react';
-import { Search, User, Clock, FileText, Download, Filter, CircuitBoard, Globe, Gamepad2 } from 'lucide-react'; 
+import { Search, User, Clock, FileText, Download, Filter, CircuitBoard, Globe, Gamepad2, AppWindowIcon, Apple, Bot, Database, Menu } from 'lucide-react'; 
 import { useNavigate, useLocation } from 'react-router-dom';
 import styles from '../styles/DocumentManagementSystem.module.css';
 
@@ -33,6 +33,12 @@ const DocumentManagementSystem = () => {
     { label: 'IOT', value: 'IOT', icon: CircuitBoard },
     { label: 'Website', value: 'Website', icon: Globe },
     { label: 'เกม', value: 'Game', icon: Gamepad2 },
+     { label: 'Web Application', value: 'WebApplication', icon:AppWindowIcon },
+    { label: 'Application', value: 'Application', icon: Apple },
+    { label: 'AI', value: 'AI', icon: Bot },
+     { label: 'Data Mining', value: 'DataMining', icon:Database },
+    { label: 'อื่นๆ', value: 'อื่นๆ', icon: Menu },
+
   ];
 
   const categoryContainerStyle = {
