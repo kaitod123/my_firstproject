@@ -415,9 +415,17 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + '-' + file.originalname);
+    
+    // *** เพิ่มโค้ด Sanitize ชื่อไฟล์ ***
+    const sanitizedFilename = file.originalname
+                                .replace(/\s/g, '-')  // แทนที่ช่องว่างด้วยขีดกลาง
+                                .replace(/[()']/g, ''); // ลบวงเล็บและเครื่องหมายคำพูด
+
+    // ใช้ชื่อไฟล์ที่ปลอดภัย
+    cb(null, uniqueSuffix + '-' + sanitizedFilename); 
   },
 });
+
 const allowedExtensions = {
     'complete_pdf': ['.pdf'],
     'complete_doc': ['.docx'],
