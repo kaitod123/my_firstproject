@@ -9,18 +9,29 @@ import multerS3 from 'multer-s3';
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'; // สำหรับ API Download
 
-const S3_BUCKET = process.env.S3_BUCKET_NAME;
-const AWS_REGION = process.env.AWS_REGION;
+// **********************************************
+// IMPORT Core Modules และ PG
+// **********************************************
 import pkg from 'pg'; 
 const { Pool } = pkg; 
-
 import express from 'express'; 
 import bodyParser from 'body-parser'; 
 import cors from 'cors'; 
-import path from 'path'; 
+import { fileURLToPath } from 'url'; 
+import * as path from 'path'; 
 
+// **********************************************
+// Global Config
+// **********************************************
+const S3_BUCKET = process.env.S3_BUCKET_NAME;
+const AWS_REGION = process.env.AWS_REGION;
 const app = express();
 const port = process.env.PORT || 5000;
+
+// กำหนด __filename และ __dirname สำหรับ ES Module (สำคัญสำหรับการหา Path)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 
 // ตรวจสอบว่า S3 Keys ถูกโหลดหรือไม่
 if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY || !S3_BUCKET) {
@@ -65,7 +76,8 @@ pool.connect((err, client, release) => {
 // Middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true })); // <-- เพิ่มเพื่อรองรับ Form Data จาก Multer
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads'))); // <-- แก้ไข path ให้ทำงานได้ใน ES Module
+// แก้ไข: ใช้ __dirname เพื่อเสิร์ฟไฟล์ Static อย่างถูกต้อง
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ===============================================
 // API for Users (CRUD Operations) - (แก้ไขเป็น pg)
