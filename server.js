@@ -83,9 +83,25 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // API for Users (CRUD Operations) - (แก้ไขเป็น pg)
 // ===============================================
 
-// GET: ดึงข้อมูลผู้ใช้ทั้งหมด (แก้ไข: เพิ่ม Logging)
-app.get('/api/users', async (req, res) => {
-  console.log("Attempting to fetch users from DB..."); // <-- Log 1: เริ่มทำงาน
+// GET: ดึงข้อมูลผู้ใช้ทั้งหมด (แก้ไข: เพิ่ม Logging และ Simplify)
+app.get('/api/users', async (req, res, next) => { // <-- เพิ่ม next
+  console.log("==> /api/users route handler started."); // <-- Log 0: ยืนยันว่า Route ถูกเรียก
+  
+  // *** Temporarily comment out DB logic and return dummy data ***
+  try {
+     console.log("==> /api/users: Inside try block, BEFORE sending dummy response."); // <-- Log 1
+     res.json([
+         { id: 1, username: 'testuser1', first_name: 'Test', last_name: 'User1', email: 'test1@example.com', role: 'student', is_active: true, created_at: new Date() },
+         { id: 2, username: 'adminuser', first_name: 'Admin', last_name: 'Istrator', email: 'admin@example.com', role: 'admin', is_active: true, created_at: new Date() }
+     ]);
+     console.log("==> /api/users: Successfully sent dummy response."); // <-- Log 2
+  } catch(err) {
+      console.error("!!! UNEXPECTED ERROR in simplified /api/users:", err.message, err.stack); // <-- Log 3: ถ้าเกิด Error แปลกๆ
+      next(err); // ส่งไป Global Handler
+  }
+
+  /* --- Original DB Logic (Commented Out) ---
+  console.log("Attempting to fetch users from DB..."); 
   const sql = `
     SELECT 
       id, username, first_name, last_name, email, 
@@ -94,16 +110,17 @@ app.get('/api/users', async (req, res) => {
   `;
 
   try {
-    console.log("Executing SQL for /api/users"); // <-- Log 2: ก่อน Query
+    console.log("Executing SQL for /api/users"); 
     const results = await pool.query(sql);
-    console.log(`Successfully fetched ${results.rows.length} users.`); // <-- Log 3: หลัง Query สำเร็จ
-    res.json(results.rows); // <-- pg: ใช้ .rows
+    console.log(`Successfully fetched ${results.rows.length} users.`); 
+    res.json(results.rows); 
   } catch (err) {
-    // นี่คือส่วนที่ควรจะทำงานถ้า DB Query ล้มเหลว
-    console.error('!!! ERROR fetching users:', err.message, err.stack); // <-- Log 4: แสดง Error ชัดเจน
-    // ส่ง JSON Error กลับไปเสมอ
+    console.error('!!! ERROR fetching users:', err.message, err.stack); 
+    // Return JSON error
     return res.status(500).json({ error: 'Database query failed', details: err.message }); 
+    // Or pass to global handler: next(err);
   }
+  */
 });
 
 //สำหรับดึงข้อมูลผู้ใช้รายคน
