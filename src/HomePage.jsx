@@ -51,6 +51,9 @@ const handleCardClick = (projectId) => {
     } else if (userRole === 'student') {
         // สำหรับ Student, นำทางไปยัง path ของนักศึกษา
         navigate(`/student/documents/${projectId}`);
+    } else if (userRole === 'advisor') {
+        // สำหรับ Student, นำทางไปยัง path ของนักศึกษา
+        navigate(`/professor/documents/${projectId}`);
     } else {
         // สำหรับ Professor, Guest, หรือ Role อื่นๆ จะไปยัง path เริ่มต้น
         navigate(`/documents/${projectId}`);
