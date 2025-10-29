@@ -137,10 +137,11 @@ app.post('/api/users', async (req, res, next) => { // <-- Add next
   }
   const is_active = true; 
   const sql = `
-    INSERT INTO users (username, email, password, first_name, last_name, identification, role, is_active) 
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    INSERT INTO users (username, email, password, password_hash, first_name, last_name, identification, role, is_active) 
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     RETURNING id`; 
-  const values = [username, email, password, first_name, last_name, identification || null, role || 'student', is_active];
+  // IMPORTANT FIX: Use password for password_hash as well to satisfy NOT NULL constraint (since no hashing library is used)
+  const values = [username, email, password, password, first_name, last_name, identification || null, role || 'student', is_active];
 
   try {
     const result = await pool.query(sql, values);
