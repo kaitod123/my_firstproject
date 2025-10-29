@@ -833,7 +833,7 @@ app.get('/api/project-details/:id', async (req, res, next) => { // <-- Add next
                                     ? JSON.parse(projectDetails.file_paths || '{}') 
                                     : (projectDetails.file_paths || {});
     } catch(e) {
-        console.error("Error parsing file_paths for project details:", e);
+        console.error('Error parsing file_paths for project details:', e); 
         projectDetails.file_paths = {}; // Default to empty object on error
     }
     
@@ -1075,4 +1075,3 @@ app.use((err, req, res, next) => {
         errorDetails: process.env.NODE_ENV === 'development' ? err.stack : 'Error details hidden in production.'
     });
 });
-
