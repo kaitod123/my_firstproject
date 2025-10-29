@@ -623,9 +623,10 @@ app.get('/api/professor/documents/:id', async (req, res, next) => { // <-- Add n
 // **********************************************
 // Corrected API for Download using Wildcard
 // **********************************************
-app.get('/api/download/*', async (req, res, next) => { 
+app.get('/api/download/:s3Key', async (req, res, next) => { 
     // The S3 key is everything after '/api/download/'
-    const s3Key = req.params[0]; 
+    // Use a custom regex pattern on the route definition if simple named parameter is not enough
+    const s3Key = req.params.s3Key; 
     
     console.log("Attempting to download S3 Key:", s3Key);
 
@@ -633,15 +634,9 @@ app.get('/api/download/*', async (req, res, next) => {
         return res.status(400).send('S3 Key is required.');
     }
 
-    // Ensure the key doesn't start with a slash if req.params[0] includes it
-    const cleanS3Key = s3Key.startsWith('/') ? s3Key.substring(1) : s3Key;
-
-    console.log("Cleaned S3 Key:", cleanS3Key);
-
-
     const command = new GetObjectCommand({
         Bucket: S3_BUCKET,
-        Key: cleanS3Key, // Use the captured key
+        Key: s3Key, // Use the captured key
     });
     
     try {
