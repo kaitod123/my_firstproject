@@ -71,7 +71,7 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'uploads'))); // <--
 // API for Users (CRUD Operations) - (แก้ไขเป็น pg)
 // ===============================================
 
-// GET: ดึงข้อมูลผู้ใช้ทั้งหมด
+// GET: ดึงข้อมูลผู้ใช้ทั้งหมด (แก้ไข: ใช้ SELECT field ชัดเจน)
 app.get('/api/users', async (req, res) => {
   const sql = `
     SELECT 
@@ -319,7 +319,12 @@ app.get('/api/documents', async (req, res) => {
     const statusFilter = req.query.status || ''; 
     const limit = req.query.limit || null;
 
-    let sql = 'SELECT * FROM documents';
+    let sql = `
+        SELECT 
+            id, title, title_eng, author, department, advisorName, 
+            abstract, keywords, document_type, publish_year, approval_status, is_active 
+        FROM documents
+    `;
     let values = [];
     let whereConditions = [];
     let paramIndex = 1; // <-- pg: สร้างตัวนับ Parameter
@@ -530,7 +535,7 @@ app.post('/api/upload-project', (req, res) => {
             });
             
             // **********************************************
-            // แก้ไข: เพิ่ม file_sizes และ is_active ใน SQL
+            // แก้ไข: เพิ่ม file_sizes และ is_active ใน SQL (แก้ไขปัญหา NOT NULL)
             // **********************************************
             const sql = `
                 INSERT INTO documents (
@@ -568,9 +573,47 @@ app.post('/api/upload-project', (req, res) => {
             
             // NOTE: SQL ต้องมี 15 fields ใน INSERT list และ 13 placeholders ใน VALUES (นับรวม EXTRACT/CURRENT_DATE/pending)
             // SQL: INSERT INTO documents (..., file_paths, file_sizes, is_active, ...) VALUES ($1...$13, EXTRACT(YEAR FROM NOW()), CURRENT_DATE, 'pending')
-            // เดี๋ยวผมจะปรับ SQL ให้ถูกต้องในขั้นตอนถัดไป 
+            // จำนวนฟิลด์: 13 fields ใน VALUES list + 3 Hardcoded fields = 16 fields.
+            // ตรวจสอบ SQL อีกครั้ง:
+            /*
+            1. document_type ($1)
+            2. title ($2)
+            3. title_eng ($3)
+            4. author ($4)
+            5. abstract ($5)
+            6. keywords ($6)
+            7. advisorName ($7)
+            8. department ($8)
+            9. coAdvisorName ($9)
+            10. supportAgency ($10)
+            11. file_paths ($11)
+            12. file_sizes ($12)
+            13. is_active ($13)
+            14. publish_year (EXTRACT(YEAR FROM NOW()))
+            15. scan_date (CURRENT_DATE)
+            16. approval_status ('pending')
+            
+            จำนวนฟิลด์ใน INSERT = 16. จำนวน Placeholder = 13.
+            ดังนั้น SQL ต้องมีฟิลด์ Hardcoded 3 ตัวและ Placeholder 13 ตัว
+            */
 
-            const result = await pool.query(sql, values); 
+            const finalSql = `
+                INSERT INTO documents (
+                    document_type, title, title_eng, author, abstract, keywords,
+                    advisorName, department, coAdvisorName, supportAgency,
+                    file_paths, file_sizes,
+                    is_active,
+                    publish_year, scan_date, approval_status
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, EXTRACT(YEAR FROM NOW()), CURRENT_DATE, 'pending')
+                RETURNING id; 
+            `;
+
+            const finalValues = [
+                // $1 - $13 (ใช้ values เดิม)
+                ...values
+            ];
+
+            const result = await pool.query(finalSql, finalValues); 
             
             res.status(201).json({
                 message: 'บันทึกข้อมูลและไฟล์เรียบร้อยแล้ว',
