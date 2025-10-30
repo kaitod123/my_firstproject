@@ -250,7 +250,7 @@ const DocumentManagementSystem = () => {
                     <img 
                         src={doc.front_face_url} 
                         alt={`หน้าปกโครงงาน: ${doc.title}`} 
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        style={{ width: '50%', height: '100%', objectFit: 'cover' }}
                         onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder-image.png'; }} // Placeholder fallback
                     />
                 ) : (
