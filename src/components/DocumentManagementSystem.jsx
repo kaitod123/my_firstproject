@@ -245,8 +245,19 @@ const DocumentManagementSystem = () => {
 
 
           <div className={styles.cardDetails}>
-            <div className={styles.cardDetail}>
-              <span><img src={doc.front_face}/></span>
+              <div className={styles.frontFaceContainer} style={{ width: '100%', height: '200px', marginBottom: '15px', overflow: 'hidden', borderRadius: '8px' }}>
+                {doc.front_face_url ? (
+                    <img 
+                        src={doc.front_face_url} 
+                        alt={`หน้าปกโครงงาน: ${doc.title}`} 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder-image.png'; }} // Placeholder fallback
+                    />
+                ) : (
+                    <div style={{ width: '100%', height: '100%', backgroundColor: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280' }}>
+                        [ ไม่มีรูปหน้าปก ]
+                    </div>
+                )}
             </div>
             <div className={styles.cardDetail}>
               <User className={styles.cardIcon} />
