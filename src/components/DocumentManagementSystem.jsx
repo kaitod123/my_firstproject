@@ -254,7 +254,7 @@ const DocumentManagementSystem = () => {
                         onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder-image.png'; }} // Placeholder fallback
                     />
                 ) : (
-                    <div style={{ width: '100%', height: '100%', backgroundColor: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280' }}>
+                    <div style={{ width: '50%', height: '20%', backgroundColor: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280' }}>
                         [ ไม่มีรูปหน้าปก ]
                     </div>
                 )}
