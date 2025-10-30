@@ -104,12 +104,29 @@ const DocumentManagementSystem = () => {
                                 .map(cat => cat.trim()) 
                                 .filter(cat => cat.length > 0); 
             }
+
+            let frontFaceUrl = null;
+            let filePathsObject = {};
+            try {
+                if (doc.file_paths) {
+                    filePathsObject = (typeof doc.file_paths === 'string') 
+                                        ? JSON.parse(doc.file_paths) 
+                                        : doc.file_paths;
+                    // front_face เป็น array แต่เราต้องการแค่ URL แรก 
+                    if (filePathsObject.front_face && filePathsObject.front_face.length > 0) {
+                        frontFaceUrl = filePathsObject.front_face[0];
+                    }
+                }
+            } catch (e) {
+                console.error("Could not parse file_paths JSON:", e); 
+            }
             
             return {
                 ...doc,
                 keywords: doc.keywords || '',
                 categories: categories, 
-                files: [] 
+                files: [], // ไม่จำเป็นต้องใช้ในหน้านี้ แต่คงไว้ก่อน
+                front_face_url: frontFaceUrl // <<< เพิ่ม URL หน้าปกที่นี่
             };
         });
 

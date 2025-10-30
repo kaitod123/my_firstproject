@@ -355,7 +355,7 @@ app.get('/api/documents', async (req, res, next) => { // <-- Add next
     let sql = `
         SELECT 
             id, title, title_eng, author, department, advisorName, 
-            abstract, keywords, document_type, publish_year, approval_status, is_active 
+            abstract, keywords, document_type, publish_year, approval_status, is_active ,file_paths
         FROM documents
     `;
     let values = [];
