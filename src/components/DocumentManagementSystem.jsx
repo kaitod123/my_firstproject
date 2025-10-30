@@ -230,6 +230,10 @@ const DocumentManagementSystem = () => {
           <div className={styles.cardDetails}>
             <div className={styles.cardDetail}>
               <User className={styles.cardIcon} />
+              <span><img src={doc.front_face}/></span>
+            </div>
+            <div className={styles.cardDetail}>
+              <User className={styles.cardIcon} />
               <span><strong>ผู้แต่ง:</strong> {doc.author}</span>
             </div>
             <div className={styles.cardDetail}>
