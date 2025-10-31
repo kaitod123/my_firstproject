@@ -194,9 +194,10 @@ const ProfessorDocumentDetails = () => {
           </div>
           
           {/* --- (เพิ่ม) 6. เพิ่มข้อมูล Advisor ที่ขาดไป --- */}
-          <div className={styles.listItem}>
+          <div  div className={styles.listItem}>
             <span className={styles.listLabel}>อาจารย์ที่ปรึกษา</span>
-            <span className={styles.listValue}>{document.advisorName || 'N/A'}</span>
+            {/* (แก้ไข) ตรวจสอบทั้ง N ใหญ่ และ n เล็ก */}
+            <span className={styles.listValue}>{document.advisorName || document.advisorname || 'N/A'}</span>
           </div>
 
           <div className={styles.listItem}>

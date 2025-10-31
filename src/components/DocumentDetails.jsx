@@ -196,7 +196,8 @@ const DocumentDetails = () => {
           </div>
           <div className={styles.listItem}>
             <span className={styles.listLabel}>อาจารย์ที่ปรึกษา</span>
-            <span className={styles.listValue}>{doc.advisorName || doc.advisorname || 'N/A'}</span>
+            {/* (แก้ไข) ตรวจสอบทั้ง N ใหญ่ และ n เล็ก */}
+            <span className={styles.listValue}>{document.advisorName || document.advisorname || 'N/A'}</span>
           </div>
           <div className={styles.listItem}>
             <span className={styles.listLabel}>ปีที่เผยแพร่</span>
