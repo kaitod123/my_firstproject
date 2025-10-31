@@ -84,13 +84,15 @@ pool.connect((err, client, release) => {
 // Middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true })); // <-- เพิ่มเพื่อรองรับ Form Data จาก Multer
-// แก้ไข: ใช้ __dirname เพื่อเสิร์ฟไฟล์ Static อย่างถูกต้อง
-// Only serve local 'uploads' if they exist and are needed (likely not with S3)
-// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// ===============================================
-// API for Users (CRUD Operations) - (แก้ไขเป็น pg)
-// ===============================================
+app.get('/documents', (req, res) => {
+    // เปลี่ยนเส้นทางไปยัง API Endpoint ที่ถูกต้อง
+    // (โดยเก็บ Query Parameters เดิมไว้ด้วย)
+    const newUrl = `/api/documents?${new URLSearchParams(req.query).toString()}`;
+    console.log(`Redirecting erroneous /documents call to: ${newUrl}`);
+    // ใช้ 307 Temporary Redirect หรือ 301 Permanent Redirect
+    res.redirect(307, newUrl); 
+});
 
 // GET: ดึงข้อมูลผู้ใช้ทั้งหมด (คืนค่า Logic เดิม)
 app.get('/api/users', async (req, res, next) => { 
