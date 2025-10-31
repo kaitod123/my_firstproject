@@ -1056,7 +1056,7 @@ app.use((err, req, res, next) => {
         });
     } else if (err.code === '23502') { // Not Null Violation
         return res.status(400).json({ 
-            message: 'Database Error: A required field is missing.',
+            message: 'Databasee Error: A required field is missing.',
             errorDetails: `Column '${err.column}' cannot be null.` || err.message
         });
     } else if (err.code && err.code.startsWith('22')) { // Data Exception (e.g., invalid format)
