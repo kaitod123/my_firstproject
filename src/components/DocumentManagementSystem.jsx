@@ -270,14 +270,14 @@ const DocumentManagementSystem = () => {
                     </div>
                 )}
             </div>
-
-            {/* 2. รายละเอียดเอกสาร (ขวามือ) */}
-            <div className={styles.cardDetails} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '14px' }}>
-              
               <div className={styles.cardDetail}>
                 <User className={styles.cardIcon} style={{ width: '16px', height: '16px' }} />
                 <span><strong>ผู้แต่ง:</strong> {doc.author}</span>
               </div>
+            {/* 2. รายละเอียดเอกสาร (ขวามือ) */}
+            <div className={styles.cardDetails} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '14px' }}>
+              
+
               <div className={styles.cardDetail}>
                 <Clock className={styles.cardIcon} style={{ width: '16px', height: '16px' }} />
                 <span><strong>สาขาวิชา:</strong> {doc.department}</span>
