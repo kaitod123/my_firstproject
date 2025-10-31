@@ -43,14 +43,29 @@ const ProfessorDocumentDetails = () => {
   const processFilesForTable = (files) => {
     const fileGroupMap = new Map();
 
+    if (!files || typeof files !== 'object' || Array.isArray(files)) {
+        return [];
+    }
+
     Object.values(files).flat().forEach(fileName => {
-        const baseName = fileName.substring(fileName.indexOf('-') + 1).replace(/\.[^/.]+$/, "");
-        const extension = fileName.split('.').pop().toLowerCase();
+        if (typeof fileName !== 'string' || !fileName) return; 
+
+        // S3 URL มักมี format: projects/field/timestamp-filename.ext
+        const urlParts = fileName.split('/');
+        const nameWithTimestamp = urlParts[urlParts.length - 1]; // ชื่อไฟล์พร้อม timestamp
+        
+        // แยก timestamp-name กับ extension
+        const parts = nameWithTimestamp.split('.');
+        const extension = parts.pop().toLowerCase(); 
+        const nameWithoutExtension = parts.join('.'); 
+
+        // เอา Timestamp ออก: 123456789-filename -> filename
+        const baseName = nameWithoutExtension.substring(nameWithoutExtension.indexOf('-') + 1);
 
         if (!fileGroupMap.has(baseName)) {
             fileGroupMap.set(baseName, { 
                 name: baseName, pdf: null, doc: null, docx: null, 
-                zip: null, rar: null, exe: null, psd: null, jpg: null 
+                zip: null, rar: null, exe: null, psd: null, jpg: null, png: null 
             });
         }
 
@@ -64,8 +79,9 @@ const ProfessorDocumentDetails = () => {
             case 'rar': fileGroup.rar = fileName; break;
             case 'exe': fileGroup.exe = fileName; break;
             case 'psd': fileGroup.psd = fileName; break;
-            case 'jpg': fileGroup.jpg = fileName; break;
+            case 'jpg': 
             case 'jpeg': fileGroup.jpg = fileName; break;
+            case 'png': fileGroup.png = fileName; break;
             default: 
                 break;
         }
@@ -110,22 +126,26 @@ const ProfessorDocumentDetails = () => {
   }
   // --- (จบส่วนที่เพิ่ม) ---
 
+  // *** แก้ไข: เชื่อถือ Backend ว่า file_paths เป็น Object หรือ String (ถ้าเป็น String ให้ Parse) ***
   let files = {};
-  try {
-    if (document.file_paths && typeof document.file_paths === 'string') {
-      files = JSON.parse(document.file_paths);
-    }
-  } catch (e) {
-    console.error("Failed to parse file_paths JSON:", e);
-    files = {};
+  if (document.file_paths) {
+      try {
+          files = (typeof document.file_paths === 'string' && document.file_paths.trim().startsWith('{'))
+              ? JSON.parse(document.file_paths)
+              : document.file_paths; // ถ้าเป็น Object อยู่แล้ว ให้ใช้เลย
+      } catch (e) {
+          console.error("Failed to parse file_paths JSON:", e);
+          files = {};
+      }
   }
+
 
   const processedFiles = processFilesForTable(files);
 
   const renderDownloadLink = (fileName) => {
     if (!fileName) return <span className={tableStyles.noFile}>-</span>;
     return (
-      <a href={`${import.meta.env.VITE_API_URL}/api/download/${fileName}`} className={tableStyles.downloadLink} download>
+      <a href={`${import.meta.env.VITE_API_URL}/api/download/${fileName}`} className={tableStyles.downloadLink} target="_blank" rel="noopener noreferrer">
         <Download size={16} /> ดาวน์โหลด
       </a>
     );
@@ -211,7 +231,7 @@ const ProfessorDocumentDetails = () => {
                     <th>RAR</th>
                     <th>EXE</th>
                     <th>PSD</th>
-                    <th>JPG</th>
+                    <th>JPG/PNG</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -225,7 +245,10 @@ const ProfessorDocumentDetails = () => {
                       <td>{renderDownloadLink(file.rar)}</td>
                       <td>{renderDownloadLink(file.exe)}</td>
                       <td>{renderDownloadLink(file.psd)}</td>
-                      <td>{renderDownloadLink(file.jpg)}</td>
+                      <td>
+                        {renderDownloadLink(file.jpg)}
+                        {renderDownloadLink(file.png)}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

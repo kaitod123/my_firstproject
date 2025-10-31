@@ -39,18 +39,31 @@ const DocumentDetails = () => {
    const processFilesForTable = (files) => {
     const fileGroupMap = new Map();
 
-    if (!files || typeof files !== 'object') {
+    // *** แก้ไข: ตรวจสอบว่าเป็น Object หรือไม่ ก่อนเข้าถึง Object.values ***
+    if (!files || typeof files !== 'object' || Array.isArray(files)) {
         return [];
     }
 
     Object.values(files).flat().forEach(fileName => {
-        const baseName = fileName.substring(fileName.indexOf('-') + 1).replace(/\.[^/.]+$/, "");
-        const extension = fileName.split('.').pop().toLowerCase();
+        // ตรวจสอบว่า fileName เป็น String และมีค่าที่ถูกต้อง
+        if (typeof fileName !== 'string' || !fileName) return; 
+        
+        // S3 URL มักมี format: timestamp-filename.ext
+        const urlParts = fileName.split('/');
+        const nameWithTimestamp = urlParts[urlParts.length - 1]; // ชื่อไฟล์พร้อม timestamp
+        
+        // แยก timestamp-name กับ extension
+        const parts = nameWithTimestamp.split('.');
+        const extension = parts.pop().toLowerCase(); // นามสกุล
+        const nameWithoutExtension = parts.join('.'); 
+
+        // เอา Timestamp ออก: 123456789-filename -> filename
+        const baseName = nameWithoutExtension.substring(nameWithoutExtension.indexOf('-') + 1);
 
         if (!fileGroupMap.has(baseName)) {
             fileGroupMap.set(baseName, { 
                 name: baseName, pdf: null, doc: null, docx: null, 
-                zip: null, rar: null, exe: null, psd: null, jpg: null 
+                zip: null, rar: null, exe: null, psd: null, jpg: null, png: null // เพิ่ม png
             });
         }
 
@@ -66,6 +79,7 @@ const DocumentDetails = () => {
             case 'psd': fileGroup.psd = fileName; break;
             case 'jpg':
             case 'jpeg': fileGroup.jpg = fileName; break;
+            case 'png': fileGroup.png = fileName; break; // เพิ่ม png
             default:
                 break;
         }
@@ -75,9 +89,11 @@ const DocumentDetails = () => {
   };
 
   const renderDownloadLink = (fileName) => {
+    // fileName ที่นี่คือ S3 Key เต็มๆ
     if (!fileName) return <span className={tableStyles.noFile}>-</span>;
     return (
-      <a href={`${import.meta.env.VITE_API_URL}/api/download/${fileName}`} className={tableStyles.downloadLink} download>
+      // *** แก้ไข URL ให้ใช้ /api/download/ ตามรูปแบบที่ Backend ต้องการ ***
+      <a href={`${import.meta.env.VITE_API_URL}/api/download/${fileName}`} className={tableStyles.downloadLink} target="_blank" rel="noopener noreferrer">
         <Download size={16} /> ดาวน์โหลด
       </a>
     );
@@ -117,14 +133,17 @@ const DocumentDetails = () => {
     );
   }
 
- let files = {};
-  try {
-    if (document.file_paths && typeof document.file_paths === 'string') {
-      files = JSON.parse(document.file_paths);
-    }
-  } catch (e) {
-    console.error("Failed to parse file_paths JSON:", e);
-    files = {};
+  // *** แก้ไข: เชื่อถือ Backend ว่า file_paths เป็น Object หรือ String (ถ้าเป็น String ให้ Parse) ***
+  let files = {};
+  if (document.file_paths) {
+      try {
+          files = (typeof document.file_paths === 'string' && document.file_paths.trim().startsWith('{'))
+              ? JSON.parse(document.file_paths)
+              : document.file_paths; // ถ้าเป็น Object อยู่แล้ว ให้ใช้เลย
+      } catch (e) {
+          console.error("Failed to parse file_paths JSON:", e);
+          files = {};
+      }
   }
 
   const processedFiles = processFilesForTable(files);
@@ -209,7 +228,8 @@ const DocumentDetails = () => {
                             <th>RAR</th>
                             <th>EXE</th>
                             <th>PSD</th>
-                            <th>JPG</th>
+                            <th>JPG/PNG</th>
+                            
                           </tr>
                         </thead>
                         <tbody>
@@ -223,7 +243,10 @@ const DocumentDetails = () => {
                               <td>{renderDownloadLink(file.rar)}</td>
                               <td>{renderDownloadLink(file.exe)}</td>
                               <td>{renderDownloadLink(file.psd)}</td>
-                              <td>{renderDownloadLink(file.jpg)}</td>
+                              <td>
+                                {renderDownloadLink(file.jpg)}
+                                {renderDownloadLink(file.png)}
+                              </td>
                             </tr>
                           ))}
                         </tbody>

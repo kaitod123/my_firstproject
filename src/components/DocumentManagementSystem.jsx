@@ -106,14 +106,17 @@ const DocumentManagementSystem = () => {
             }
 
             let frontFaceUrl = null;
+            let filePathsObject = {};
+            
             try {
                 if (doc.file_paths) {
-                    const filePathsObject = (typeof doc.file_paths === 'string') 
+                    // *** แก้ไข: Parse JSON ถ้าเป็น String (กรณี DB เก่า) ถ้าเป็น Object (กรณี DB ใหม่) ให้ใช้ Object เลย ***
+                    filePathsObject = (typeof doc.file_paths === 'string' && doc.file_paths.trim().startsWith('{')) 
                                         ? JSON.parse(doc.file_paths) 
                                         : doc.file_paths;
 
                     // front_face เป็น array ของ URL S3 เราใช้ตัวแรก
-                    if (filePathsObject.front_face && filePathsObject.front_face.length > 0) {
+                    if (filePathsObject && filePathsObject.front_face && filePathsObject.front_face.length > 0) {
                         frontFaceUrl = filePathsObject.front_face[0];
                     }
                 }
@@ -434,4 +437,3 @@ const DocumentManagementSystem = () => {
 };
 
 export default DocumentManagementSystem;
-
