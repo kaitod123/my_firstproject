@@ -249,11 +249,11 @@ const DocumentManagementSystem = () => {
             }}
             title={doc.title} 
           >
-            {doc.title}
-          </h3> */}
+          {/* </h3> */}
 
           {/* *** ส่วนที่แก้ไข: จัดวางรูปภาพและรายละเอียดเคียงข้างกัน *** */}
-          <div style={{ display: 'flex', gap: '15px', marginBottom: '10px', minHeight: '140px' }}> {/* (แก้ไข) ลด marginBottom และ minHeight */}
+          {/* (แก้ไข) ปรับ minHeight ให้เท่ากับความสูงของรูปภาพ (170px) */}
+          <div style={{ display: 'flex', gap: '15px', marginBottom: '10px', minHeight: '170px' }}> 
             
             {/* 1. รูปภาพหน้าปก (ซ้ายมือ) */}
             <div className={styles.frontFaceContainer} style={{ width: '120px', minWidth: '120px', height: '170px', overflow: 'hidden', borderRadius: '4px', border: '1px solid #eee' }}>
@@ -488,5 +488,4 @@ const DocumentManagementSystem = () => {
 };
 
 export default DocumentManagementSystem;
-
 
