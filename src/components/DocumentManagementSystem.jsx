@@ -106,26 +106,26 @@ const DocumentManagementSystem = () => {
             }
 
             let frontFaceUrl = null;
-            let filePathsObject = {};
             try {
                 if (doc.file_paths) {
-                    filePathsObject = (typeof doc.file_paths === 'string') 
+                    const filePathsObject = (typeof doc.file_paths === 'string') 
                                         ? JSON.parse(doc.file_paths) 
                                         : doc.file_paths;
-                    // front_face เป็น array แต่เราต้องการแค่ URL แรก 
+
+                    // front_face เป็น array ของ URL S3 เราใช้ตัวแรก
                     if (filePathsObject.front_face && filePathsObject.front_face.length > 0) {
                         frontFaceUrl = filePathsObject.front_face[0];
                     }
                 }
             } catch (e) {
-                console.error("Could not parse file_paths JSON:", e); 
+                console.error("Could not parse file_paths JSON for document ID:", doc.id, e); 
             }
             
             return {
                 ...doc,
                 keywords: doc.keywords || '',
                 categories: categories, 
-                files: [], // ไม่จำเป็นต้องใช้ในหน้านี้ แต่คงไว้ก่อน
+                files: [], // ไม่จำเป็นต้องใช้ในหน้านี้
                 front_face_url: frontFaceUrl // <<< เพิ่ม URL หน้าปกที่นี่
             };
         });
@@ -227,12 +227,14 @@ const DocumentManagementSystem = () => {
         }}
       >
         <div className={styles.cardHeader}></div>
-        {/* (เพิ่ม) style={{ flex: 1 }} ให้ content ขยายเต็มการ์ด */}
-        <div className={styles.cardContent} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}> 
+        {/* (แก้ไข) ให้ cardContent เป็น flex column และยืดเต็ม */}
+        <div className={styles.cardContent} style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '15px' }}> 
           
+          {/* ชื่อโครงงาน (ยังอยู่ด้านบนสุด) */}
           <h3 
             className={styles.cardTitle}
             style={{ 
+              marginBottom: '10px',
               whiteSpace: 'nowrap', 
               overflow: 'hidden', 
               textOverflow: 'ellipsis', 
@@ -243,33 +245,41 @@ const DocumentManagementSystem = () => {
             {doc.title}
           </h3>
 
-
-          <div className={styles.cardDetails}>
-              <div className={styles.frontFaceContainer} style={{ width: '50%', height: '100px', marginBottom: '15px', overflow: 'hidden', borderRadius: '8px' }}>
+          {/* *** ส่วนที่แก้ไข: จัดวางรูปภาพและรายละเอียดเคียงข้างกัน *** */}
+          <div style={{ display: 'flex', gap: '15px', marginBottom: '15px', minHeight: '150px' }}>
+            
+            {/* 1. รูปภาพหน้าปก (ซ้ายมือ) */}
+            <div className={styles.frontFaceContainer} style={{ width: '120px', minWidth: '120px', height: '170px', overflow: 'hidden', borderRadius: '4px', border: '1px solid #eee' }}>
                 {doc.front_face_url ? (
                     <img 
                         src={doc.front_face_url} 
                         alt={`หน้าปกโครงงาน: ${doc.title}`} 
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder-image.png'; }} // Placeholder fallback
+                        // จัดการข้อผิดพลาดในการโหลดรูปภาพ
+                        onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.closest('div').innerHTML = '<div style="width:100%; height:100%; background:#f3f4f6; display:flex; align-items:center; justify-content:center; font-size:12px; color:#9ca3af; text-align:center;">Load Error</div>'; }} 
                     />
                 ) : (
-                    <div style={{ width: '100%', height: '100%', backgroundColor: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280' }}>
-                        [ ไม่มีรูปหน้าปก ]
+                    <div style={{ width: '100%', height: '100%', backgroundColor: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontSize: '12px', textAlign: 'center' }}>
+                        [ ไม่มีหน้าปก ]
                     </div>
                 )}
             </div>
-            <div className={styles.cardDetail}>
-              <User className={styles.cardIcon} />
-              <span><strong>ผู้แต่ง:</strong> {doc.author}</span>
-            </div>
-            <div className={styles.cardDetail}>
-              <Clock className={styles.cardIcon} />
-              <span><strong>สาขาวิชา:</strong> {doc.department}</span>
-            </div>
-            <div className={styles.cardDetail}>
-              <FileText className={styles.cardIcon} />
-              <span><strong>ปีที่เผยแพร่:</strong> {doc.publish_year ? doc.publish_year + 543 : 'N/A'} </span>
+
+            {/* 2. รายละเอียดเอกสาร (ขวามือ) */}
+            <div className={styles.cardDetails} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '14px' }}>
+              
+              <div className={styles.cardDetail}>
+                <User className={styles.cardIcon} style={{ width: '16px', height: '16px' }} />
+                <span><strong>ผู้แต่ง:</strong> {doc.author}</span>
+              </div>
+              <div className={styles.cardDetail}>
+                <Clock className={styles.cardIcon} style={{ width: '16px', height: '16px' }} />
+                <span><strong>สาขาวิชา:</strong> {doc.department}</span>
+              </div>
+              <div className={styles.cardDetail}>
+                <FileText className={styles.cardIcon} style={{ width: '16px', height: '16px' }} />
+                <span><strong>ปีที่เผยแพร่:</strong> {doc.publish_year ? doc.publish_year + 543 : 'N/A'} </span>
+              </div>
             </div>
           </div>
 
@@ -280,7 +290,7 @@ const DocumentManagementSystem = () => {
           {/* (เพิ่ม) style={{ marginTop: 'auto' }} เพื่อดัน tag ลงล่างสุด */}
           <div 
             className={styles.categoryTagsContainer} 
-            style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: 'auto', paddingTop: '10px' }}
+            style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: 'auto', paddingTop: '10px', borderTop: '1px solid #eee' }}
           >
             {Array.isArray(doc.categories) && doc.categories.map((category, index) => (
                 <span key={index} className={styles.categoryTag}>

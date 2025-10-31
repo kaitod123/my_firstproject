@@ -352,10 +352,11 @@ app.get('/api/documents', async (req, res, next) => { // <-- Add next
     const statusFilter = req.query.status || ''; 
     const limit = req.query.limit || null;
 
-    let sql = `
+let sql = `
         SELECT 
             id, title, title_eng, author, department, advisorName, 
-            abstract, keywords, document_type, publish_year, approval_status, is_active ,file_paths
+            abstract, keywords, document_type, publish_year, approval_status, is_active,
+            file_paths 
         FROM documents
     `;
     let values = [];
