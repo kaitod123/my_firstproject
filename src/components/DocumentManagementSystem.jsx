@@ -1,5 +1,6 @@
 // src/components/DocumentManagementSystem.jsx
 import React, { useState, useEffect } from 'react';
+// (เพิ่ม) Import Icon อาจารย์ที่ปรึกษา (สมมติว่าใช้ User)
 import { Search, User, Clock, FileText, Download, Filter, CircuitBoard, Globe, Gamepad2, AppWindowIcon, Apple, Bot, Database, Menu } from 'lucide-react'; 
 import { useNavigate, useLocation } from 'react-router-dom';
 import styles from '../styles/DocumentManagementSystem.module.css';
@@ -23,6 +24,7 @@ const DocumentManagementSystem = () => {
   const [yearFilter, setYearFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [loading, setLoading] = useState(true);
+  // (แก้ไข) FIX: ใช้ useState(null) แทนการกำหนดค่า = null โดยตรง
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -88,6 +90,8 @@ const DocumentManagementSystem = () => {
         }
         if (typeFilter) queryParams.append('type', typeFilter); 
 
+        // (เพิ่ม) ดึง advisorName มาด้วย (ถ้า API /api/documents ยังไม่ส่งมา)
+        // หมายเหตุ: API /api/documents ใน server.js (บรรทัด 382) ส่ง advisorName มาแล้ว
         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/documents?${queryParams.toString()}`);
 
         if (!response.ok) {
@@ -283,11 +287,26 @@ const DocumentManagementSystem = () => {
                 <FileText className={styles.cardIcon} style={{ width: '16px', height: '16px' }} />
                 <span><strong>ปีที่เผยแพร่:</strong> {doc.publish_year ? doc.publish_year + 543 : 'N/A'} </span>
               </div>
-            </div>
+              
+              {/* --- (ย้ายมาไว้ตรงนี้) --- */}
               <div className={styles.cardDetail}>
                 <User className={styles.cardIcon} style={{ width: '16px', height: '16px' }} />
                 <span><strong>ผู้แต่ง:</strong> {doc.author}</span>
               </div>
+              
+              {/* --- (เพิ่ม) แสดงชื่ออาจารย์ที่ปรึกษา --- */}
+              <div className={styles.cardDetail}>
+                <User className={styles.cardIcon} style={{ width: '16px', height: '16px' }} />
+                <span><strong>ที่ปรึกษา:</strong> {doc.advisorName || 'N/A'}</span>
+              </div>
+              
+            </div>
+              {/* (ลบ) ย้าย Div ผู้แต่งจากตรงนี้ไปไว้ด้านบนแล้ว
+              <div className={styles.cardDetail}>
+                <User className={styles.cardIcon} style={{ width: '16px', height: '16px' }} />
+                <span><strong>ผู้แต่ง:</strong> {doc.author}</span>
+              </div>
+              */}
           </div>
 
           <div className={styles.filesSection}>
@@ -437,3 +456,4 @@ const DocumentManagementSystem = () => {
 };
 
 export default DocumentManagementSystem;
+
