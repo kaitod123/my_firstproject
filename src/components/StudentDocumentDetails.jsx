@@ -6,7 +6,7 @@ import { Download, ChevronLeft, FileText, User, Clock, Calendar } from 'lucide-r
 import styles from '../styles/DocumentDetails.module.css';
 import tableStyles from '../styles/FileTable.module.css';
 
-const ProfessorDocumentDetails = () => {
+const StudentDocumentDetails = () => {
   const { documentId } = useParams();
   const [document, setDocument] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -18,11 +18,24 @@ const ProfessorDocumentDetails = () => {
     const fetchDocumentDetails = async () => {
       setLoading(true);
       setError(null); // --- (เพิ่ม)
+      
+      const userData = JSON.parse(localStorage.getItem('user'));
+      if (!userData || !userData.id) {
+          console.error("User data not found in localStorage.");
+          setError("ไม่พบข้อมูลผู้ใช้ กรุณาล็อกอินใหม่อีกครั้ง"); // --- (เพิ่ม)
+          setLoading(false);
+          return;
+      }
+      const userId = userData.id;
+
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/professor/documents/${documentId}`);
+        // *** FIX: เปลี่ยน fetch URL ให้ถูกต้องสำหรับ StudentDetails
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/student/documents/${documentId}?userId=${userId}`);
+        
         if (!response.ok) {
            throw new Error(`HTTP error! status: ${response.status}`); // --- (แก้ไข)
         }
+        
         const data = await response.json();
         
         if (data) {
@@ -236,6 +249,7 @@ const ProfessorDocumentDetails = () => {
                   <tr>
                     <th>ชื่อ</th>
                     <th>PDF</th>
+                    <th>DOC</th>
                     <th>DOCX</th>
                     <th>ZIP</th>
                     <th>RAR</th>
@@ -249,6 +263,7 @@ const ProfessorDocumentDetails = () => {
                     <tr key={index}>
                       <td className={tableStyles.fileTableName}>{file.name}</td>
                       <td>{renderDownloadLink(file.pdf)}</td>
+                      <td>{renderDownloadLink(file.doc)}</td>
                       <td>{renderDownloadLink(file.docx)}</td>
                       <td>{renderDownloadLink(file.zip)}</td>
                       <td>{renderDownloadLink(file.rar)}</td>
@@ -279,4 +294,4 @@ const ProfessorDocumentDetails = () => {
   );
 };
 
-export default ProfessorDocumentDetails;
+export default StudentDocumentDetails;

@@ -625,10 +625,9 @@ app.get('/api/professor/documents/:id', async (req, res, next) => { // <-- Add n
 // **********************************************
 // Corrected API for Download using Wildcard
 // **********************************************
-// IMPORTANT: Reverting to Named Parameter only as the Wildcard was causing PathError crash
-app.get('/api/download/:s3Key', async (req, res, next) => { 
-    // The S3 key is everything after '/api/download/'
-    // Use a custom regex pattern on the route definition if simple named parameter is not enough
+// FIX: Use custom regex to allow slashes in the parameter
+app.get('/api/download/:s3Key(.+)', async (req, res, next) => { 
+    // Use (.+) to capture all characters, including slashes
     const s3Key = req.params.s3Key; 
     
     console.log("Attempting to download S3 Key:", s3Key);
