@@ -1060,7 +1060,7 @@ app.use((err, req, res, next) => {
         });
     } else if (err.code && err.code.startsWith('22')) { // Data Exception (e.g., invalid format)
         return res.status(400).json({
-            message: 'Database Error: Invalid data format.',
+            message: 'Database Error: Invalid data format',
             errorDetails: err.message
         });
     }
