@@ -1,7 +1,7 @@
 // src/components/ProfessorDocumentDetails.jsx
 import React, { useState, useEffect } from 'react';
 // --- (แก้ไข) 1. Import useNavigate ---
-import { useParams, useNavigate } from 'raeact-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Download, ChevronLeft, FileText, User, Clock, Calendar } from 'lucide-react';
 import styles from '../styles/DocumentDetails.module.css';
 import tableStyles from '../styles/FileTable.module.css';
