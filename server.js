@@ -54,7 +54,7 @@ const s3Client = new S3Client({
 
 // (สำคัญ!) ตั้งค่า CORS ให้ถูกต้อง
 const corsOptions = {
-  origin: 'https://my-firstprojectdeploysohard.onrender.com' 
+  origin: 'https.my-firstprojectdeploysohard.onrender.com' 
 };
 app.use(cors(corsOptions)); 
     
@@ -625,10 +625,10 @@ app.get('/api/professor/documents/:id', async (req, res, next) => { // <-- Add n
 // **********************************************
 // Corrected API for Download using Wildcard
 // **********************************************
-// FIX: Use custom regex to allow slashes in the parameter
-app.get('/api/download/:s3Key(.+)', async (req, res, next) => { 
-    // Use (.+) to capture all characters, including slashes
-    const s3Key = req.params.s3Key; 
+// FIX: Use standard wildcard (*) and access via req.params[0]
+app.get('/api/download/*', async (req, res, next) => { 
+    // Use (*) to capture all segments
+    const s3Key = req.params[0]; // Access the captured path via index 0
     
     console.log("Attempting to download S3 Key:", s3Key);
 
@@ -1072,3 +1072,4 @@ app.use((err, req, res, next) => {
         errorDetails: process.env.NODE_ENV === 'development' ? err.stack : 'Error details hidden in production.'
     });
 });
+
