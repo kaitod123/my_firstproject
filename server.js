@@ -457,7 +457,7 @@ app.get('/api/documents/:id', async (req, res, next) => { // <-- Add next
 
 app.delete('/api/documents/:id', async (req, res, next) => { // <-- Add next
   const documentId = req.params.id;
-  const sql = 'DELETE FROM documents WHERE id = $1'; 
+  const sql = 'DELETE FROM users WHERE id = $1'; 
   
   try {
     const result = await pool.query(sql, [documentId]);
@@ -1072,3 +1072,4 @@ app.use((err, req, res, next) => {
         errorDetails: process.env.NODE_ENV === 'development' ? err.stack : 'Error details hidden in production.'
     });
 });
+
