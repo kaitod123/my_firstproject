@@ -237,8 +237,8 @@ const DocumentManagementSystem = () => {
         {/* (แก้ไข) ให้ cardContent เป็น flex column และยืดเต็ม */}
         <div className={styles.cardContent} style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '15px' }}> 
           
-          {/* ชื่อโครงงาน (ยังอยู่ด้านบนสุด) */}
-          <h3 
+          {/* (ลบ) ชื่อโครงงาน (ย้ายไปไว้ใน cardDetails แล้ว) */}
+          {/* <h3 
             className={styles.cardTitle}
             style={{ 
               marginBottom: '10px',
@@ -250,10 +250,10 @@ const DocumentManagementSystem = () => {
             title={doc.title} 
           >
             {doc.title}
-          </h3>
+          </h3> */}
 
           {/* *** ส่วนที่แก้ไข: จัดวางรูปภาพและรายละเอียดเคียงข้างกัน *** */}
-          <div style={{ display: 'flex', gap: '15px', marginBottom: '15px', minHeight: '170px' }}>
+          <div style={{ display: 'flex', gap: '15px', marginBottom: '10px', minHeight: '140px' }}> {/* (แก้ไข) ลด marginBottom และ minHeight */}
             
             {/* 1. รูปภาพหน้าปก (ซ้ายมือ) */}
             <div className={styles.frontFaceContainer} style={{ width: '120px', minWidth: '120px', height: '170px', overflow: 'hidden', borderRadius: '4px', border: '1px solid #eee' }}>
@@ -278,6 +278,23 @@ const DocumentManagementSystem = () => {
             {/* 2. รายละเอียดเอกสาร (ขวามือ) */}
             <div className={styles.cardDetails} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '14px' }}>
               
+              {/* --- (ย้ายมาไว้ตรงนี้) --- */}
+              <h3 
+                className={styles.cardTitle}
+                style={{ 
+                  // (ลบ) เอา margin-bottom ออก เพราะ gap: 8px จะจัดการแทน
+                  whiteSpace: 'nowrap', 
+                  overflow: 'hidden', 
+                  textOverflow: 'ellipsis', 
+                  maxWidth: '100%',
+                  // (เพิ่ม) ปรับ font-size ให้เข้ากับ details
+                  fontSize: '16px', 
+                  lineHeight: '1.4'
+                }}
+                title={doc.title} 
+              >
+                {doc.title}
+              </h3>
 
               <div className={styles.cardDetail}>
                 <Clock className={styles.cardIcon} style={{ width: '16px', height: '16px' }} />
@@ -288,17 +305,9 @@ const DocumentManagementSystem = () => {
                 <span><strong>ปีที่เผยแพร่:</strong> {doc.publish_year ? doc.publish_year + 543 : 'N/A'} </span>
               </div>
               
-              {/* --- (ย้ายมาไว้ตรงนี้) --- */}
-              <div className={styles.cardDetail}>
-                <User className={styles.cardIcon} style={{ width: '16px', height: '16px' }} />
-                <span><strong>ผู้แต่ง:</strong> {doc.author}</span>
-              </div>
+              {/* --- (ลบ) ผู้แต่ง (ย้ายไปด้านล่าง) --- */}
               
-              {/* --- (เพิ่ม) แสดงชื่ออาจารย์ที่ปรึกษา --- */}
-              <div className={styles.cardDetail}>
-                <User className={styles.cardIcon} style={{ width: '16px', height: '16px' }} />
-                <span><strong>ที่ปรึกษา:</strong> {doc.advisorName || 'N/A'}</span>
-              </div>
+              {/* --- (ลบ) อาจารย์ที่ปรึกษา (ย้ายไปด้านล่าง) --- */}
               
             </div>
               {/* (ลบ) ย้าย Div ผู้แต่งจากตรงนี้ไปไว้ด้านบนแล้ว
@@ -307,6 +316,29 @@ const DocumentManagementSystem = () => {
                 <span><strong>ผู้แต่ง:</strong> {doc.author}</span>
               </div>
               */}
+          </div>
+
+          {/* (เพิ่ม) ส่วนสำหรับผู้แต่งและที่ปรึกษา - ย้ายมาไว้ใต้รูป */}
+          <div className={styles.cardAuthorSection} style={{ 
+              marginTop: '15px', 
+              paddingTop: '10px', 
+              borderTop: '1px solid #f0f0f0', 
+              display: 'flex', 
+              flexDirection: 'column', 
+              gap: '8px', 
+              fontSize: '14px' 
+          }}>
+            {/* --- (ย้ายมาไว้ตรงนี้) --- */}
+            <div className={styles.cardDetail}>
+              <User className={styles.cardIcon} style={{ width: '16px', height: '16px' }} />
+              <span><strong>ผู้แต่ง:</strong> {doc.author}</span>
+            </div>
+            
+            {/* --- (ย้ายมาไว้ตรงนี้) --- */}
+            <div className={styles.cardDetail}>
+              <User className={styles.cardIcon} style={{ width: '16px', height: '16px' }} />
+              <span><strong>ที่ปรึกษา:</strong> {doc.advisorName || 'N/A'}</span>
+            </div>
           </div>
 
           <div className={styles.filesSection}>
@@ -456,4 +488,5 @@ const DocumentManagementSystem = () => {
 };
 
 export default DocumentManagementSystem;
+
 
