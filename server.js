@@ -86,11 +86,12 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true })); // <-- เพิ่มเพื่อรองรับ Form Data จาก Multer
 
 app.get('/documents', (req, res) => {
-    // เปลี่ยนเส้นทางไปยัง API Endpoint ที่ถูกต้อง
-    // (โดยเก็บ Query Parameters เดิมไว้ด้วย)
-    const newUrl = `/api/documents?${new URLSearchParams(req.query).toString()}`;
+    // 1. ดึง Query Parameters ทั้งหมดที่แนบมากับ URL
+    const queryParams = new URLSearchParams(req.query).toString(); 
+    // 2. สร้าง URL ใหม่ที่ถูกต้อง
+    const newUrl = `/api/documents?${queryParams}`; 
     console.log(`Redirecting erroneous /documents call to: ${newUrl}`);
-    // ใช้ 307 Temporary Redirect หรือ 301 Permanent Redirect
+    // 3. สั่งเปลี่ยนเส้นทาง (Temporary Redirect)
     res.redirect(307, newUrl); 
 });
 
