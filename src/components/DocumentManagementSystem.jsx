@@ -250,15 +250,19 @@ const DocumentManagementSystem = () => {
             
             {/* 1. รูปภาพหน้าปก (ซ้ายมือ) */}
             <div className={styles.frontFaceContainer} style={{ width: '120px', minWidth: '120px', height: '170px', overflow: 'hidden', borderRadius: '4px', border: '1px solid #eee' }}>
-                {doc.front_face_url ? (
-                    <img 
-                        src={doc.front_face_url} 
-                        alt={`หน้าปกโครงงาน: ${doc.title}`} 
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        // จัดการข้อผิดพลาดในการโหลดรูปภาพ
-                        onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.closest('div').innerHTML = '<div style="width:100%; height:100%; background:#f3f4f6; display:flex; align-items:center; justify-content:center; font-size:12px; color:#9ca3af; text-align:center;">Load Error</div>'; }} 
-                    />
-                ) : (
+              {doc.front_face_url ? (
+                  <img 
+                      src={doc.front_face_url} 
+                      alt={`หน้าปกโครงงาน: ${doc.title}`} 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            // แก้ไข: ให้จัดการแสดงผลเป็นกล่องข้อความทันทีเมื่อโหลดไม่ได้
+                      onError={(e) => { 
+                          e.target.onerror = null; 
+                          e.target.style.display = 'none'; 
+                          e.target.closest('div').innerHTML = '<div style="width:100%; height:100%; background:#f3f4f6; display:flex; align-items:center; justify-content:center; font-size:12px; color:#9ca3af; text-align:center;">Load Error</div>'; 
+                      }} 
+                  />
+              ) : (
                     <div style={{ width: '100%', height: '100%', backgroundColor: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontSize: '12px', textAlign: 'center' }}>
                         [ ไม่มีหน้าปก ]
                     </div>
