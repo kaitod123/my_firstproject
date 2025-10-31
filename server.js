@@ -54,7 +54,8 @@ const s3Client = new S3Client({
 
 // (สำคัญ!) ตั้งค่า CORS ให้ถูกต้อง
 const corsOptions = {
-  origin: 'https.my-firstprojectdeploysohard.onrender.com' 
+  // (แก้ไข) ลบ 'S' ที่เกินมาจาก 'httpsS://'
+  origin: 'https://my-firstprojectdeploysohard.onrender.com' 
 };
 app.use(cors(corsOptions)); 
     
@@ -1079,3 +1080,4 @@ app.use((err, req, res, next) => {
         errorDetails: process.env.NODE_ENV === 'development' ? err.stack : 'Error details hidden in production.'
     });
 });
+
