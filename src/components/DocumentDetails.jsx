@@ -231,34 +231,62 @@ const DocumentDetails = () => {
                   <h2>ไฟล์แนบ</h2>
                   {processedFiles.length > 0 ? (
                     <div className={tableStyles.fileTableContainer}>
+                      
+                      {/* (!! แก้ไข !!) 
+                        1. table-layout: fixed และ width: 100% (คงเดิม)
+                        2. เพิ่ม style word-wrap: break-word เพื่อความแน่นอน 
+                      */}
                       <table 
                         className={tableStyles.fileTable}
-                        style={{ tableLayout: 'fixed', width: '100%' }}
+                        style={{ tableLayout: 'fixed', width: '100%', wordWrap: 'break-word' }}
                       >
                         <thead>
                           <tr>
-                            <th>ชื่อ</th>
-                            <th>PDF</th>
-                            <th>DOCX</th>
-                            <th>ZIP,RAR</th>
-                            <th>EXE</th>
-                            <th>PSD</th>
-                            <th>JPG/PNG</th>
+                            {/* (!! แก้ไข !!) 
+                              1. กำหนดความกว้างคอลัมน์ชื่อไฟล์ให้ชัดเจน (เช่น 30%)
+                              2. จัดข้อความชิดซ้าย
+                            */}
+                            <th style={{ width: '30%', textAlign: 'left' }}>ชื่อ</th>
+                            
+                            {/* (!! แก้ไข !!) 
+                              1. กำหนดความกว้างอัตโนมัติสำหรับคอลัมน์ที่เหลือ
+                              2. จัดกลาง
+                            */}
+                            <th style={{ width: '10%', textAlign: 'center' }}>PDF</th>
+                            <th style={{ width: '10%', textAlign: 'center' }}>DOCX</th>
+                            <th style={{ width: '10%', textAlign: 'center' }}>ZIP,RAR</th>
+                            <th style={{ width: '10%', textAlign: 'center' }}>EXE</th>
+                            <th style={{ width: '10%', textAlign: 'center' }}>PSD</th>
+                            <th style={{ width: '10%', textAlign: 'center' }}>JPG/PNG</th>
                             
                           </tr>
                         </thead>
                         <tbody>
                           {processedFiles.map((file, index) => (
                             <tr key={index}>
-                              <td className={tableStyles.fileTableName}>{file.name}</td>
-                              <td>{renderDownloadLink(file.pdf)}</td>
-                              <td>{renderDownloadLink(file.docx)}</td>
-                              <td>{renderDownloadLink(file.zip)}
-                                  {renderDownloadLink(file.rar)}
+                              {/* (!! แก้ไข !!) 
+                                1. เพิ่ม style word-break: 'break-all' เพื่อบังคับตัดคำที่ยาวมากๆ
+                                2. จัดข้อความชิดซ้าย
+                              */}
+                              <td 
+                                className={tableStyles.fileTableName} 
+                                style={{ wordBreak: 'break-all', textAlign: 'left' }}
+                              >
+                                {file.name}
                               </td>
-                              <td>{renderDownloadLink(file.exe)}</td>
-                              <td>{renderDownloadLink(file.psd)}</td>
-                              <td>
+                              
+                              {/* (!! แก้ไข !!) 
+                                1. จัดกลาง 
+                              */}
+                              <td style={{ textAlign: 'center' }}>{renderDownloadLink(file.pdf)}</td>
+                              <td style={{ textAlign: 'center' }}>{renderDownloadLink(file.docx)}</td>
+                              <td style={{ textAlign: 'center' }}>
+                                {renderDownloadLink(file.zip)}
+                                {renderDownloadLink(file.rar)}
+                              </td>
+                              <td style={{ textAlign: 'center' }}>{renderDownloadLink(file.exe)}</td>
+                              <td style={{ textAlign: 'center' }}>{renderDownloadLink(file.psd)}</td>
+                              <td style={{ textAlign: 'center' }}>
                                 {renderDownloadLink(file.jpg)}
                                 {renderDownloadLink(file.png)}
                               </td>
@@ -286,3 +314,4 @@ const DocumentDetails = () => {
 };
 
 export default DocumentDetails;
+
