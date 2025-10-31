@@ -82,7 +82,6 @@ const ProfessorDocumentDetails = () => {
         
         switch (extension) {
             case 'pdf': fileGroup.pdf = s3Key; break;
-            case 'doc': fileGroup.doc = s3Key; break;
             case 'docx': fileGroup.docx = s3Key; break;
             case 'zip': fileGroup.zip = s3Key; break;
             case 'rar': fileGroup.rar = s3Key; break;
@@ -242,7 +241,6 @@ const ProfessorDocumentDetails = () => {
                   <tr>
                     <th>ชื่อ</th>
                     <th>PDF</th>
-                    <th>DOC</th>
                     <th>DOCX</th>
                     <th>ZIP</th>
                     <th>RAR</th>
@@ -258,8 +256,9 @@ const ProfessorDocumentDetails = () => {
                       <td>{renderDownloadLink(file.pdf)}</td>
                       <td>{renderDownloadLink(file.doc)}</td>
                       <td>{renderDownloadLink(file.docx)}</td>
-                      <td>{renderDownloadLink(file.zip)}</td>
-                      <td>{renderDownloadLink(file.rar)}</td>
+                      <td>{renderDownloadLink(file.zip)}
+                          {renderDownloadLink(file.rar)}
+                      </td>
                       <td>{renderDownloadLink(file.exe)}</td>
                       <td>{renderDownloadLink(file.psd)}</td>
                       <td>

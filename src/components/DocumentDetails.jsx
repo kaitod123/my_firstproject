@@ -80,7 +80,6 @@ const DocumentDetails = () => {
         
         switch (extension) {
             case 'pdf': fileGroup.pdf = s3Key; break;
-            case 'doc': fileGroup.doc = s3Key; break;
             case 'docx': fileGroup.docx = s3Key; break;
             case 'zip': fileGroup.zip = s3Key; break;
             case 'rar': fileGroup.rar = s3Key; break;
@@ -238,8 +237,7 @@ const DocumentDetails = () => {
                             <th>ชื่อ</th>
                             <th>PDF</th>
                             <th>DOCX</th>
-                            <th>ZIP</th>
-                            <th>RAR</th>
+                            <th>ZIP,RAR</th>
                             <th>EXE</th>
                             <th>PSD</th>
                             <th>JPG/PNG</th>
@@ -252,8 +250,9 @@ const DocumentDetails = () => {
                               <td className={tableStyles.fileTableName}>{file.name}</td>
                               <td>{renderDownloadLink(file.pdf)}</td>
                               <td>{renderDownloadLink(file.docx)}</td>
-                              <td>{renderDownloadLink(file.zip)}</td>
-                              <td>{renderDownloadLink(file.rar)}</td>
+                              <td>{renderDownloadLink(file.zip)}
+                                  {renderDownloadLink(file.rar)}
+                              </td>
                               <td>{renderDownloadLink(file.exe)}</td>
                               <td>{renderDownloadLink(file.psd)}</td>
                               <td>

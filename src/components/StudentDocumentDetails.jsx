@@ -255,7 +255,6 @@ const StudentDocumentDetails = () => {
                   <tr>
                     <th>ชื่อ</th>
                     <th>PDF</th>
-                    <th>DOC</th>
                     <th>DOCX</th>
                     <th>ZIP</th>
                     <th>RAR</th>
@@ -269,10 +268,10 @@ const StudentDocumentDetails = () => {
                     <tr key={index}>
                       <td className={tableStyles.fileTableName}>{file.name}</td>
                       <td>{renderDownloadLink(file.pdf)}</td>
-                      <td>{renderDownloadLink(file.doc)}</td>
                       <td>{renderDownloadLink(file.docx)}</td>
-                      <td>{renderDownloadLink(file.zip)}</td>
-                      <td>{renderDownloadLink(file.rar)}</td>
+                      <td>{renderDownloadLink(file.zip)}
+                          {renderDownloadLink(file.rar)}
+                      </td>
                       <td>{renderDownloadLink(file.exe)}</td>
                       <td>{renderDownloadLink(file.psd)}</td>
                       <td>
