@@ -39,25 +39,25 @@ const DocumentDetails = () => {
    const processFilesForTable = (files) => {
     const fileGroupMap = new Map();
 
-    // *** ตรวจสอบว่าเป็น Object หรือไม่ ก่อนเข้าถึง Object.values ***
+    // *** FIX: ตรวจสอบว่าเป็น Object หรือไม่ ***
     if (!files || typeof files !== 'object' || Array.isArray(files)) {
         return [];
     }
 
     Object.values(files).flat().forEach(fileName => {
-        // ตรวจสอบว่า fileName เป็น String และมีค่าที่ถูกต้อง
         if (typeof fileName !== 'string' || !fileName) return; 
         
-        // *** FIX: แยก S3 Key ออกจาก URL เต็มๆ ***
+        // --- ดึง S3 Key ---
         let s3Key = fileName;
         try {
+            // หากเป็น URL เต็ม (https://bucket...)
             const url = new URL(fileName);
             // Key จะเป็น /projects/field/timestamp-filename.ext (ต้องลบ / ตัวแรกออก)
             s3Key = url.pathname.substring(1); 
         } catch (e) {
             // หากไม่ใช่ URL ที่ถูกต้อง (อาจจะเป็น S3 Key อยู่แล้ว) ใช้ค่าเดิม
         }
-
+        
         // แยกชื่อไฟล์เพื่อจัดกลุ่ม
         const urlParts = fileName.split('/');
         const nameWithTimestamp = urlParts[urlParts.length - 1]; 
@@ -86,9 +86,14 @@ const DocumentDetails = () => {
             case 'rar': fileGroup.rar = s3Key; break;
             case 'exe': fileGroup.exe = s3Key; break;
             case 'psd': fileGroup.psd = s3Key; break;
+            // *** FIX: รวม jpg/jpeg/png ให้เป็น field เดียวกัน ***
             case 'jpg':
-            case 'jpeg': fileGroup.jpg = s3Key; break;
-            case 'png': fileGroup.png = s3Key; break; 
+            case 'jpeg': 
+                fileGroup.jpg = s3Key; 
+                break;
+            case 'png':
+                fileGroup.png = s3Key;
+                break;
             default:
                 break;
         }
@@ -125,8 +130,8 @@ const DocumentDetails = () => {
           onClick={() => navigate(-1)} 
           className={styles.backButton}
         >
-          <ChevronLeft /> กลับไปยังหน้าก่อนหน้า
-        </button>
+          <ChevronLeft /> กลับไปยังหน้าก่อนหน้า
+        </button>
       </div>
     );
   }
@@ -142,7 +147,7 @@ const DocumentDetails = () => {
     );
   }
 
-  // *** แก้ไข: เชื่อถือ Backend ว่า file_paths เป็น Object หรือ String (ถ้าเป็น String ให้ Parse) ***
+  // *** FIX: ตรรกะการ Parse JSON ถูกต้องแล้ว (เชื่อว่า Backend ส่งมาเป็น Object หรือ String JSON) ***
   let files = {};
   if (document.file_paths) {
       try {

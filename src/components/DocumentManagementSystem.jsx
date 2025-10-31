@@ -23,7 +23,7 @@ const DocumentManagementSystem = () => {
   const [yearFilter, setYearFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = null;
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -110,7 +110,7 @@ const DocumentManagementSystem = () => {
             
             try {
                 if (doc.file_paths) {
-                    // *** แก้ไข: Parse JSON ถ้าเป็น String (กรณี DB เก่า) ถ้าเป็น Object (กรณี DB ใหม่) ให้ใช้ Object เลย ***
+                    // *** FIX: Parse JSON ถ้าเป็น String (กรณี DB เก่า) ถ้าเป็น Object (กรณี DB ใหม่) ให้ใช้ Object เลย ***
                     filePathsObject = (typeof doc.file_paths === 'string' && doc.file_paths.trim().startsWith('{')) 
                                         ? JSON.parse(doc.file_paths) 
                                         : doc.file_paths;
@@ -249,7 +249,7 @@ const DocumentManagementSystem = () => {
           </h3>
 
           {/* *** ส่วนที่แก้ไข: จัดวางรูปภาพและรายละเอียดเคียงข้างกัน *** */}
-          <div style={{ display: 'flex', gap: '15px', marginBottom: '15px', minHeight: '150px' }}>
+          <div style={{ display: 'flex', gap: '15px', marginBottom: '15px', minHeight: '170px' }}>
             
             {/* 1. รูปภาพหน้าปก (ซ้ายมือ) */}
             <div className={styles.frontFaceContainer} style={{ width: '120px', minWidth: '120px', height: '170px', overflow: 'hidden', borderRadius: '4px', border: '1px solid #eee' }}>
@@ -261,7 +261,6 @@ const DocumentManagementSystem = () => {
             // การจัดการข้อผิดพลาด: แสดงกล่องข้อความแทนการโหลดไฟล์อื่น
             onError={(e) => { 
                 e.target.onerror = null; 
-                e.target.style.display = 'none'; 
                 e.target.closest('div').innerHTML = '<div style="width:100%; height:100%; background:#f3f4f6; display:flex; align-items:center; justify-content:center; font-size:12px; color:#9ca3af; text-align:center;">Load Error</div>'; 
             }} 
         />

@@ -101,9 +101,14 @@ const StudentDocumentDetails = () => {
             case 'rar': fileGroup.rar = s3Key; break;
             case 'exe': fileGroup.exe = s3Key; break;
             case 'psd': fileGroup.psd = s3Key; break;
-            case 'jpg': 
-            case 'jpeg': fileGroup.jpg = s3Key; break;
-            case 'png': fileGroup.png = s3Key; break;
+            // *** FIX: รวม jpg/jpeg/png ให้เป็น field เดียวกัน ***
+            case 'jpg':
+            case 'jpeg': 
+                fileGroup.jpg = s3Key; 
+                break;
+            case 'png':
+                fileGroup.png = s3Key;
+                break;
             default: 
                 break;
         }
@@ -130,8 +135,8 @@ const StudentDocumentDetails = () => {
           onClick={() => navigate(-1)} 
           className={styles.backButton}
         >
-          <ChevronLeft /> กลับไปยังหน้าก่อนหน้า
-        </button>
+          <ChevronLeft /> กลับไปยังหน้าก่อนหน้า
+        </button>
       </div>
     );
   }
