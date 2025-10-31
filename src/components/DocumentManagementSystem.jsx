@@ -237,19 +237,22 @@ const DocumentManagementSystem = () => {
         {/* (แก้ไข) ให้ cardContent เป็น flex column และยืดเต็ม */}
         <div className={styles.cardContent} style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '15px' }}> 
           
-          {/* (ลบ) ชื่อโครงงาน (ย้ายไปไว้ใน cardDetails แล้ว) */}
-          {/* <h3 
+          {/* --- (ย้ายมาไว้ตรงนี้) --- */}
+          <h3 
             className={styles.cardTitle}
             style={{ 
-              marginBottom: '10px',
               whiteSpace: 'nowrap', 
               overflow: 'hidden', 
               textOverflow: 'ellipsis', 
-              maxWidth: '100%' 
+              maxWidth: '100%',
+              fontSize: '16px', 
+              lineHeight: '1.4',
+              marginBottom: '10px' // (เพิ่ม) เพิ่มระยะห่างด้านล่าง
             }}
             title={doc.title} 
           >
-          {/* </h3> */}
+            {doc.title}
+          </h3>
 
           {/* *** ส่วนที่แก้ไข: จัดวางรูปภาพและรายละเอียดเคียงข้างกัน *** */}
           {/* (แก้ไข) ปรับ minHeight ให้เท่ากับความสูงของรูปภาพ (170px) */}
@@ -278,23 +281,7 @@ const DocumentManagementSystem = () => {
             {/* 2. รายละเอียดเอกสาร (ขวามือ) */}
             <div className={styles.cardDetails} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '14px' }}>
               
-              {/* --- (ย้ายมาไว้ตรงนี้) --- */}
-              <h3 
-                className={styles.cardTitle}
-                style={{ 
-                  // (ลบ) เอา margin-bottom ออก เพราะ gap: 8px จะจัดการแทน
-                  whiteSpace: 'nowrap', 
-                  overflow: 'hidden', 
-                  textOverflow: 'ellipsis', 
-                  maxWidth: '100%',
-                  // (เพิ่ม) ปรับ font-size ให้เข้ากับ details
-                  fontSize: '16px', 
-                  lineHeight: '1.4'
-                }}
-                title={doc.title} 
-              >
-                {doc.title}
-              </h3>
+              {/* --- (ลบ) ย้าย Title ออกไปแล้ว --- */}
 
               <div className={styles.cardDetail}>
                 <Clock className={styles.cardIcon} style={{ width: '16px', height: '16px' }} />
@@ -451,7 +438,7 @@ const DocumentManagementSystem = () => {
           {error ? (
               <div className={styles.errorMessage}>
                   <p>Error: {error}</p>
-                  <button onClick={reloadDocuments} className={styles.reloadButton}>ลองใหม่อีกครั้ง</button>
+                  <button onClick={reloadDocuments} className={styles.reloadButton}>ลองใหม่อGีกครั้ง</button>
               </div>
           ) : loading ? (
             <LoadingSpinner />
