@@ -237,7 +237,6 @@ const DocumentManagementSystem = () => {
         {/* (แก้ไข) ให้ cardContent เป็น flex column และยืดเต็ม */}
         <div className={styles.cardContent} style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '15px' }}> 
           
-          {/* --- (ย้ายมาไว้ตรงนี้) --- */}
           <h3 
             className={styles.cardTitle}
             style={{ 
@@ -291,18 +290,7 @@ const DocumentManagementSystem = () => {
                 <FileText className={styles.cardIcon} style={{ width: '16px', height: '16px' }} />
                 <span><strong>ปีที่เผยแพร่:</strong> {doc.publish_year ? doc.publish_year + 543 : 'N/A'} </span>
               </div>
-              
-              {/* --- (ลบ) ผู้แต่ง (ย้ายไปด้านล่าง) --- */}
-              
-              {/* --- (ลบ) อาจารย์ที่ปรึกษา (ย้ายไปด้านล่าง) --- */}
-              
             </div>
-              {/* (ลบ) ย้าย Div ผู้แต่งจากตรงนี้ไปไว้ด้านบนแล้ว
-              <div className={styles.cardDetail}>
-                <User className={styles.cardIcon} style={{ width: '16px', height: '16px' }} />
-                <span><strong>ผู้แต่ง:</strong> {doc.author}</span>
-              </div>
-              */}
           </div>
 
           {/* (เพิ่ม) ส่วนสำหรับผู้แต่งและที่ปรึกษา - ย้ายมาไว้ใต้รูป */}
@@ -315,24 +303,16 @@ const DocumentManagementSystem = () => {
               gap: '8px', 
               fontSize: '14px' 
           }}>
-            {/* --- (ย้ายมาไว้ตรงนี้) --- */}
             <div className={styles.cardDetail}>
               <User className={styles.cardIcon} style={{ width: '16px', height: '16px' }} />
               <span><strong>ผู้แต่ง:</strong> {doc.author}</span>
             </div>
-            
-            {/* --- (ย้ายมาไว้ตรงนี้) --- */}
             <div className={styles.cardDetail}>
               <User className={styles.cardIcon} style={{ width: '16px', height: '16px' }} />
-              <span><strong>ที่ปรึกษา:</strong> {doc.advisorName || 'N/A'}</span>
+              {/* (แก้ไข) ตรวจสอบทั้ง doc.advisorName (N ใหญ่) และ doc.advisorname (n เล็ก) */}
+              <span><strong>ที่ปรึกษา:</strong> {doc.advisorName || doc.advisorname || 'N/A'}</span>
             </div>
           </div>
-
-          <div className={styles.filesSection}>
-            {/* ... (ส่วน filesSection ไม่เปลี่ยนแปลง) ... */}
-          </div>
-
-          {/* (เพิ่ม) style={{ marginTop: 'auto' }} เพื่อดัน tag ลงล่างสุด */}
           <div 
             className={styles.categoryTagsContainer} 
             style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: 'auto', paddingTop: '10px', borderTop: '1px solid #eee' }}
