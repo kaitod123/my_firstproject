@@ -84,16 +84,13 @@ pool.connect((err, client, release) => {
 // Middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true })); // <-- เพิ่มเพื่อรองรับ Form Data จาก Multer
+// แก้ไข: ใช้ __dirname เพื่อเสิร์ฟไฟล์ Static อย่างถูกต้อง
+// Only serve local 'uploads' if they exist and are needed (likely not with S3)
+// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-app.get('/documents', (req, res) => {
-    // 1. ดึง Query Parameters ทั้งหมดที่แนบมากับ URL
-    const queryParams = new URLSearchParams(req.query).toString(); 
-    // 2. สร้าง URL ใหม่ที่ถูกต้อง
-    const newUrl = `/api/documents?${queryParams}`; 
-    console.log(`Redirecting erroneous /documents call to: ${newUrl}`);
-    // 3. สั่งเปลี่ยนเส้นทาง (Temporary Redirect)
-    res.redirect(307, newUrl); 
-});
+// ===============================================
+// API for Users (CRUD Operations) - (แก้ไขเป็น pg)
+// ===============================================
 
 // GET: ดึงข้อมูลผู้ใช้ทั้งหมด (คืนค่า Logic เดิม)
 app.get('/api/users', async (req, res, next) => { 
@@ -355,7 +352,7 @@ app.get('/api/documents', async (req, res, next) => { // <-- Add next
     const statusFilter = req.query.status || ''; 
     const limit = req.query.limit || null;
 
-let sql = `
+    let sql = `
         SELECT 
             id, title, title_eng, author, department, advisorName, 
             abstract, keywords, document_type, publish_year, approval_status, is_active,
@@ -628,6 +625,7 @@ app.get('/api/professor/documents/:id', async (req, res, next) => { // <-- Add n
 // **********************************************
 // Corrected API for Download using Wildcard
 // **********************************************
+// IMPORTANT: Reverting to Named Parameter only as the Wildcard was causing PathError crash
 app.get('/api/download/:s3Key', async (req, res, next) => { 
     // The S3 key is everything after '/api/download/'
     // Use a custom regex pattern on the route definition if simple named parameter is not enough
