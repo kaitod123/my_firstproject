@@ -24,7 +24,7 @@ const DocumentManagementSystem = () => {
   const [yearFilter, setYearFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [loading, setLoading] = useState(true);
-  // (แก้ไข) FIX: ใช้ useState(null) แทนการกำหนดค่า = null โดยตรง
+  // (แก้ไข) FIX: ใช้ useState(null)
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -90,8 +90,6 @@ const DocumentManagementSystem = () => {
         }
         if (typeFilter) queryParams.append('type', typeFilter); 
 
-        // (เพิ่ม) ดึง advisorName มาด้วย (ถ้า API /api/documents ยังไม่ส่งมา)
-        // หมายเหตุ: API /api/documents ใน server.js (บรรทัด 382) ส่ง advisorName มาแล้ว
         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/documents?${queryParams.toString()}`);
 
         if (!response.ok) {
@@ -109,19 +107,28 @@ const DocumentManagementSystem = () => {
                                 .filter(cat => cat.length > 0); 
             }
 
-            let frontFaceUrl = null;
+            // (!! แก้ไข !!) เราจะเก็บ S3 Key (Path) แทน S3 URL เต็ม
+            let frontFaceKey = null; 
             let filePathsObject = {};
             
             try {
                 if (doc.file_paths) {
-                    // *** FIX: Parse JSON ถ้าเป็น String (กรณี DB เก่า) ถ้าเป็น Object (กรณี DB ใหม่) ให้ใช้ Object เลย ***
                     filePathsObject = (typeof doc.file_paths === 'string' && doc.file_paths.trim().startsWith('{')) 
                                         ? JSON.parse(doc.file_paths) 
                                         : doc.file_paths;
 
-                    // front_face เป็น array ของ URL S3 เราใช้ตัวแรก
                     if (filePathsObject && filePathsObject.front_face && filePathsObject.front_face.length > 0) {
-                        frontFaceUrl = filePathsObject.front_face[0];
+                        const fullUrl = filePathsObject.front_face[0]; // นี่คือ URL เต็ม (https://...)
+                        
+                        // (!! แก้ไข !!) แปลง URL เต็ม ให้เป็น S3 Key (ลบ https://.../ ออก)
+                        try {
+                             const url = new URL(fullUrl);
+                             // Key จะเป็น /projects/field/timestamp-filename.ext (ต้องลบ / ตัวแรกออก)
+                             frontFaceKey = url.pathname.substring(1); // ได้ "projects/front_face/..."
+                        } catch (e) {
+                             // ถ้าไม่ใช่ URL (อาจจะเป็น Key อยู่แล้ว)
+                             frontFaceKey = fullUrl;
+                        }
                     }
                 }
             } catch (e) {
@@ -132,8 +139,9 @@ const DocumentManagementSystem = () => {
                 ...doc,
                 keywords: doc.keywords || '',
                 categories: categories, 
-                files: [], // ไม่จำเป็นต้องใช้ในหน้านี้
-                front_face_url: frontFaceUrl // <<< เพิ่ม URL หน้าปกที่นี่
+                files: [], 
+                // (!! แก้ไข !!) เก็บ S3 Key แทน URL
+                front_face_key: frontFaceKey 
             };
         });
 
@@ -234,7 +242,6 @@ const DocumentManagementSystem = () => {
         }}
       >
         <div className={styles.cardHeader}></div>
-        {/* (แก้ไข) ให้ cardContent เป็น flex column และยืดเต็ม */}
         <div className={styles.cardContent} style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '15px' }}> 
           
           <h3 
@@ -246,42 +253,40 @@ const DocumentManagementSystem = () => {
               maxWidth: '100%',
               fontSize: '16px', 
               lineHeight: '1.4',
-              marginBottom: '10px' // (เพิ่ม) เพิ่มระยะห่างด้านล่าง
+              marginBottom: '10px' 
             }}
             title={doc.title} 
           >
             {doc.title}
           </h3>
 
-          {/* *** ส่วนที่แก้ไข: จัดวางรูปภาพและรายละเอียดเคียงข้างกัน *** */}
-          {/* (แก้ไข) ปรับ minHeight ให้เท่ากับความสูงของรูปภาพ (170px) */}
           <div style={{ display: 'flex', gap: '15px', marginBottom: '10px', minHeight: '170px' }}> 
             
             {/* 1. รูปภาพหน้าปก (ซ้ายมือ) */}
             <div className={styles.frontFaceContainer} style={{ width: '120px', minWidth: '120px', height: '170px', overflow: 'hidden', borderRadius: '4px', border: '1px solid #eee' }}>
-    {doc.front_face_url ? (
-        <img 
-            src={doc.front_face_url} 
-            alt={`หน้าปกโครงงาน: ${doc.title}`} 
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            // การจัดการข้อผิดพลาด: แสดงกล่องข้อความแทนการโหลดไฟล์อื่น
-            onError={(e) => { 
-                e.target.onerror = null; 
-                e.target.closest('div').innerHTML = '<div style="width:100%; height:100%; background:#f3f4f6; display:flex; align-items:center; justify-content:center; font-size:12px; color:#9ca3af; text-align:center;">Load Error</div>'; 
-            }} 
-        />
-    ) : (
-                    <div style={{ width: '100%', height: '100%', backgroundColor: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontSize: '12px', textAlign: 'center' }}>
-                        [ ไม่มีหน้าปก ]
-                    </div>
-                )}
+              
+              {/* (!! แก้ไข !!) ตรวจสอบ doc.front_face_key (S3 Key) */}
+              {doc.front_face_key ? (
+                  <img 
+                      // (!! แก้ไข !!) src ชี้ไปที่ API Download ของเราแทน S3 URL ตรงๆ
+                      src={`${import.meta.env.VITE_API_URL}/api/download/${doc.front_face_key}`} 
+                      alt={`หน้าปกโครงงาน: ${doc.title}`} 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      onError={(e) => { 
+                          e.target.onerror = null; 
+                          e.target.closest('div').innerHTML = '<div style="width:100%; height:100%; background:#f3f4f6; display:flex; align-items:center; justify-content:center; font-size:12px; color:#9ca3af; text-align:center;">Load Error</div>'; 
+                      }} 
+                  />
+              ) : (
+                  <div style={{ width: '100%', height: '100%', backgroundColor: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontSize: '12px', textAlign: 'center' }}>
+                      [ ไม่มีหน้าปก ]
+                  </div>
+              )}
             </div>
 
             {/* 2. รายละเอียดเอกสาร (ขวามือ) */}
             <div className={styles.cardDetails} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '14px' }}>
               
-              {/* --- (ลบ) ย้าย Title ออกไปแล้ว --- */}
-
               <div className={styles.cardDetail}>
                 <Clock className={styles.cardIcon} style={{ width: '16px', height: '16px' }} />
                 <span><strong>สาขาวิชา:</strong> {doc.department}</span>
@@ -293,7 +298,6 @@ const DocumentManagementSystem = () => {
             </div>
           </div>
 
-          {/* (เพิ่ม) ส่วนสำหรับผู้แต่งและที่ปรึกษา - ย้ายมาไว้ใต้รูป */}
           <div className={styles.cardAuthorSection} style={{ 
               marginTop: '15px', 
               paddingTop: '10px', 
@@ -309,7 +313,6 @@ const DocumentManagementSystem = () => {
             </div>
             <div className={styles.cardDetail}>
               <User className={styles.cardIcon} style={{ width: '16px', height: '16px' }} />
-              {/* (แก้ไข) ตรวจสอบทั้ง doc.advisorName (N ใหญ่) และ doc.advisorname (n เล็ก) */}
               <span><strong>ที่ปรึกษา:</strong> {doc.advisorName || doc.advisorname || 'N/A'}</span>
             </div>
           </div>
@@ -344,14 +347,10 @@ const DocumentManagementSystem = () => {
   );
 
   return (
-    // (แก้ไข) 1. เปลี่ยน div container ให้เป็น flex column
     <div style={{ width: '100%', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* (แก้ไข) 2. ใช้ className เดิม แต่เพิ่ม style เข้าไป */}
       <div className={styles.container} style={{ flex: 1 }}>
-        {/* (แก้ไข) 3. จำกัดความกว้างสูงสุดและจัดกลาง */}
         <div className={styles.wrapper} style={{ width: '100%', maxWidth: '1280px', margin: '0 auto', padding: '20px' }}>
           <div className={styles.searchSection}>
-            {/* (แก้ไข) 4. ทำให้ search bar เป็น flex responsive */}
             <form className={styles.searchBar} onSubmit={handleSearch} style={{ display: 'flex', width: '100%', gap: '10px' }}>
               <input
                 type="text"
@@ -359,7 +358,7 @@ const DocumentManagementSystem = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className={styles.searchInput}
-                style={{ flex: 1, minWidth: 0 }} // ให้ input ยืดหดได้
+                style={{ flex: 1, minWidth: 0 }} 
               />
               <button type="submit" className={styles.searchButton} aria-label="Search">
                 <Search style={{ width: '20px', height: '20px' }} />
@@ -367,7 +366,6 @@ const DocumentManagementSystem = () => {
               </button>
             </form>
             
-            {/* (แก้ไข) 5. ทำให้ filter container เป็น flex-wrap */}
             <div className={styles.filterContainer} style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', marginTop: '15px' }}>
               <div className={styles.filterLabel}>
                 <Filter style={{width: '16px', height: '16px', color: '#6b7280'}} />
@@ -377,7 +375,7 @@ const DocumentManagementSystem = () => {
                 className={styles.select}
                 value={departmentFilter}
                 onChange={(e) => setDepartmentFilter(e.target.value)}
-                style={{ flex: 1, minWidth: '150px' }} // (เพิ่ม) ให้ select ยืดหดได้
+                style={{ flex: 1, minWidth: '150px' }} 
               >
                 <option value="">ทุกสาขา</option>
                 <option value="วิทยาการคอมพิวเตอร์">วิทยาการคอมพิวเตอร์</option>
@@ -388,7 +386,7 @@ const DocumentManagementSystem = () => {
                 className={styles.select}
                 value={yearFilter}
                 onChange={(e) => setYearFilter(e.target.value)}
-                style={{ flex: 1, minWidth: '150px' }} // (เพิ่ม) ให้ select ยืดหดได้
+                style={{ flex: 1, minWidth: '150px' }} 
               >
                 <option value="">ทุกปี</option>
                 {generateYearOptions()}
@@ -425,12 +423,11 @@ const DocumentManagementSystem = () => {
           ) : documents.length === 0 ? (
             <NoResults />
           ) : (
-            // (แก้ไข) 6. ทำให้ documentsGrid เป็น CSS Grid ที่ responsive
             <div 
               className={styles.documentsGrid} 
               style={{ 
                 display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', // นี่คือส่วนสำคัญ
+                gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', 
                 gap: '20px', 
                 marginTop: '20px' 
               }}
@@ -442,7 +439,6 @@ const DocumentManagementSystem = () => {
           )}
         </div>
       </div>
-      {/* (แก้ไข) 7. ดัน footer ลงล่างสุด */}
       <footer className={styles.footer} style={{ marginTop: 'auto' }}>
         <p className={styles.footerText}>© 2023 University Project Hub</p>
         <div className={styles.footerLinks}>
