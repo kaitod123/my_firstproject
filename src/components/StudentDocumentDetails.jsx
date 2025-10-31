@@ -256,27 +256,42 @@ const StudentDocumentDetails = () => {
                 >
                 <thead>
                   <tr>
-                    <th>ชื่อ</th>
-                    <th>PDF</th>
-                    <th>DOCX</th>
-                    <th>ZIP/RAR</th>
-                    <th>EXE</th>
-                    <th>PSD</th>
-                    <th>JPG/PNG</th>
+                            <th style={{ width: '30%', textAlign: 'left' }}>ชื่อ</th>
+                            
+                            {/* (!! แก้ไข !!) 
+                              1. กำหนดความกว้างอัตโนมัติสำหรับคอลัมน์ที่เหลือ
+                              2. จัดกลาง
+                            */}
+                            <th style={{ width: '10%', textAlign: 'center' }}>PDF</th>
+                            <th style={{ width: '10%', textAlign: 'center' }}>DOCX</th>
+                            <th style={{ width: '10%', textAlign: 'center' }}>ZIP,RAR</th>
+                            <th style={{ width: '10%', textAlign: 'center' }}>EXE</th>
+                            <th style={{ width: '10%', textAlign: 'center' }}>PSD</th>
+                            <th style={{ width: '10%', textAlign: 'center' }}>JPG/PNG</th>
                   </tr>
                 </thead>
                 <tbody>
                   {processedFiles.map((file, index) => (
                     <tr key={index}>
-                      <td className={tableStyles.fileTableName}>{file.name}</td>
-                      <td>{renderDownloadLink(file.pdf)}</td>
-                      <td>{renderDownloadLink(file.docx)}</td>
-                      <td>{renderDownloadLink(file.zip)}
-                          {renderDownloadLink(file.rar)}
+                      <td 
+                        className={tableStyles.fileTableName} 
+                        style={{ wordBreak: 'break-all', textAlign: 'left' }}
+                      >
+                        {file.name}
                       </td>
-                      <td>{renderDownloadLink(file.exe)}</td>
-                      <td>{renderDownloadLink(file.psd)}</td>
-                      <td>
+                              
+                      {/* (!! แก้ไข !!) 
+                        1. จัดกลาง 
+                      */}
+                      <td style={{ textAlign: 'center' }}>{renderDownloadLink(file.pdf)}</td>
+                      <td style={{ textAlign: 'center' }}>{renderDownloadLink(file.docx)}</td>
+                      <td style={{ textAlign: 'center' }}>
+                        {renderDownloadLink(file.zip)}
+                        {renderDownloadLink(file.rar)}
+                      </td>
+                      <td style={{ textAlign: 'center' }}>{renderDownloadLink(file.exe)}</td>
+                      <td style={{ textAlign: 'center' }}>{renderDownloadLink(file.psd)}</td>
+                      <td style={{ textAlign: 'center' }}>
                         {renderDownloadLink(file.jpg)}
                         {renderDownloadLink(file.png)}
                       </td>
