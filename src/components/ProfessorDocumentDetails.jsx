@@ -236,7 +236,10 @@ const ProfessorDocumentDetails = () => {
           <h2>ไฟล์แนบ</h2>
           {processedFiles.length > 0 ? (
             <div className={tableStyles.fileTableContainer}>
-              <table className={tableStyles.fileTable}>
+                <table 
+                        className={tableStyles.fileTable}
+                        style={{ tableLayout: 'fixed', width: '100%' }}
+                >
                 <thead>
                   <tr>
                     <th>ชื่อ</th>
