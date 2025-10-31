@@ -71,7 +71,7 @@ const DocumentDetails = () => {
 
         if (!fileGroupMap.has(baseName)) {
             fileGroupMap.set(baseName, { 
-                name: baseName, pdf: null, doc: null, docx: null, 
+                name: baseName, pdf: null, docx: null, 
                 zip: null, rar: null, exe: null, psd: null, jpg: null, png: null 
             });
         }
