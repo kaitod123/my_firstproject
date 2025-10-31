@@ -23,7 +23,7 @@ const DocumentManagementSystem = () => {
   const [yearFilter, setYearFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = null;
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
 
