@@ -270,10 +270,7 @@ const DocumentManagementSystem = () => {
                     </div>
                 )}
             </div>
-              <div className={styles.cardDetail}>
-                <User className={styles.cardIcon} style={{ width: '16px', height: '16px' }} />
-                <span><strong>ผู้แต่ง:</strong> {doc.author}</span>
-              </div>
+
             {/* 2. รายละเอียดเอกสาร (ขวามือ) */}
             <div className={styles.cardDetails} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '14px' }}>
               
@@ -287,6 +284,10 @@ const DocumentManagementSystem = () => {
                 <span><strong>ปีที่เผยแพร่:</strong> {doc.publish_year ? doc.publish_year + 543 : 'N/A'} </span>
               </div>
             </div>
+              <div className={styles.cardDetail}>
+                <User className={styles.cardIcon} style={{ width: '16px', height: '16px' }} />
+                <span><strong>ผู้แต่ง:</strong> {doc.author}</span>
+              </div>
           </div>
 
           <div className={styles.filesSection}>
