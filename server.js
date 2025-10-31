@@ -626,9 +626,11 @@ app.get('/api/professor/documents/:id', async (req, res, next) => { // <-- Add n
 // (!!!) CORRECTED API FOR DOWNLOAD (!!!)
 // **********************************************
 // (แก้ไข) FIX: 
-// 1. เปลี่ยนไปใช้ Wildcard (.*) แบบไม่ระบุชื่อ เพื่อหลีกเลี่ยง PathError
-// 2. ดึง s3Key จาก req.params[0]
-app.get('/api/download/(.*)', async (req, res, next) => { 
+// 1. เปลี่ยนจาก String Path เป็น RegExp Object ( /.../ )
+//    เพื่อหลีกเลี่ยง PathError [TypeError]: Missing parameter name
+//    RegExp นี้จะจับทุกอย่างที่ตามหลัง /api/download/
+// 2. ดึง s3Key จาก req.params[0] (เหมือนเดิม)
+app.get(/\/api\/download\/(.*)/, async (req, res, next) => { 
     // (แก้ไข) ดึง s3Key จาก req.params[0] (index 0)
     const s3Key = req.params[0]; 
     
@@ -1077,4 +1079,3 @@ app.use((err, req, res, next) => {
         errorDetails: process.env.NODE_ENV === 'development' ? err.stack : 'Error details hidden in production.'
     });
 });
-
