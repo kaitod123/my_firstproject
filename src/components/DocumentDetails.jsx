@@ -39,7 +39,7 @@ const DocumentDetails = () => {
    const processFilesForTable = (files) => {
     const fileGroupMap = new Map();
 
-    // *** แก้ไข: ตรวจสอบว่าเป็น Object หรือไม่ ก่อนเข้าถึง Object.values ***
+    // *** ตรวจสอบว่าเป็น Object หรือไม่ ก่อนเข้าถึง Object.values ***
     if (!files || typeof files !== 'object' || Array.isArray(files)) {
         return [];
     }
@@ -48,13 +48,22 @@ const DocumentDetails = () => {
         // ตรวจสอบว่า fileName เป็น String และมีค่าที่ถูกต้อง
         if (typeof fileName !== 'string' || !fileName) return; 
         
-        // S3 URL มักมี format: timestamp-filename.ext
+        // *** FIX: แยก S3 Key ออกจาก URL เต็มๆ ***
+        let s3Key = fileName;
+        try {
+            const url = new URL(fileName);
+            // Key จะเป็น /projects/field/timestamp-filename.ext (ต้องลบ / ตัวแรกออก)
+            s3Key = url.pathname.substring(1); 
+        } catch (e) {
+            // หากไม่ใช่ URL ที่ถูกต้อง (อาจจะเป็น S3 Key อยู่แล้ว) ใช้ค่าเดิม
+        }
+
+        // แยกชื่อไฟล์เพื่อจัดกลุ่ม
         const urlParts = fileName.split('/');
-        const nameWithTimestamp = urlParts[urlParts.length - 1]; // ชื่อไฟล์พร้อม timestamp
+        const nameWithTimestamp = urlParts[urlParts.length - 1]; 
         
-        // แยก timestamp-name กับ extension
         const parts = nameWithTimestamp.split('.');
-        const extension = parts.pop().toLowerCase(); // นามสกุล
+        const extension = parts.pop().toLowerCase(); 
         const nameWithoutExtension = parts.join('.'); 
 
         // เอา Timestamp ออก: 123456789-filename -> filename
@@ -63,23 +72,23 @@ const DocumentDetails = () => {
         if (!fileGroupMap.has(baseName)) {
             fileGroupMap.set(baseName, { 
                 name: baseName, pdf: null, doc: null, docx: null, 
-                zip: null, rar: null, exe: null, psd: null, jpg: null, png: null // เพิ่ม png
+                zip: null, rar: null, exe: null, psd: null, jpg: null, png: null 
             });
         }
 
         const fileGroup = fileGroupMap.get(baseName);
         
         switch (extension) {
-            case 'pdf': fileGroup.pdf = fileName; break;
-            case 'doc': fileGroup.doc = fileName; break;
-            case 'docx': fileGroup.docx = fileName; break;
-            case 'zip': fileGroup.zip = fileName; break;
-            case 'rar': fileGroup.rar = fileName; break;
-            case 'exe': fileGroup.exe = fileName; break;
-            case 'psd': fileGroup.psd = fileName; break;
+            case 'pdf': fileGroup.pdf = s3Key; break;
+            case 'doc': fileGroup.doc = s3Key; break;
+            case 'docx': fileGroup.docx = s3Key; break;
+            case 'zip': fileGroup.zip = s3Key; break;
+            case 'rar': fileGroup.rar = s3Key; break;
+            case 'exe': fileGroup.exe = s3Key; break;
+            case 'psd': fileGroup.psd = s3Key; break;
             case 'jpg':
-            case 'jpeg': fileGroup.jpg = fileName; break;
-            case 'png': fileGroup.png = fileName; break; // เพิ่ม png
+            case 'jpeg': fileGroup.jpg = s3Key; break;
+            case 'png': fileGroup.png = s3Key; break; 
             default:
                 break;
         }
@@ -89,10 +98,10 @@ const DocumentDetails = () => {
   };
 
   const renderDownloadLink = (fileName) => {
-    // fileName ที่นี่คือ S3 Key เต็มๆ
+    // fileName ที่นี่คือ S3 Key (projects/field/timestamp-filename.ext)
     if (!fileName) return <span className={tableStyles.noFile}>-</span>;
     return (
-      // *** แก้ไข URL ให้ใช้ /api/download/ ตามรูปแบบที่ Backend ต้องการ ***
+      // *** ส่งแค่ S3 Key เข้าไปใน API Download ***
       <a href={`${import.meta.env.VITE_API_URL}/api/download/${fileName}`} className={tableStyles.downloadLink} target="_blank" rel="noopener noreferrer">
         <Download size={16} /> ดาวน์โหลด
       </a>
@@ -222,7 +231,6 @@ const DocumentDetails = () => {
                           <tr>
                             <th>ชื่อ</th>
                             <th>PDF</th>
-                            <th>DOC</th>
                             <th>DOCX</th>
                             <th>ZIP</th>
                             <th>RAR</th>
@@ -237,7 +245,6 @@ const DocumentDetails = () => {
                             <tr key={index}>
                               <td className={tableStyles.fileTableName}>{file.name}</td>
                               <td>{renderDownloadLink(file.pdf)}</td>
-                              <td>{renderDownloadLink(file.doc)}</td>
                               <td>{renderDownloadLink(file.docx)}</td>
                               <td>{renderDownloadLink(file.zip)}</td>
                               <td>{renderDownloadLink(file.rar)}</td>
