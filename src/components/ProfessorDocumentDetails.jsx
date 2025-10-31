@@ -245,8 +245,7 @@ const ProfessorDocumentDetails = () => {
                     <th>ชื่อ</th>
                     <th>PDF</th>
                     <th>DOCX</th>
-                    <th>ZIP</th>
-                    <th>RAR</th>
+                    <th>ZIP/RAR</th>
                     <th>EXE</th>
                     <th>PSD</th>
                     <th>JPG/PNG</th>
