@@ -918,10 +918,10 @@ app.put('/api/projects/:id', (req, res, next) => {
             department || null, 
             coAdvisorName || null, 
             supportAgency || null, 
-            Array.isArray(document_type) ? document_type.join(',') : document_type, // Handle array
-            JSON.stringify(existingFilePaths), // Updated file paths ($10)
-            newStatus, // Reset status to pending ($11)
-            projectId // WHERE clause ($12)
+            Array.isArray(document_type) ? document_type.join(',') : document_type,
+            JSON.stringify(existingFilePaths), 
+            newStatus, 
+            projectId 
           ];
 
           await pool.query(updateSql, values); 
@@ -930,7 +930,7 @@ app.put('/api/projects/:id', (req, res, next) => {
 
         } catch (updateErr) {
           console.error("Error updating project:", updateErr.message, updateErr.stack); 
-          next(updateErr); // Pass DB error to global handler
+          next(updateErr); 
         }
     });
 });
