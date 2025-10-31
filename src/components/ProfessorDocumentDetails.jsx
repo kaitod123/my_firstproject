@@ -209,7 +209,7 @@ const ProfessorDocumentDetails = () => {
             <span className={styles.listValue}>{document.language || 'N/A'}</span>
           </div>
           <div className={styles.listItem}>
-            <span className={styles.listLabel}>วันสแกน</span>
+            <span className={styles.listLabel}>วันที่อัพโหลด</span>
             <span className={styles.listValue}>{document.scan_date ? new Date(document.scan_date).toLocaleDateString('th-TH') : 'N/A'}</span>
           </div>
           <div className={styles.listItem}>

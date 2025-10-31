@@ -357,7 +357,7 @@ app.get('/api/documents', async (req, res, next) => { // <-- Add next
         SELECT 
             id, title, title_eng, author, department, advisorName, 
             abstract, keywords, document_type, publish_year, approval_status, is_active,
-            file_paths 
+            file_paths,scan_date,display_date
         FROM documents
     `;
     let values = [];
@@ -590,7 +590,7 @@ app.get('/api/professor/documents/:id', async (req, res, next) => { // <-- Add n
     SELECT 
         id, title, title_eng, author, department, advisorName, coAdvisorName, 
         abstract, keywords, supportAgency, document_type, publish_year, 
-        approval_status, is_active, file_paths 
+        approval_status, is_active, file_paths ,scan_date,display_date
     FROM documents 
     WHERE id = $1
   `; 
@@ -822,7 +822,7 @@ app.get('/api/project-details/:id', async (req, res, next) => { // <-- Add next
     SELECT 
       id, title, title_eng, author, abstract, keywords,
       advisorName, department, coAdvisorName, supportAgency, document_type,
-      file_paths 
+      file_paths,scan_date,display_date
     FROM documents 
     WHERE id = $1
   `; 
@@ -955,7 +955,7 @@ app.get('/api/student/documents/:id', async (req, res, next) => { // <-- Add nex
         SELECT 
             id, title, title_eng, author, department, advisorName, coAdvisorName, 
             abstract, keywords, document_type, publish_year, approval_status, is_active, 
-            file_paths 
+            file_paths,scan_date,display_date
         FROM documents 
         WHERE id = $1
     `;
