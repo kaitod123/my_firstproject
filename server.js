@@ -622,6 +622,9 @@ app.get('/api/professor/documents/:id', async (req, res, next) => { // <-- Add n
   }
 });
 
+// **********************************************
+// Corrected API for Download using Wildcard
+// **********************************************
 // FIX: Use custom regex to allow slashes in the parameter
 app.get('/api/download/:s3Key(.+)', async (req, res, next) => { 
     // Use (.+) to capture all characters, including slashes
