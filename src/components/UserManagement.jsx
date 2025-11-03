@@ -265,14 +265,12 @@ const UserManagement = () => {
                             {/* === แถวบน (ปุ่ม) === */}
                             <div className={styles.topButtonRow}>
                                 <button 
-                                    onClick={handleDeleteSelected} 
-                                    className={`${styles.btna} ${styles.deleteuserbtn}`}
-                                    disabled={selectedUsers.length === 0}
+                                    onClick={openAddModal} 
+                                    className={`${styles.btna} ${styles.adduserbtn}`}
                                 >
-                                    ลบผู้ใช้ที่เลือก
+                                    + เพิ่มผู้ใช้
                                 </button>
 
-                                {/* (!!!) ย้ายปุ่มนำเข้าและ input มาไว้ตรงนี้ (!!!) */}
                                 <button
                                     onClick={handleUploadClick} 
                                     className={`${styles.btna} ${styles.uploadbtn}`} 
@@ -287,14 +285,20 @@ const UserManagement = () => {
                                     style={{ display: 'none' }}
                                     accept=".xlsx, .xls" // จำกัดให้รับเฉพาะไฟล์ Excel
                                 />
-                                {/* (!!!) สิ้นสุดส่วนที่ย้ายมา (!!!) */}
 
                                 <button 
-                                    onClick={openAddModal} 
-                                    className={`${styles.btna} ${styles.adduserbtn}`}
+                                    onClick={handleDeleteSelected} 
+                                    className={`${styles.btna} ${styles.deleteuserbtn}`}
+                                    disabled={selectedUsers.length === 0}
                                 >
-                                    + เพิ่มผู้ใช้
+                                    ลบผู้ใช้ที่เลือก
                                 </button>
+
+                                {/* (!!!) ย้ายปุ่มนำเข้าและ input มาไว้ตรงนี้ (!!!) */}
+
+                                {/* (!!!) สิ้นสุดส่วนที่ย้ายมา (!!!) */}
+
+
                             </div>
                             
                             {/* (!!!) START: แก้ไข (ย้าย Dropdown ออกมา) (!!!) */}
