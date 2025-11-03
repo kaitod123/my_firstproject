@@ -306,21 +306,21 @@ const UserManagement = () => {
                                 value={`${sortConfig.key}-${sortConfig.direction}`}
                                 className={`${styles.btna} ${styles.dropdown}`}
                             >
-                                <option value="created_at-descending">Date Added (Newest)</option>
-                                <option value="created_at-ascending">Date Added (Oldest)</option>
-                                <option value="role-ascending">Role (A-Z)</option>
-                                <option value="role-descending">Role (Z-A)</option>
-                                <option value="first_name-ascending">Name (A-Z)</option>
-                                <option value="first_name-descending">Name (Z-A)</option>
+                                <option value="created_at-descending">วันที่เพิ่ม (ใหม่สุด)</option>
+                                <option value="created_at-ascending">วันที่เพิ่ม (เก่าสุด)</option>
+                                <option value="role-ascending">บทบาท (A-Z)</option>
+                                <option value="role-descending">บทบาท (Z-A)</option>
+                                <option value="first_name-ascending">ชื่อ (A-Z)</option>
+                                <option value="first_name-descending">ชื่อ (Z-A)</option>
                             </select>
                             {/* (!!!) END: แก้ไข (ย้าย Dropdown ออกมา) (!!!) */}
                             
                             {/* === แถวล่าง (Tabs) === */}
                             <div className={styles.roletabs}>
-                                <button onClick={() => setActiveRole('All')} className={activeRole === 'All' ? styles.active : ''}>All</button>
-                                <button onClick={() => setActiveRole('Admin')} className={activeRole === 'Admin' ? styles.active : ''}>Admin</button>
-                                <button onClick={() => setActiveRole('Advisor')} className={activeRole === 'Advisor' ? styles.active : ''}>Advisor</button>
-                                <button onClick={() => setActiveRole('Student')} className={activeRole === 'Student' ? styles.active : ''}>Student</button>
+                                <button onClick={() => setActiveRole('All')} className={activeRole === 'All' ? styles.active : ''}>ทั้งหมด</button>
+                                <button onClick={() => setActiveRole('Admin')} className={activeRole === 'Admin' ? styles.active : ''}>ผู้ดูแล</button>
+                                <button onClick={() => setActiveRole('Advisor')} className={activeRole === 'Advisor' ? styles.active : ''}>อาจารย์</button>
+                                <button onClick={() => setActiveRole('Student')} className={activeRole === 'Student' ? styles.active : ''}>นักศึกษา</button>
                             </div>
                         </div>
                     </div>
@@ -379,7 +379,7 @@ const UserManagement = () => {
                                                 <span className={`${styles.roleBadge} ${styles['role-' + user.role.toLowerCase().replace(' ', '-')]}`}>{user.role}</span>
                                             </td>
                                             <td>
-                                                <span className={`${styles.status} ${user.is_active ? styles.active : styles.inactive}`}>{user.is_active ? 'Active' : 'Inactive'}</span>
+                                                <span className={`${styles.status} ${user.is_active ? styles.active : styles.inactive}`}>{user.is_active ? 'พร้อมใช้งาน' : 'ไม่พร้อมใช้งาน'}</span>
                                             </td>
                                             <td>
                                                 {user.created_at ? new Date(user.created_at).toLocaleDateString('th-TH') : 'N/A'}
@@ -420,9 +420,9 @@ const UserManagement = () => {
                                 <div className={styles.formGroup}>
                                     <label>Role:</label>
                                     <div className={styles.radioGroup}>
-                                        <label><input type="radio" name="role" value="admin" checked={currentUser.role === 'admin'} onChange={handleInputChange} /> Admin</label>
-                                        <label><input type="radio" name="role" value="advisor" checked={currentUser.role === 'advisor'} onChange={handleInputChange} /> Advisor</label>
-                                        <label><input type="radio" name="role" value="student" checked={currentUser.role === 'student'} onChange={handleInputChange} /> Student</label>
+                                        <label><input type="radio" name="role" value="admin" checked={currentUser.role === 'admin'} onChange={handleInputChange} /> ผู้ดูแล</label>
+                                        <label><input type="radio" name="role" value="advisor" checked={currentUser.role === 'advisor'} onChange={handleInputChange} /> อาจารย์</label>
+                                        <label><input type="radio" name="role" value="student" checked={currentUser.role === 'student'} onChange={handleInputChange} /> นักศึกษา</label>
                                     </div>
                                 </div>
                               <div className={styles.formGroup}>
