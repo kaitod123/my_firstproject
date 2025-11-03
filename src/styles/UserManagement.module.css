@@ -23,7 +23,7 @@
   align-items: center;
   gap: 8px; /* ระยะห่างระหว่างไอคอนกับข้อความ */
   text-decoration: none; /* ลบเส้นใต้หากใช้กับ Link */
-  color: white; /* สีตัวอักษรเริ่มต้น */
+  color: black; /* สีตัวอักษรเริ่มต้น */
 }
 .btna, .actionBtn {
   border: none;
@@ -76,6 +76,7 @@ h1 {
     margin-right: 12px;
     color: white;
     float: right;
+    margin-bottom: 1rem;
 }
 
 .adduserbtn {
