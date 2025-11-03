@@ -26,6 +26,13 @@ const UserManagement = () => {
         last_name: '', identification: '', role: 'student', is_active: 1
     });
 
+    const getInitials = (firstName, lastName) => {
+  if (!firstName && !lastName) return '??';
+  const firstInitial = firstName?.[0] || '';
+  const lastInitial = lastName?.[0] || '';
+  return `${firstInitial}${lastInitial}`.toUpperCase();
+}
+
     const fileInputRef = useRef(null);
 
         const roleTranslation = {
@@ -336,7 +343,7 @@ const UserManagement = () => {
                     <div className={styles.searchbar}>
                         <input 
                             type="text" 
-                            placeholder="Search for users by name or email..." 
+                            placeholder="ค้นหาโดยใช้ ชื่อผู้ใช้ หรือ อีเมล" 
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -373,7 +380,9 @@ const UserManagement = () => {
                                             <td><input type="checkbox" onChange={() => handleSelectUser(user.id)} checked={selectedUsers.includes(user.id)} /></td>
                                             <td>
                                                 <div className={styles.userinfo}>
-                                                    <img className={styles.useravatar} src={`https://i.pravatar.cc/40?u=${user.email}`} alt="avatar" />
+                                                    <div className={styles.useravatar}>
+                                                       {getInitials(user.first_name, user.last_name)}
+                                                    </div>
                                                     <div>
                                                         <strong>{user.first_name} {user.last_name}</strong>
                                                         <br />
