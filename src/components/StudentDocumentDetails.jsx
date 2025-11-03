@@ -94,16 +94,15 @@ const StudentDocumentDetails = () => {
         const fileGroup = fileGroupMap.get(baseName);
         
         // (!!!) START: แก้ไขส่วนนี้ (!!!)
-        // ลบ case 'doc' ออก เพื่อไม่ให้แสดงผล
+        // (ลบ case 'doc' ออกตามที่ขอ)
         switch (extension) {
             case 'pdf': fileGroup.pdf = s3Key; break;
-            // case 'doc': fileGroup.doc = s3Key; break; // <--- ลบบรรทัดนี้ออก
+            // case 'doc': fileGroup.doc = s3Key; break; // <-- ลบออก
             case 'docx': fileGroup.docx = s3Key; break;
             case 'zip': fileGroup.zip = s3Key; break;
             case 'rar': fileGroup.rar = s3Key; break;
             case 'exe': fileGroup.exe = s3Key; break;
             case 'psd': fileGroup.psd = s3Key; break;
-            // *** FIX: รวม jpg/jpeg/png ให้เป็น field เดียวกัน ***
             case 'jpg':
             case 'jpeg': 
                 fileGroup.jpg = s3Key; 
@@ -156,13 +155,12 @@ const StudentDocumentDetails = () => {
   }
   // --- (จบส่วนที่เพิ่ม) ---
 
-  // *** แก้ไข: เชื่อถือ Backend ว่า file_paths เป็น Object หรือ String (ถ้าเป็น String ให้ Parse) ***
   let files = {};
   if (document.file_paths) {
       try {
           files = (typeof document.file_paths === 'string' && document.file_paths.trim().startsWith('{'))
               ? JSON.parse(document.file_paths)
-              : document.file_paths; // ถ้าเป็น Object อยู่แล้ว ให้ใช้เลย
+              : document.file_paths; 
       } catch (e) {
           console.error("Failed to parse file_paths JSON:", e);
           files = {};
@@ -173,10 +171,8 @@ const StudentDocumentDetails = () => {
   const processedFiles = processFilesForTable(files);
 
   const renderDownloadLink = (fileName) => {
-    // fileName ที่นี่คือ S3 Key (projects/field/timestamp-filename.ext)
-    if (!fileName) return <span className={tableStyles.noFile}>-</span>;
+    if (!fileName) return <span className={tableStyles.noFile}>--</span>; // (แก้ไข) ใช้ -- แทน -
     return (
-      // *** ส่งแค่ S3 Key เข้าไปใน API Download ***
       <a href={`${import.meta.env.VITE_API_URL}/api/download/${fileName}`} className={tableStyles.downloadLink} target="_blank" rel="noopener noreferrer">
         <Download size={16} /> ดาวน์โหลด
       </a>
@@ -185,7 +181,6 @@ const StudentDocumentDetails = () => {
 
   return (
     <div className={styles.container}>
-      {/* --- (แก้ไข) 5. เปลี่ยน Link เป็น button navigate(-1) --- */}
       <button onClick={() => navigate(-1)} className={styles.backButton}>
         <ChevronLeft size={20} /> กลับไปยังหน้าก่อนหน้า
       </button>
@@ -193,7 +188,7 @@ const StudentDocumentDetails = () => {
       <div className={styles.mainContent}>
         <h1 
           className={styles.title}
-          style={{ overflowWrap: 'break-word' }} // เพิ่ม style นี้
+          style={{ overflowWrap: 'break-word' }} 
         >
           {document.title}
         </h1>
@@ -208,14 +203,10 @@ const StudentDocumentDetails = () => {
             <span className={styles.listLabel}>สาขาวิชา</span>
             <span className={styles.listValue}>{document.department || 'N/A'}</span>
           </div>
-          
-          {/* --- (เพิ่ม) 6. เพิ่มข้อมูล Advisor ที่ขาดไป --- */}
           <div className={styles.listItem}>
             <span className={styles.listLabel}>อาจารย์ที่ปรึกษา</span>
-            {/* (แก้ไข) ตรวจสอบทั้ง N ใหญ่ และ n เล็ก */}
             <span className={styles.listValue}>{document.advisorName || document.advisorname || 'N/A'}</span>
           </div>
-
           <div className={styles.listItem}>
             <span className={styles.listLabel}>ปีที่เผยแพร่</span>
             <span className={styles.listValue}>{document.publish_year ? document.publish_year + 543 : 'N/A'}</span>
@@ -230,7 +221,7 @@ const StudentDocumentDetails = () => {
           </div>
           <div className={styles.listItem}>
             <span className={styles.listLabel}>วันแสดงผล</span>
-            <span className={styles.listValue}>{document.display_date ? new Date(document.display_date).toLocaleDateString('th-TH') : 'N/N/A'}</span>
+            <span className={styles.listValue}>{document.display_date ? new Date(document.display_date).toLocaleDateString('th-TH') : 'N/A'}</span>
           </div>
         </div>
 
@@ -260,11 +251,6 @@ const StudentDocumentDetails = () => {
                 <thead>
                   <tr>
                             <th style={{ width: '30%', textAlign: 'left' }}>ชื่อ</th>
-                            
-                            {/* (!! แก้ไข !!) 
-                              1. กำหนดความกว้างอัตโนมัติสำหรับคอลัมน์ที่เหลือ
-                              2. จัดกลาง
-                            */}
                             <th style={{ width: '10%', textAlign: 'center' }}>PDF</th>
                             <th style={{ width: '10%', textAlign: 'center' }}>DOCX</th>
                             <th style={{ width: '10%', textAlign: 'center' }}>ZIP,RAR</th>
@@ -283,9 +269,7 @@ const StudentDocumentDetails = () => {
                         {file.name}
                       </td>
                               
-                      {/* (!! แก้ไข !!) 
-                        1. จัดกลาง 
-                      */}
+                      {/* (!!!) START: แก้ไข (เพิ่ม style) (!!!) */}
                       <td style={{ textAlign: 'center' }}>{renderDownloadLink(file.pdf)}</td>
                       <td style={{ textAlign: 'center' }}>{renderDownloadLink(file.docx)}</td>
                       <td style={{ textAlign: 'center' }}>
@@ -298,6 +282,7 @@ const StudentDocumentDetails = () => {
                         {renderDownloadLink(file.jpg)}
                         {renderDownloadLink(file.png)}
                       </td>
+                      {/* (!!!) END: แก้ไข (เพิ่ม style) (!!!) */}
                     </tr>
                   ))}
                 </tbody>

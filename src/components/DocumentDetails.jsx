@@ -85,7 +85,6 @@ const DocumentDetails = () => {
             case 'rar': fileGroup.rar = s3Key; break;
             case 'exe': fileGroup.exe = s3Key; break;
             case 'psd': fileGroup.psd = s3Key; break;
-            // *** FIX: รวม jpg/jpeg/png ให้เป็น field เดียวกัน ***
             case 'jpg':
             case 'jpeg': 
                 fileGroup.jpg = s3Key; 
@@ -102,10 +101,8 @@ const DocumentDetails = () => {
   };
 
   const renderDownloadLink = (fileName) => {
-    // fileName ที่นี่คือ S3 Key (projects/field/timestamp-filename.ext)
-    if (!fileName) return <span className={tableStyles.noFile}>-</span>;
+    if (!fileName) return <span className={tableStyles.noFile}>--</span>; // (แก้ไข) ใช้ -- แทน -
     return (
-      // *** ส่งแค่ S3 Key เข้าไปใน API Download ***
       <a href={`${import.meta.env.VITE_API_URL}/api/download/${fileName}`} className={tableStyles.downloadLink} target="_blank" rel="noopener noreferrer">
         <Download size={16} /> ดาวน์โหลด
       </a>
@@ -146,13 +143,12 @@ const DocumentDetails = () => {
     );
   }
 
-  // *** FIX: ตรรกะการ Parse JSON ถูกต้องแล้ว (เชื่อว่า Backend ส่งมาเป็น Object หรือ String JSON) ***
   let files = {};
   if (document.file_paths) {
       try {
           files = (typeof document.file_paths === 'string' && document.file_paths.trim().startsWith('{'))
               ? JSON.parse(document.file_paths)
-              : document.file_paths; // ถ้าเป็น Object อยู่แล้ว ให้ใช้เลย
+              : document.file_paths; 
       } catch (e) {
           console.error("Failed to parse file_paths JSON:", e);
           files = {};
@@ -172,7 +168,7 @@ const DocumentDetails = () => {
       <div className={styles.mainContent}>
         <h1 
           className={styles.title}
-          style={{ overflowWrap: 'break-word' }} // เพิ่ม style นี้
+          style={{ overflowWrap: 'break-word' }} 
         >
           {document.title}
         </h1>
@@ -183,7 +179,6 @@ const DocumentDetails = () => {
           )}
         <p className={styles.documentType}>{document.document_type || 'N/A'}</p>
 
-        {/* --- (แก้ไข) เปลี่ยนจาก Grid เป็น List --- */}
         <div className={styles.detailsList}>
           <div className={styles.listItem}>
             <span className={styles.listLabel}>ผู้แต่ง</span>
@@ -195,7 +190,6 @@ const DocumentDetails = () => {
           </div>
           <div className={styles.listItem}>
             <span className={styles.listLabel}>อาจารย์ที่ปรึกษา</span>
-            {/* (แก้ไข) ตรวจสอบทั้ง N ใหญ่ และ n เล็ก */}
             <span className={styles.listValue}>{document.advisorName || document.advisorname || 'N/A'}</span>
           </div>
           <div className={styles.listItem}>
@@ -211,7 +205,6 @@ const DocumentDetails = () => {
             <span className={styles.listValue}>{document.display_date ? new Date(document.display_date).toLocaleDateString('th-TH') : 'N/A'}</span>
           </div>
         </div>
-        {/* --- จบส่วนที่แก้ไข --- */}
 
         <div className={styles.section}>
           <h2>บทคัดย่อ</h2>
@@ -232,26 +225,13 @@ const DocumentDetails = () => {
                   {processedFiles.length > 0 ? (
                     <div className={tableStyles.fileTableContainer}>
                       
-                      {/* (!! แก้ไข !!) 
-                        1. table-layout: fixed และ width: 100% (คงเดิม)
-                        2. เพิ่ม style word-wrap: break-word เพื่อความแน่นอน 
-                      */}
                       <table 
                         className={tableStyles.fileTable}
                         style={{ tableLayout: 'fixed', width: '100%', wordWrap: 'break-word' }}
                       >
                         <thead>
                           <tr>
-                            {/* (!! แก้ไข !!) 
-                              1. กำหนดความกว้างคอลัมน์ชื่อไฟล์ให้ชัดเจน (เช่น 30%)
-                              2. จัดข้อความชิดซ้าย
-                            */}
                             <th style={{ width: '30%', textAlign: 'left' }}>ชื่อ</th>
-                            
-                            {/* (!! แก้ไข !!) 
-                              1. กำหนดความกว้างอัตโนมัติสำหรับคอลัมน์ที่เหลือ
-                              2. จัดกลาง
-                            */}
                             <th style={{ width: '10%', textAlign: 'center' }}>PDF</th>
                             <th style={{ width: '10%', textAlign: 'center' }}>DOCX</th>
                             <th style={{ width: '10%', textAlign: 'center' }}>ZIP,RAR</th>
@@ -264,10 +244,6 @@ const DocumentDetails = () => {
                         <tbody>
                           {processedFiles.map((file, index) => (
                             <tr key={index}>
-                              {/* (!! แก้ไข !!) 
-                                1. เพิ่ม style word-break: 'break-all' เพื่อบังคับตัดคำที่ยาวมากๆ
-                                2. จัดข้อความชิดซ้าย
-                              */}
                               <td 
                                 className={tableStyles.fileTableName} 
                                 style={{ wordBreak: 'break-all', textAlign: 'left' }}
@@ -275,9 +251,7 @@ const DocumentDetails = () => {
                                 {file.name}
                               </td>
                               
-                              {/* (!! แก้ไข !!) 
-                                1. จัดกลาง 
-                              */}
+                              {/* (!!!) START: แก้ไข (เพิ่ม style) (!!!) */}
                               <td style={{ textAlign: 'center' }}>{renderDownloadLink(file.pdf)}</td>
                               <td style={{ textAlign: 'center' }}>{renderDownloadLink(file.docx)}</td>
                               <td style={{ textAlign: 'center' }}>
@@ -290,6 +264,7 @@ const DocumentDetails = () => {
                                 {renderDownloadLink(file.jpg)}
                                 {renderDownloadLink(file.png)}
                               </td>
+                              {/* (!!!) END: แก้ไข (เพิ่ม style) (!!!) */}
                             </tr>
                           ))}
                         </tbody>
@@ -314,4 +289,3 @@ const DocumentDetails = () => {
 };
 
 export default DocumentDetails;
-
