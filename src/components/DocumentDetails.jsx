@@ -230,8 +230,9 @@ const DocumentDetails = () => {
                         style={{ tableLayout: 'fixed', width: '100%', wordWrap: 'break-word' }}
                       >
                         <thead>
+                          {/* (!!!) START: แก้ไขความกว้างคอลัมน์ (!!!) */}
                           <tr>
-                            <th style={{ width: '30%', textAlign: 'left' }}>ชื่อ</th>
+                            <th style={{ width: '40%', textAlign: 'left' }}>ชื่อ</th>
                             <th style={{ width: '10%', textAlign: 'center' }}>PDF</th>
                             <th style={{ width: '10%', textAlign: 'center' }}>DOCX</th>
                             <th style={{ width: '10%', textAlign: 'center' }}>ZIP,RAR</th>
@@ -240,6 +241,7 @@ const DocumentDetails = () => {
                             <th style={{ width: '10%', textAlign: 'center' }}>JPG/PNG</th>
                             
                           </tr>
+                          {/* (!!!) END: แก้ไขความกว้างคอลัมน์ (!!!) */}
                         </thead>
                         <tbody>
                           {processedFiles.map((file, index) => (

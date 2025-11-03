@@ -249,15 +249,17 @@ const StudentDocumentDetails = () => {
                         style={{ tableLayout: 'fixed', width: '100%' }}
                 >
                 <thead>
+                  {/* (!!!) START: แก้ไขความกว้างคอลัมน์ (!!!) */}
                   <tr>
-                            <th style={{ width: '30%', textAlign: 'left' }}>ชื่อ</th>
-                            <th style={{ width: '20%', textAlign: 'center' }}>PDF</th>
-                            <th style={{ width: '20%', textAlign: 'center' }}>DOCX</th>
-                            <th style={{ width: '20%', textAlign: 'center' }}>ZIP,RAR</th>
-                            <th style={{ width: '20%', textAlign: 'center' }}>EXE</th>
-                            <th style={{ width: '20%', textAlign: 'center' }}>PSD</th>
-                            <th style={{ width: '20%', textAlign: 'center' }}>JPG/PNG</th>
+                            <th style={{ width: '40%', textAlign: 'left' }}>ชื่อ</th>
+                            <th style={{ width: '10%', textAlign: 'center' }}>PDF</th>
+                            <th style={{ width: '10%', textAlign: 'center' }}>DOCX</th>
+                            <th style={{ width: '10%', textAlign: 'center' }}>ZIP,RAR</th>
+                            <th style={{ width: '10%', textAlign: 'center' }}>EXE</th>
+                            <th style={{ width: '10%', textAlign: 'center' }}>PSD</th>
+                            <th style={{ width: '10%', textAlign: 'center' }}>JPG/PNG</th>
                   </tr>
+                  {/* (!!!) END: แก้ไขความกว้างคอลัมน์ (!!!) */}
                 </thead>
                 <tbody>
                   {processedFiles.map((file, index) => (
