@@ -292,7 +292,6 @@ const UserManagement = () => {
                             
 
                              <div>
-                                <label>Filter by role</label>
                                     <select
                                         onChange={(e) => {
                                             const [key, direction] = e.target.value.split('-');
