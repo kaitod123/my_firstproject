@@ -278,7 +278,7 @@ const UserManagement = () => {
                         {/* === ส่วนด้านขวา (เปลี่ยนชื่อ class) === */}
                         <div className={styles.rightColumn}>
                             
-                            {/* === แถวบน (ปุ่ม + Dropdown) === */}
+                            {/* === แถวบน (ปุ่ม) === */}
                             <div className={styles.topButtonRow}>
                                 <button 
                                     onClick={handleDeleteSelected} 
@@ -291,24 +291,26 @@ const UserManagement = () => {
                                 <button onClick={openAddModal} className={`${styles.btn} ${styles.adduserbtn}`}>
                                     + เพิ่มผู้ใช้
                                 </button>
-                                
-                                {/* Dropdown Sorter */}
-                                <select
-                                    onChange={(e) => {
-                                        const [key, direction] = e.target.value.split('-');
-                                        setSortConfig({ key, direction });
-                                    }}
-                                    value={`${sortConfig.key}-${sortConfig.direction}`}
-                                    className={styles.btna}
-                                >
-                                    <option value="created_at-descending">Date Added (Newest)</option>
-                                    <option value="created_at-ascending">Date Added (Oldest)</option>
-                                    <option value="role-ascending">Role (A-Z)</option>
-                                    <option value="role-descending">Role (Z-A)</option>
-                                    <option value="first_name-ascending">Name (A-Z)</option>
-                                    <option value="first_name-descending">Name (Z-A)</option>
-                                </select>
                             </div>
+                            
+                            {/* (!!!) START: แก้ไข (ย้าย Dropdown ออกมา) (!!!) */}
+                            {/* === แถวกลาง (Dropdown Sorter) === */}
+                            <select
+                                onChange={(e) => {
+                                    const [key, direction] = e.target.value.split('-');
+                                    setSortConfig({ key, direction });
+                                }}
+                                value={`${sortConfig.key}-${sortConfig.direction}`}
+                                className={styles.btna}
+                            >
+                                <option value="created_at-descending">Date Added (Newest)</option>
+                                <option value="created_at-ascending">Date Added (Oldest)</option>
+                                <option value="role-ascending">Role (A-Z)</option>
+                                <option value="role-descending">Role (Z-A)</option>
+                                <option value="first_name-ascending">Name (A-Z)</option>
+                                <option value="first_name-descending">Name (Z-A)</option>
+                            </select>
+                            {/* (!!!) END: แก้ไข (ย้าย Dropdown ออกมา) (!!!) */}
                             
                             {/* === แถวล่าง (Tabs) === */}
                             <div className={styles.roletabs}>
