@@ -251,12 +251,12 @@ const StudentDocumentDetails = () => {
                 <thead>
                   <tr>
                             <th style={{ width: '30%', textAlign: 'left' }}>ชื่อ</th>
-                            <th style={{ width: '10%', textAlign: 'center' }}>PDF</th>
-                            <th style={{ width: '10%', textAlign: 'center' }}>DOCX</th>
-                            <th style={{ width: '10%', textAlign: 'center' }}>ZIP,RAR</th>
-                            <th style={{ width: '10%', textAlign: 'center' }}>EXE</th>
-                            <th style={{ width: '10%', textAlign: 'center' }}>PSD</th>
-                            <th style={{ width: '10%', textAlign: 'center' }}>JPG/PNG</th>
+                            <th style={{ width: '15%', textAlign: 'center' }}>PDF</th>
+                            <th style={{ width: '15%', textAlign: 'center' }}>DOCX</th>
+                            <th style={{ width: '15%', textAlign: 'center' }}>ZIP,RAR</th>
+                            <th style={{ width: '15%', textAlign: 'center' }}>EXE</th>
+                            <th style={{ width: '15%', textAlign: 'center' }}>PSD</th>
+                            <th style={{ width: '15%', textAlign: 'center' }}>JPG/PNG</th>
                   </tr>
                 </thead>
                 <tbody>
