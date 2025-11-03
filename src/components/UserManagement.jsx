@@ -304,7 +304,7 @@ const UserManagement = () => {
                                     setSortConfig({ key, direction });
                                 }}
                                 value={`${sortConfig.key}-${sortConfig.direction}`}
-                                className={styles.btna}
+                                className={`${styles.btna} ${styles.dropdown}`}
                             >
                                 <option value="created_at-descending">Date Added (Newest)</option>
                                 <option value="created_at-ascending">Date Added (Oldest)</option>
