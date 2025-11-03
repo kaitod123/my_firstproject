@@ -265,13 +265,13 @@ const UserManagement = () => {
                                 style={{ display: 'none' }}
                                 accept=".xlsx, .xls" // จำกัดให้รับเฉพาะไฟล์ Excel
                             />
-                            <FileImport
+                            <button
                                 onClick={handleUploadClick} 
                                 // (แนะนำ) เพิ่ม class 'uploadbtn' ใน CSS เพื่อทำเป็นสีเขียว
                                 className={`${styles.btn} ${styles.uploadbtn}`} 
                             >
-                                อัพโหลด Excel
-                            </FileImport>
+                                <FileImport></FileImport>
+                            </button>
                             {/* (!!!) END: 4. เพิ่มปุ่มและ Input ที่ซ่อนอยู่ (!!!) */}
 
 
