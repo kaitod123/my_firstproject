@@ -93,9 +93,11 @@ const StudentDocumentDetails = () => {
 
         const fileGroup = fileGroupMap.get(baseName);
         
+        // (!!!) START: แก้ไขส่วนนี้ (!!!)
+        // ลบ case 'doc' ออก เพื่อไม่ให้แสดงผล
         switch (extension) {
             case 'pdf': fileGroup.pdf = s3Key; break;
-            case 'doc': fileGroup.doc = s3Key; break;
+            // case 'doc': fileGroup.doc = s3Key; break; // <--- ลบบรรทัดนี้ออก
             case 'docx': fileGroup.docx = s3Key; break;
             case 'zip': fileGroup.zip = s3Key; break;
             case 'rar': fileGroup.rar = s3Key; break;
@@ -112,6 +114,7 @@ const StudentDocumentDetails = () => {
             default: 
                 break;
         }
+        // (!!!) END: แก้ไขส่วนนี้ (!!!)
     });
 
     return Array.from(fileGroupMap.values());
@@ -227,7 +230,7 @@ const StudentDocumentDetails = () => {
           </div>
           <div className={styles.listItem}>
             <span className={styles.listLabel}>วันแสดงผล</span>
-            <span className={styles.listValue}>{document.display_date ? new Date(document.display_date).toLocaleDateString('th-TH') : 'N/A'}</span>
+            <span className={styles.listValue}>{document.display_date ? new Date(document.display_date).toLocaleDateString('th-TH') : 'N/N/A'}</span>
           </div>
         </div>
 
