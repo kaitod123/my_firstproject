@@ -268,14 +268,9 @@ const UserManagement = () => {
                                 accept=".xlsx, .xls" // จำกัดให้รับเฉพาะไฟล์ Excel
                             />
                             {/* (!!!) START: 4. (แก้ไข) แก้ไขปุ่มให้ถูกต้อง (!!!) */}
-                            <button
-                                onClick={handleUploadClick} 
-                                // (แนะนำ) เพิ่ม class 'uploadbtn' ใน CSS เพื่อทำเป็นสีเขียว
-                            >
-                                {/* (!!!) 1. (แก้ไข) เปลี่ยนชื่อ Component (!!!) */}
-                                <Import size={18} style={{ marginRight: '8px' }} />
-                            </button>
-                            {/* (!!!) END: 4. (แก้ไข) แก้ไขปุ่มให้ถูกต้อง (!!!) */}
+
+                                <Import size={18} style={{ marginRight: '8px' }} onClick={handleUploadClick}  />
+
 
 
                             <button 
