@@ -342,11 +342,11 @@ const UserManagement = () => {
                                             checked={sortedAndFilteredUsers.length > 0 && selectedUsers.length === sortedAndFilteredUsers.length}
                                         />
                                     </th> 
-                                    <th>User</th>
-                                    <th>Role</th>
-                                    <th>Status</th>
-                                    <th>Date Added</th>
-                                    <th>Actions</th>
+                                    <th>ผู้ใช้</th>
+                                    <th>บทบาท</th>
+                                    <th>สถานะ</th>
+                                    <th>วันที่เพิ่ม</th>
+                                    <th>แก้ไข/ลบ</th>
                                 </tr>
                             </thead>
                             
