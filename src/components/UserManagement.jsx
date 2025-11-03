@@ -46,7 +46,6 @@ const UserManagement = () => {
     }, []);
 
     // ... (ฟังก์ชัน handleInputChange, handleSelectAll, handleEditClick, handleFormSubmit, openAddModal, closeModalAndRefresh, handleDelete, handleDeleteSelected, handleSelectUser อยู่เหมือนเดิม) ...
-    // (คัดลอกฟังก์ชันเหล่านี้จากไฟล์เดิมของคุณมาวางที่นี่)
     
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -144,20 +143,16 @@ const UserManagement = () => {
         reader.onload = async (evt) => {
             try {
                 const bstr = evt.target.result;
-                const wb = XLSX.read(bstr, { type: 'binary' }); // อ่านไฟล์
-                const wsname = wb.SheetNames[0]; // เอาชีตแรก
+                const wb = XLSX.read(bstr, { type: 'binary' }); 
+                const wsname = wb.SheetNames[0]; 
                 const ws = wb.Sheets[wsname];
                 
-                // แปลงข้อมูลเป็น JSON (โดย 'header: 1' จะทำให้ได้ Array ของ Arrays)
-                // (แก้ไข) ใช้ 'defval: ""' เพื่อป้องกันค่า null/undefined
-                // (แก้ไข) เราต้องการให้มันอ่าน header อัตโนมัติ (ตามที่ผู้ใช้ระบุ)
                 const data = XLSX.utils.sheet_to_json(ws, { defval: "" });
 
                 if (!data || data.length === 0) {
                     throw new Error("ไฟล์ Excel ว่างเปล่า");
                 }
 
-                // ตรวจสอบ Headers (จากข้อมูลแถวแรก)
                 const firstRow = data[0];
                 const requiredHeaders = ['username', 'email', 'password', 'first_name', 'last_name', 'role'];
                 const missingHeaders = requiredHeaders.filter(header => !firstRow.hasOwnProperty(header));
@@ -166,11 +161,30 @@ const UserManagement = () => {
                     throw new Error(`ไฟล์ Excel ขาดคอลัมน์ที่จำเป็น: ${missingHeaders.join(', ')}`);
                 }
                 
-                // (สำคัญ) ส่งข้อมูล (data) ไปยัง API
                 alert(`กำลังอัปโหลดผู้ใช้ ${data.length} คน...`);
-                const response = await bulkCreateUsers(data);
                 
-                alert(response.message || "อัปโหลดสำเร็จ!");
+                // (!!!) START: แก้ไขส่วน Alert (!!!)
+                // รับ Response กลับมาจาก Server
+                const response = await bulkCreateUsers(data); 
+                
+                let alertMessage = response.message || "อัปโหลดสำเร็จ!";
+
+                // ตรวจสอบว่า Server ส่ง errors กลับมาหรือไม่
+                if (response.errors && response.errors.length > 0) {
+                    console.error("Bulk Upload Errors:", response.errors); // Log error ทั้งหมดใน Console
+                    
+                    alertMessage += "\n\nสาเหตุที่ล้มเหลว:\n";
+                    // เอา Error มาแสดง (จำกัดแค่ 5 ข้อแรก)
+                    alertMessage += response.errors.slice(0, 5).join("\n"); 
+                    
+                    if (response.errors.length > 5) {
+                        alertMessage += `\n...และอีก ${response.errors.length - 5} ข้อผิดพลาด (กรุณาดูใน Console)`;
+                    }
+                }
+                
+                alert(alertMessage); // แสดง Alert ที่มีรายละเอียด
+                // (!!!) END: แก้ไขส่วน Alert (!!!)
+                
                 loadUsers(); // โหลดข้อมูลผู้ใช้ใหม่
 
             } catch (err) {
