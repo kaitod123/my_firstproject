@@ -383,7 +383,7 @@ const UserManagement = () => {
                                             </td>
                                             <td>
                                                 <span className={`${styles.roleBadge} ${styles['role-' + (user.role || '').toLowerCase().replace(' ', '-')]}`}>
-                                                    { (user.role && roleTranslation[user.role.charAt(0).toUpperCase() + user.role.slice(1)]) || user.role }
+                                                    { (user.role && roleTranslation[user.role.toLowerCase()]) || user.role }
                                                  </span>
                                             </td>
                                             <td>
