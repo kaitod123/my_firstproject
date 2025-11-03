@@ -98,7 +98,10 @@ export const deleteUser = async (userId) => {
 //import excel file
 export const bulkCreateUsers = async (usersData) => {
   try {
-    const response = await fetch(`${API_URL}/api/users/bulk`, {
+    // (!!!) START: แก้ไข (!!!)
+    // เปลี่ยนจาก API_URL เป็น API_BASE_URL
+    const response = await fetch(`${API_BASE_URL}/api/users/bulk`, {
+    // (!!!) END: แก้ไข (!!!)
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
