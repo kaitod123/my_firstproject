@@ -13,16 +13,7 @@
     background-color:#f0f2f5 ;
     color: #000;
     border: none;
-  border-radius: 8px; /* เพิ่มความโค้งมน */
-  font-size: 1rem;
-  font-weight: 600; /* ทำให้ตัวอักษรหนาขึ้น */
-  cursor: pointer;
-  transition: all 0.2s ease-in-out; /* ทำให้การเปลี่ยนแปลงสมูท */
-  display: inline-flex; /* จัดไอคอนกับข้อความให้อยู่กลาง (สำหรับอนาคต) */
-  align-items: center;
-  gap: 8px; /* ระยะห่างระหว่างไอคอนกับข้อความ */
-  text-decoration: none; /* ลบเส้นใต้หากใช้กับ Link */
-  color: black; /* สีตัวอักษรเริ่มต้น */
+
 }
 .btna, .actionBtn {
   border: none;
