@@ -66,14 +66,6 @@ h1 {
     color: #000;
 }
 
-.controlscontainer {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 24px;
-    float: right;
-}
-
 .actionbuttons .btn {
     border: none;
     padding: 12px 24px;
