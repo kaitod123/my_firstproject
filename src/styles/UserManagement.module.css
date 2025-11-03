@@ -53,6 +53,24 @@
     max-width: 1400px;
 }
 
+.profileAvatar {
+  height: 40px;
+  width: 40px;
+  border-radius: 50%; /* ทำให้เป็นวงกลม */
+  background-color: #007bff; /* สีพื้นหลัง (สีฟ้า) */
+  color: white; /* สีตัวอักษร */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease; /* (แก้ไข) transition */
+  
+  /* --- (เพิ่ม) กรอบ --- */
+  border: 2px solid #0056b3; /* เพิ่มกรอบสีน้ำเงินเข้ม */
+}
+
 h1 {
     font-size: 26px;
     font-weight: 700;

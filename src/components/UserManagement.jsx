@@ -380,7 +380,7 @@ const UserManagement = () => {
                                             <td><input type="checkbox" onChange={() => handleSelectUser(user.id)} checked={selectedUsers.includes(user.id)} /></td>
                                             <td>
                                                 <div className={styles.userinfo}>
-                                                    <div className={styles.useravatar}>
+                                                    <div className={styles.profileAvatar}>
                                                        {getInitials(user.first_name, user.last_name)}
                                                     </div>
                                                     <div>
