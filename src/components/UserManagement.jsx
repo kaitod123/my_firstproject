@@ -4,6 +4,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import * as XLSX from 'xlsx'; // (!!!) 1. Import 'xlsx'
 import { Link } from 'react-router-dom';
+import { FileImport } from 'lucide-react';
 
 // (!!!) 2. Import 'bulkCreateUsers' (ที่เราจะสร้างใน api/usersApi.js)
 import { fetchUsers, createUser, updateUser, deleteUser, fetchUserById, bulkCreateUsers } from '../api/usersApi';
@@ -270,7 +271,7 @@ const UserManagement = () => {
                                 // (แนะนำ) เพิ่ม class 'uploadbtn' ใน CSS เพื่อทำเป็นสีเขียว
                                 className={`${styles.btn} ${styles.uploadbtn}`} 
                             >
-                                <FileImport></FileImport>
+                                <FileImport size={18} style={{ marginRight: '8px' }} />
                             </button>
                             {/* (!!!) END: 4. เพิ่มปุ่มและ Input ที่ซ่อนอยู่ (!!!) */}
 
