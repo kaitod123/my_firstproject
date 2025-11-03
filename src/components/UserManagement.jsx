@@ -241,9 +241,9 @@ const UserManagement = () => {
     return (
         <div className={styles.body}>
             <div className={styles.dashboardContainer}>
-                             
+
                 <div className={styles.usermanagementcontainer}>
-                     <div className={styles.dashboardContainer}>
+                                                  <div className={styles.dashboardContainer}>
                                     <div>
                                         <Link to="/AdminDashboard" className={styles.backButton}>
                                         &larr; กลับไปยังหน้าจัดการข้อมูลแอดมิน
@@ -268,9 +268,14 @@ const UserManagement = () => {
                                 accept=".xlsx, .xls" // จำกัดให้รับเฉพาะไฟล์ Excel
                             />
                             {/* (!!!) START: 4. (แก้ไข) แก้ไขปุ่มให้ถูกต้อง (!!!) */}
+                            <button
+                                onClick={handleUploadClick} 
 
-                                <Import size={18} style={{ marginRight: '8px' }} onClick={handleUploadClick}  />
-
+                            >นำเข้า
+                                {/* (!!!) 1. (แก้ไข) เปลี่ยนชื่อ Component (!!!) */}
+                                <Import size={18} style={{ marginRight: '8px' }} />
+                            </button>
+                            {/* (!!!) END: 4. (แก้ไข) แก้ไขปุ่มให้ถูกต้อง (!!!) */}
 
 
                             <button 
