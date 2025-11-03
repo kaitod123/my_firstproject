@@ -249,7 +249,7 @@ const UserManagement = () => {
                                         </Link>
                                     </div>
                               </div>
-                    <h1>User Management</h1>
+                    <h1>จัดการผู้ใช้งาน</h1>
 
                    
                     <div className={styles.controlscontainer}>
