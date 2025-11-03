@@ -171,7 +171,7 @@ const StudentDocumentDetails = () => {
   const processedFiles = processFilesForTable(files);
 
   const renderDownloadLink = (fileName) => {
-    if (!fileName) return <span className={tableStyles.noFile}>--</span>; 
+    if (!fileName) return <span className={tableStyles.noFile}></span>; 
     return (
       <a href={`${import.meta.env.VITE_API_URL}/api/download/${fileName}`} className={tableStyles.downloadLink} target="_blank" rel="noopener noreferrer">
         <Download size={16} /> ดาวน์โหลด
