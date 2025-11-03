@@ -270,7 +270,7 @@ const StudentDocumentDetails = () => {
                       </td>
                               
                       {/* (!!!) START: แก้ไข (เพิ่ม style) (!!!) */}
-                      <td style={{ textAlign: 'center' }}>{renderDownloadLink(file.pdf)}</td>
+                      <td style={{ textAlign: 'left' }}>{renderDownloadLink(file.pdf)}</td>
                       <td style={{ textAlign: 'center' }}>{renderDownloadLink(file.docx)}</td>
                       <td style={{ textAlign: 'center' }}>
                         {renderDownloadLink(file.zip)}
