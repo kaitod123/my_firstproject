@@ -180,14 +180,14 @@ const handleDeleteSelected = async () => {
                     <div className={styles.controlscontainer}>
                         <div className={styles.actionbuttons}>
                             <button onClick={() => setIsModalOpen(true)} className={`${styles.btn} ${styles.adduserbtn}`}>
-                                + Add User
+                                + เพิ่มผู้ใช้
                             </button>
                             <button 
                                 onClick={handleDeleteSelected} 
                                 className={`${styles.btn} ${styles.deleteuserbtn}`}
                                 disabled={selectedUsers.length === 0}
                             >
-                                Delete Selected
+                                ลบผู้ใช้ที่เลือก
                             </button>
                             
                         </div>
@@ -288,10 +288,10 @@ const handleDeleteSelected = async () => {
                                           
                                             <div className={styles.actionCell}>
                                                  <button onClick={() => handleEditClick(user)} className={`${styles.actionBtn} ${styles.editBtn}`}>
-                                                    Edit 
+                                                    แก้ไข
                                                   </button>
                                                 {/* (แก้ไข) ปุ่ม Delete ให้เรียกใช้ handleDelete */}
-                                                <button onClick={() => handleDelete(user.id)} className={`${styles.actionBtn} ${styles.deleteuserbtn}`}>Delete</button>
+                                                <button onClick={() => handleDelete(user.id)} className={`${styles.actionBtn} ${styles.deleteuserbtn}`}>ลบผู้ใช้</button>
                                             </div>
                                         </td>
                                     </tr>
