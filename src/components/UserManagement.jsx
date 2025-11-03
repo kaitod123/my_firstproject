@@ -241,15 +241,15 @@ const UserManagement = () => {
     return (
         <div className={styles.body}>
             <div className={styles.dashboardContainer}>
-                              <div className={styles.dashboardContainer}>
+                              
+                <div className={styles.usermanagementcontainer}>
+                    <div className={styles.dashboardContainer}>
                                     <div>
                                         <Link to="/AdminDashboard" className={styles.backButton}>
                                         &larr; กลับไปยังหน้าจัดการข้อมูลแอดมิน
                                         </Link>
                                     </div>
                               </div>
-                <div className={styles.usermanagementcontainer}>
-                    
                     <h1>จัดการผู้ใช้งาน</h1>
 
                    
@@ -271,7 +271,15 @@ const UserManagement = () => {
                                     + เพิ่มผู้ใช้
                                 </button>
 
-                                <button
+                                <button 
+                                    onClick={handleDeleteSelected} 
+                                    className={`${styles.btna} ${styles.deleteuserbtn}`}
+                                    disabled={selectedUsers.length === 0}
+                                >
+                                    ลบผู้ใช้ที่เลือก
+                                </button>
+
+                                                            <button
                                     onClick={handleUploadClick} 
                                     className={`${styles.btna} ${styles.uploadbtn}`} 
                                 >
@@ -285,19 +293,6 @@ const UserManagement = () => {
                                     style={{ display: 'none' }}
                                     accept=".xlsx, .xls" // จำกัดให้รับเฉพาะไฟล์ Excel
                                 />
-
-                                <button 
-                                    onClick={handleDeleteSelected} 
-                                    className={`${styles.btna} ${styles.deleteuserbtn}`}
-                                    disabled={selectedUsers.length === 0}
-                                >
-                                    ลบผู้ใช้ที่เลือก
-                                </button>
-
-                                {/* (!!!) ย้ายปุ่มนำเข้าและ input มาไว้ตรงนี้ (!!!) */}
-
-                                {/* (!!!) สิ้นสุดส่วนที่ย้ายมา (!!!) */}
-
 
                             </div>
                             
