@@ -256,24 +256,8 @@ const UserManagement = () => {
                     {/* (!!!) START: แก้ไขโครงสร้าง Layout (!!!) */}
                     <div className={styles.controlsContainer}>
                         
-                        {/* === ส่วนด้านซ้าย === */}
-                        <div>
-                            <button
-                                onClick={handleUploadClick} 
-                                // ใช้ .btna เพื่อให้ได้ padding และ .uploadbtn เพื่อสี
-                                className={`${styles.btna} ${styles.uploadbtn}`} 
-                            >
-                                <ArrowUpToLine size={18} style={{ marginRight: '8px' }} />
-                                นำเข้า
-                            </button>
-                            <input
-                                type="file"
-                                ref={fileInputRef}
-                                onChange={handleFileChange}
-                                style={{ display: 'none' }}
-                                accept=".xlsx, .xls" // จำกัดให้รับเฉพาะไฟล์ Excel
-                            />
-                        </div>
+                        {/* === ส่วนด้านซ้าย (ตอนนี้ว่างเปล่า) === */}
+                        {/* (!!!) ย้ายปุ่มนำเข้าไปไว้ใน .rightColumn แล้ว (!!!) */}
 
                         {/* === ส่วนด้านขวา (เปลี่ยนชื่อ class) === */}
                         <div className={styles.rightColumn}>
@@ -282,13 +266,33 @@ const UserManagement = () => {
                             <div className={styles.topButtonRow}>
                                 <button 
                                     onClick={handleDeleteSelected} 
-                                    className={`${styles.btn} ${styles.deleteuserbtn}`}
+                                    className={`${styles.btna} ${styles.deleteuserbtn}`}
                                     disabled={selectedUsers.length === 0}
                                 >
                                     ลบผู้ใช้ที่เลือก
                                 </button>
 
-                                <button onClick={openAddModal} className={`${styles.btn} ${styles.adduserbtn}`}>
+                                {/* (!!!) ย้ายปุ่มนำเข้าและ input มาไว้ตรงนี้ (!!!) */}
+                                <button
+                                    onClick={handleUploadClick} 
+                                    className={`${styles.btna} ${styles.uploadbtn}`} 
+                                >
+                                    <ArrowUpToLine size={18} style={{ marginRight: '8px' }} />
+                                    นำเข้า
+                                </button>
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleFileChange}
+                                    style={{ display: 'none' }}
+                                    accept=".xlsx, .xls" // จำกัดให้รับเฉพาะไฟล์ Excel
+                                />
+                                {/* (!!!) สิ้นสุดส่วนที่ย้ายมา (!!!) */}
+
+                                <button 
+                                    onClick={openAddModal} 
+                                    className={`${styles.btna} ${styles.adduserbtn}`}
+                                >
                                     + เพิ่มผู้ใช้
                                 </button>
                             </div>
