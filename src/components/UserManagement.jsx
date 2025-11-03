@@ -4,7 +4,8 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import * as XLSX from 'xlsx'; // (!!!) 1. Import 'xlsx'
 import { Link } from 'react-router-dom';
-import { FileImport } from 'lucide-react';
+// (!!!) 1. (แก้ไข) เปลี่ยนชื่อไอคอนที่ Import (!!!)
+import { Import } from 'lucide-react'; 
 
 // (!!!) 2. Import 'bulkCreateUsers' (ที่เราจะสร้างใน api/usersApi.js)
 import { fetchUsers, createUser, updateUser, deleteUser, fetchUserById, bulkCreateUsers } from '../api/usersApi';
@@ -266,14 +267,17 @@ const UserManagement = () => {
                                 style={{ display: 'none' }}
                                 accept=".xlsx, .xls" // จำกัดให้รับเฉพาะไฟล์ Excel
                             />
+                            {/* (!!!) START: 4. (แก้ไข) แก้ไขปุ่มให้ถูกต้อง (!!!) */}
                             <button
                                 onClick={handleUploadClick} 
                                 // (แนะนำ) เพิ่ม class 'uploadbtn' ใน CSS เพื่อทำเป็นสีเขียว
                                 className={`${styles.btn} ${styles.uploadbtn}`} 
                             >
-                                <FileImport size={18} style={{ marginRight: '8px' }} />
+                                {/* (!!!) 1. (แก้ไข) เปลี่ยนชื่อ Component (!!!) */}
+                                <Import size={18} style={{ marginRight: '8px' }} />
+                                อัพโหลด Excel
                             </button>
-                            {/* (!!!) END: 4. เพิ่มปุ่มและ Input ที่ซ่อนอยู่ (!!!) */}
+                            {/* (!!!) END: 4. (แก้ไข) แก้ไขปุ่มให้ถูกต้อง (!!!) */}
 
 
                             <button 
@@ -418,6 +422,7 @@ const UserManagement = () => {
                                 </div>
                               <div className={styles.formGroup}>
                                 <label className={styles.checkboxLabel}>
+                                    {/* (!!!) 5. (แก้ไข) เพิ่ม '== 1' เพื่อให้ Checkbox ทำงานถูกต้อง */}
                                     <input type="checkbox" name="is_active" checked={currentUser.is_active == 1} onChange={handleInputChange} />
                                     User is Active
                                 </label>
