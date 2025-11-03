@@ -57,7 +57,7 @@
   height: 40px;
   width: 40px;
   border-radius: 50%; /* ทำให้เป็นวงกลม */
-  background-color: #007bff; /* สีพื้นหลัง (สีฟ้า) */
+  background-color: #94c2f2; /* สีพื้นหลัง (สีฟ้า) */
   color: white; /* สีตัวอักษร */
   display: flex;
   align-items: center;
@@ -68,7 +68,7 @@
   transition: all 0.2s ease; /* (แก้ไข) transition */
   
   /* --- (เพิ่ม) กรอบ --- */
-  border: 2px solid #0056b3; /* เพิ่มกรอบสีน้ำเงินเข้ม */
+  border: 2px solid #87c1ff; /* เพิ่มกรอบสีน้ำเงินเข้ม */
 }
 
 h1 {
