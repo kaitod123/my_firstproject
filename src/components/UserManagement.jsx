@@ -167,7 +167,7 @@ const handleDeleteSelected = async () => {
                               <div className={styles.dashboardContainer}>
                                     <div>
                                         <Link to="/AdminDashboard" className={styles.backButton}>
-                                        กลับไปยังหน้าจัดการข้อมูลแอดมิน
+                                        &larr; กลับไปยังหน้าจัดการข้อมูลแอดมิน
                                         </Link>
                                     </div>
                               </div>
