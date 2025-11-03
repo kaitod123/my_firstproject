@@ -28,6 +28,12 @@ const UserManagement = () => {
 
     const fileInputRef = useRef(null);
 
+    const roleTranslation = {
+        'Admin': 'ผู้ดูแล',
+        'Advisor': 'อาจารย์',
+        'Student': 'นักศึกษา',
+    };
+
     const loadUsers = () => {
         setLoading(true);
         fetchUsers()
