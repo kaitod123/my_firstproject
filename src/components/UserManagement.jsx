@@ -5,7 +5,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import * as XLSX from 'xlsx'; // (!!!) 1. Import 'xlsx'
 import { Link } from 'react-router-dom';
 // (!!!) 1. (แก้ไข) เปลี่ยนชื่อไอคอนที่ Import (!!!)
-import { ArrowUpToLine } from 'lucide-react'; // <--- แก้ไขตามภาพล่าสุด
+import { ArrowUpToLine } from 'lucide-react'; 
 
 // (!!!) 2. Import 'bulkCreateUsers' (ที่เราจะสร้างใน api/usersApi.js)
 import { fetchUsers, createUser, updateUser, deleteUser, fetchUserById, bulkCreateUsers } from '../api/usersApi';
@@ -275,38 +275,42 @@ const UserManagement = () => {
                             />
                         </div>
 
-                        {/* === ส่วนด้านขวา === */}
-                        <div className={styles.rightControls}>
-                            <button 
-                                onClick={handleDeleteSelected} 
-                                className={`${styles.btn} ${styles.deleteuserbtn}`}
-                                disabled={selectedUsers.length === 0}
-                            >
-                                ลบผู้ใช้ที่เลือก
-                            </button>
+                        {/* === ส่วนด้านขวา (เปลี่ยนชื่อ class) === */}
+                        <div className={styles.rightColumn}>
+                            
+                            {/* === แถวบน (ปุ่ม + Dropdown) === */}
+                            <div className={styles.topButtonRow}>
+                                <button 
+                                    onClick={handleDeleteSelected} 
+                                    className={`${styles.btn} ${styles.deleteuserbtn}`}
+                                    disabled={selectedUsers.length === 0}
+                                >
+                                    ลบผู้ใช้ที่เลือก
+                                </button>
 
-                            <button onClick={openAddModal} className={`${styles.btn} ${styles.adduserbtn}`}>
-                                + เพิ่มผู้ใช้
-                            </button>
+                                <button onClick={openAddModal} className={`${styles.btn} ${styles.adduserbtn}`}>
+                                    + เพิ่มผู้ใช้
+                                </button>
+                                
+                                {/* Dropdown Sorter */}
+                                <select
+                                    onChange={(e) => {
+                                        const [key, direction] = e.target.value.split('-');
+                                        setSortConfig({ key, direction });
+                                    }}
+                                    value={`${sortConfig.key}-${sortConfig.direction}`}
+                                    className={styles.btna}
+                                >
+                                    <option value="created_at-descending">Date Added (Newest)</option>
+                                    <option value="created_at-ascending">Date Added (Oldest)</option>
+                                    <option value="role-ascending">Role (A-Z)</option>
+                                    <option value="role-descending">Role (Z-A)</option>
+                                    <option value="first_name-ascending">Name (A-Z)</option>
+                                    <option value="first_name-descending">Name (Z-A)</option>
+                                </select>
+                            </div>
                             
-                            {/* Dropdown Sorter */}
-                            <select
-                                onChange={(e) => {
-                                    const [key, direction] = e.target.value.split('-');
-                                    setSortConfig({ key, direction });
-                                }}
-                                value={`${sortConfig.key}-${sortConfig.direction}`}
-                                className={styles.btna}
-                            >
-                                <option value="created_at-descending">Date Added (Newest)</option>
-                                <option value="created_at-ascending">Date Added (Oldest)</option>
-                                <option value="role-ascending">Role (A-Z)</option>
-                                <option value="role-descending">Role (Z-A)</option>
-                                <option value="first_name-ascending">Name (A-Z)</option>
-                                <option value="first_name-descending">Name (Z-A)</option>
-                            </select>
-                            
-                            {/* Role Tabs */}
+                            {/* === แถวล่าง (Tabs) === */}
                             <div className={styles.roletabs}>
                                 <button onClick={() => setActiveRole('All')} className={activeRole === 'All' ? styles.active : ''}>All</button>
                                 <button onClick={() => setActiveRole('Admin')} className={activeRole === 'Admin' ? styles.active : ''}>Admin</button>
