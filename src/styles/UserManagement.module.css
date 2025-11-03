@@ -25,7 +25,6 @@
   padding: 10px 20px;
   border-radius: 8px; /* เพิ่มความโค้งมน */
   font-size: 1rem;
-  font-weight: 600; /* ทำให้ตัวอักษรหนาขึ้น */
   cursor: pointer;
   transition: all 0.2s ease-in-out; /* ทำให้การเปลี่ยนแปลงสมูท */
   display: inline-flex; /* จัดไอคอนกับข้อความให้อยู่กลาง (สำหรับอนาคต) */
