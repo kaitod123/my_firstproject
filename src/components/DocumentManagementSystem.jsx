@@ -320,7 +320,7 @@ const DocumentManagementSystem = () => {
             className={styles.categoryTagsContainer} 
             style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: 'auto', paddingTop: '10px', borderTop: '1px solid #eee' }}
           >
-            {Array.isArray(doc.categories) && doc.categories.map((category, index) => (
+            {Array.isArray(doc.keywords) && doc.keywords.map((category, index) => (
                 <span key={index} className={styles.categoryTag}>
                     {category}
                 </span>
