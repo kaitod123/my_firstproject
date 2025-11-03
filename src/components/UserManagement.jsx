@@ -268,7 +268,7 @@ const UserManagement = () => {
                             <button
                                 onClick={handleUploadClick} 
                                 // (แนะนำ) เพิ่ม class 'uploadbtn' ใน CSS เพื่อทำเป็นสีเขียว
-                                className={`${styles.uploadbtn}`} 
+                                className={`${styles.uploadbtn} ${styles.btn}`} 
                             >
                                 {/* (!!!) 1. (แก้ไข) เปลี่ยนชื่อ Component (!!!) */}
                                 <ArrowUpToLine size={20} style={{ marginRight: '8px' }} />นำเข้า
@@ -292,6 +292,7 @@ const UserManagement = () => {
                             
 
                              <div>
+                                <label></label>
                                     <select
                                         onChange={(e) => {
                                             const [key, direction] = e.target.value.split('-');
