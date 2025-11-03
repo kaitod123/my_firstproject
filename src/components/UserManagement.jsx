@@ -270,7 +270,7 @@ const UserManagement = () => {
                             <button
                                 onClick={handleUploadClick} 
                                 // (แนะนำ) เพิ่ม class 'uploadbtn' ใน CSS เพื่อทำเป็นสีเขียว
-                                className={`${styles.btn} ${styles.uploadbtn}`} 
+                                className={`${styles.uploadbtn}`} 
                             >
                                 {/* (!!!) 1. (แก้ไข) เปลี่ยนชื่อ Component (!!!) */}
                                 <Import size={18} style={{ marginRight: '8px' }} />
