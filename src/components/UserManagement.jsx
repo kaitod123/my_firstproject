@@ -5,7 +5,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import * as XLSX from 'xlsx'; // (!!!) 1. Import 'xlsx'
 import { Link } from 'react-router-dom';
 // (!!!) 1. (แก้ไข) เปลี่ยนชื่อไอคอนที่ Import (!!!)
-import { ArrowUpToLine } from 'lucide-react'; 
+import { ArrowUpToLine } from 'lucide-react'; // <--- แก้ไขตามภาพล่าสุด
 
 // (!!!) 2. Import 'bulkCreateUsers' (ที่เราจะสร้างใน api/usersApi.js)
 import { fetchUsers, createUser, updateUser, deleteUser, fetchUserById, bulkCreateUsers } from '../api/usersApi';
@@ -241,22 +241,31 @@ const UserManagement = () => {
     return (
         <div className={styles.body}>
             <div className={styles.dashboardContainer}>
-                <div className={styles.usermanagementcontainer}>
-                    <div className={styles.dashboardContainer}>
+                              <div className={styles.dashboardContainer}>
                                     <div>
                                         <Link to="/AdminDashboard" className={styles.backButton}>
                                         &larr; กลับไปยังหน้าจัดการข้อมูลแอดมิน
                                         </Link>
                                     </div>
                               </div>
+                <div className={styles.usermanagementcontainer}>
+                    
                     <h1>จัดการผู้ใช้งาน</h1>
 
-                   <div className={styles.actionbuttons}>
-                            <button onClick={openAddModal} className={`${styles.btn} ${styles.adduserbtn}`}>
-                                + เพิ่มผู้ใช้
+                   
+                    {/* (!!!) START: แก้ไขโครงสร้าง Layout (!!!) */}
+                    <div className={styles.controlsContainer}>
+                        
+                        {/* === ส่วนด้านซ้าย === */}
+                        <div>
+                            <button
+                                onClick={handleUploadClick} 
+                                // ใช้ .btna เพื่อให้ได้ padding และ .uploadbtn เพื่อสี
+                                className={`${styles.btna} ${styles.uploadbtn}`} 
+                            >
+                                <ArrowUpToLine size={18} style={{ marginRight: '8px' }} />
+                                นำเข้า
                             </button>
-
-                            {/* (!!!) START: 4. เพิ่มปุ่มและ Input ที่ซ่อนอยู่ (!!!) */}
                             <input
                                 type="file"
                                 ref={fileInputRef}
@@ -264,19 +273,10 @@ const UserManagement = () => {
                                 style={{ display: 'none' }}
                                 accept=".xlsx, .xls" // จำกัดให้รับเฉพาะไฟล์ Excel
                             />
-                            {/* (!!!) START: 4. (แก้ไข) แก้ไขปุ่มให้ถูกต้อง (!!!) */}
-                            <button
-                                onClick={handleUploadClick} 
-                                // (แนะนำ) เพิ่ม class 'uploadbtn' ใน CSS เพื่อทำเป็นสีเขียว
-                                className={`${styles.uploadbtn}`} 
-                            >
-                                {/* (!!!) 1. (แก้ไข) เปลี่ยนชื่อ Component (!!!) */}
-                                <ArrowUpToLine size={20} style={{ marginRight: '8px' }} />นำเข้า
+                        </div>
 
-                            </button>
-                            {/* (!!!) END: 4. (แก้ไข) แก้ไขปุ่มให้ถูกต้อง (!!!) */}
-
-
+                        {/* === ส่วนด้านขวา === */}
+                        <div className={styles.rightControls}>
                             <button 
                                 onClick={handleDeleteSelected} 
                                 className={`${styles.btn} ${styles.deleteuserbtn}`}
@@ -284,42 +284,39 @@ const UserManagement = () => {
                             >
                                 ลบผู้ใช้ที่เลือก
                             </button>
-                            
-                        </div>
-                        
-                    <div className={styles.controlscontainer}>
-                        <div className={styles.roleselector}>
-                            
 
-                             <div>
-                                <label> </label>
-                                    <select
-                                        onChange={(e) => {
-                                            const [key, direction] = e.target.value.split('-');
-                                            setSortConfig({ key, direction });
-                                        }}
-                                        value={`${sortConfig.key}-${sortConfig.direction}`}
-                                        className={styles.btna}
-                                    >
-                                        
-                                        <option value="created_at-descending">Date Added (Newest)</option>
-                                        <option value="created_at-ascending">Date Added (Oldest)</option>
-                                        <option value="role-ascending">Role (A-Z)</option>
-                                        <option value="role-descending">Role (Z-A)</option>
-                                        <option value="first_name-ascending">Name (A-Z)</option>
-                                        <option value="first_name-descending">Name (Z-A)</option>
-                                    </select>
-                        </div>
+                            <button onClick={openAddModal} className={`${styles.btn} ${styles.adduserbtn}`}>
+                                + เพิ่มผู้ใช้
+                            </button>
+                            
+                            {/* Dropdown Sorter */}
+                            <select
+                                onChange={(e) => {
+                                    const [key, direction] = e.target.value.split('-');
+                                    setSortConfig({ key, direction });
+                                }}
+                                value={`${sortConfig.key}-${sortConfig.direction}`}
+                                className={styles.btna}
+                            >
+                                <option value="created_at-descending">Date Added (Newest)</option>
+                                <option value="created_at-ascending">Date Added (Oldest)</option>
+                                <option value="role-ascending">Role (A-Z)</option>
+                                <option value="role-descending">Role (Z-A)</option>
+                                <option value="first_name-ascending">Name (A-Z)</option>
+                                <option value="first_name-descending">Name (Z-A)</option>
+                            </select>
+                            
+                            {/* Role Tabs */}
                             <div className={styles.roletabs}>
                                 <button onClick={() => setActiveRole('All')} className={activeRole === 'All' ? styles.active : ''}>All</button>
                                 <button onClick={() => setActiveRole('Admin')} className={activeRole === 'Admin' ? styles.active : ''}>Admin</button>
                                 <button onClick={() => setActiveRole('Advisor')} className={activeRole === 'Advisor' ? styles.active : ''}>Advisor</button>
                                 <button onClick={() => setActiveRole('Student')} className={activeRole === 'Student' ? styles.active : ''}>Student</button>
-                                
                             </div>
                         </div>
-                       
                     </div>
+                    {/* (!!!) END: แก้ไขโครงสร้าง Layout (!!!) */}
+                       
 
                     <div className={styles.searchbar}>
                         <input 
@@ -448,3 +445,4 @@ const UserManagement = () => {
 };
 
 export default UserManagement;
+

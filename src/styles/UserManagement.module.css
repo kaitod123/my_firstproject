@@ -56,6 +56,19 @@ h1 {
     color: #000;
 }
 
+.controlsContainer {
+    display: flex;
+    justify-content: space-between; /* แยกซ้าย-ขวา */
+    align-items: center;
+    margin-bottom: 1.5rem; /* เว้นระยะก่อนช่องค้นหา */
+}
+
+.rightControls {
+    display: flex;
+    align-items: center;
+    gap: 12px; /* ระยะห่างระหว่างปุ่ม/Filter ด้านขวา */
+}
+
 .actionbuttons .btn {
     border: none;
     padding: 12px 24px;
