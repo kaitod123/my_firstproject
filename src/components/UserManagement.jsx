@@ -290,8 +290,9 @@ const UserManagement = () => {
                     <div className={styles.controlscontainer}>
                         <div className={styles.roleselector}>
                             
-                            <label>Filter by role</label>
+
                              <div>
+                                <label>Filter by role</label>
                                     <select
                                         onChange={(e) => {
                                             const [key, direction] = e.target.value.split('-');
