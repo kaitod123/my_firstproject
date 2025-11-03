@@ -418,7 +418,6 @@ const UserManagement = () => {
                                 </div>
                               <div className={styles.formGroup}>
                                 <label className={styles.checkboxLabel}>
-                                    {/* (!!!) 5. (แก้ไข) เพิ่ม '== 1' เพื่อให้ Checkbox ทำงานถูกต้อง */}
                                     <input type="checkbox" name="is_active" checked={currentUser.is_active == 1} onChange={handleInputChange} />
                                     User is Active
                                 </label>
