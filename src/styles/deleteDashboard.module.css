@@ -34,12 +34,15 @@
 
 .searchInput input,
 .filterSelect select {
-    width: 99%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 1em;
-    font-family: 'Sarabun', sans-serif;
+    width: 100%;
+    padding: 1rem 1rem 1rem 3.5rem;
+    border: 2px solid #e5e7eb; /* เพิ่มขอบ */
+    border-radius: 50px;
+    background-color: #ffffff;
+    font-size: 1rem;
+    color: #374151; /* ข้อความเข้ม */
+    outline: none;
+    transition: all 0.3s ease;
 }
 
 .clearButton {
