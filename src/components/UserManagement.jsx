@@ -251,9 +251,7 @@ const UserManagement = () => {
                               </div>
                     <h1>จัดการผู้ใช้งาน</h1>
 
-                   
-                    <div className={styles.controlscontainer}>
-                        <div className={styles.actionbuttons}>
+                   <div className={styles.actionbuttons}>
                             <button onClick={openAddModal} className={`${styles.btn} ${styles.adduserbtn}`}>
                                 + เพิ่มผู้ใช้
                             </button>
@@ -288,7 +286,7 @@ const UserManagement = () => {
                             </button>
                             
                         </div>
-                        
+                    <div className={styles.controlscontainer}>
                         <div className={styles.roleselector}>
                             
                             <label>Filter by role</label>
