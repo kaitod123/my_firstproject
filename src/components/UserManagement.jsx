@@ -273,7 +273,7 @@ const UserManagement = () => {
                                 className={`${styles.uploadbtn}`} 
                             >
                                 {/* (!!!) 1. (แก้ไข) เปลี่ยนชื่อ Component (!!!) */}
-                                <Import size={18} style={{ marginRight: '8px' }} />นำเข้า
+                                <Import size={20} style={{ marginRight: '8px' }} />นำเข้า
 
                             </button>
                             {/* (!!!) END: 4. (แก้ไข) แก้ไขปุ่มให้ถูกต้อง (!!!) */}
