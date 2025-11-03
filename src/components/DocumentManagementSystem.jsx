@@ -1,4 +1,3 @@
-// src/components/DocumentManagementSystem.jsx
 import React, { useState, useEffect } from 'react';
 // (เพิ่ม) Import Icon อาจารย์ที่ปรึกษา (สมมติว่าใช้ User)
 import { Search, User, Clock, FileText, Download, Filter, CircuitBoard, Globe, Gamepad2, AppWindowIcon, Apple, Bot, Database, Menu } from 'lucide-react'; 
@@ -135,9 +134,20 @@ const DocumentManagementSystem = () => {
                 console.error("Could not parse file_paths JSON for document ID:", doc.id, e); 
             }
             
+            // (!!!) START: แก้ไขการประมวลผล Keywords (!!!)
+            // แปลง doc.keywords จาก string "k1,k2,k3" ให้เป็น array ['k1', 'k2', 'k3']
+            let keywordsArray = [];
+            if (doc.keywords && typeof doc.keywords === 'string') {
+                keywordsArray = doc.keywords
+                                .split(',')
+                                .map(k => k.trim())
+                                .filter(k => k.length > 0);
+            }
+            // (!!!) END: แก้ไขการประมวลผล Keywords (!!!)
+
             return {
                 ...doc,
-                keywords: doc.keywords || '',
+                keywords: keywordsArray, // (!! แก้ไข !!) ใช้ Array ที่เราประมวลผล
                 categories: categories, 
                 files: [], 
                 // (!! แก้ไข !!) เก็บ S3 Key แทน URL
@@ -157,6 +167,14 @@ const DocumentManagementSystem = () => {
 
     fetchDocuments();
   }, [searchTerm, departmentFilter, yearFilter, typeFilter]); 
+
+  // (!!!) START: เพิ่มฟังก์ชันนี้ (!!!)
+  // ฟังก์ชันสำหรับจัดการเมื่อคลิกปุ่ม keyword
+  const handleKeywordClick = (keyword) => {
+    setSearchTerm(keyword); // ตั้งค่า searchTerm ใหม่
+    // useEffect ด้านบนจะทำงานอีกครั้ง (re-fetch) เพราะ searchTerm เปลี่ยนไป
+  };
+  // (!!!) END: เพิ่มฟังก์ชันนี้ (!!!)
 
   const handleSearch = (e) => {
     e.preventDefault(); 
@@ -212,7 +230,9 @@ const DocumentManagementSystem = () => {
   );
 
 
-  const DocumentCard = ({ doc }) => {
+  // (!!!) START: แก้ไข DocumentCard (!!!)
+  // เพิ่ม prop 'onKeywordClick'
+  const DocumentCard = ({ doc, onKeywordClick }) => {
     
     const handleClick = () => {
         const userData = JSON.parse(localStorage.getItem('user'));
@@ -316,20 +336,48 @@ const DocumentManagementSystem = () => {
               <span><strong>ที่ปรึกษา:</strong> {doc.advisorName || doc.advisorname || 'N/A'}</span>
             </div>
           </div>
+
+          {/* (!!!) START: แก้ไขส่วนแสดงผล Keywords (!!!) */}
           <div 
             className={styles.categoryTagsContainer} 
             style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: 'auto', paddingTop: '10px', borderTop: '1px solid #eee' }}
           >
-            {Array.isArray(doc.keywords) && doc.keywords.map((category, index) => (
-                <span key={index} className={styles.categoryTag}>
-                    {category}
-                </span>
+            {/* ตรวจสอบว่า doc.keywords เป็น Array (ซึ่งเราแก้ไขใน useEffect แล้ว) */}
+            {Array.isArray(doc.keywords) && doc.keywords.map((keyword, index) => (
+                // เปลี่ยนจาก <span> เป็น <button>
+                <button 
+                    key={index} 
+                    className={styles.categoryTag} // ใช้สไตล์เดิมเพื่อให้หน้าตาเหมือนเดิม
+                    onClick={(e) => {
+                        e.stopPropagation(); // (สำคัญ!) ป้องกันไม่ให้ card's onClick ทำงาน
+                        onKeywordClick(keyword); // เรียกฟังก์ชันที่ส่งมาจาก Parent
+                    }}
+                    title={`ค้นหาด้วย: ${keyword}`}
+                    // เพิ่มสไตล์เล็กน้อยเพื่อให้ดูเหมือนปุ่ม
+                    style={{
+                        cursor: 'pointer',
+                        background: '#f3f4f6',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '12px',
+                        padding: '3px 10px',
+                        fontSize: '12px',
+                        transition: 'background-color 0.2s'
+                    }}
+                    // เพิ่ม Hover effect
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#e5e7eb'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#f3f4f6'}
+                >
+                    {keyword}
+                </button>
             ))}
           </div>
+          {/* (!!!) END: แก้ไขส่วนแสดงผล Keywords (!!!) */}
+
         </div>
       </div>
     );
   };
+  // (!!!) END: แก้ไข DocumentCard (!!!)
 
   const LoadingSpinner = () => (
     <div className={styles.loading}>
@@ -432,9 +480,16 @@ const DocumentManagementSystem = () => {
                 marginTop: '20px' 
               }}
             >
+              {/* (!!!) START: แก้ไขการเรียกใช้ (!!!) */}
+              {/* ส่ง onKeywordClick prop ลงไป */}
               {documents.map((doc) => (
-                <DocumentCard key={doc.id} doc={doc} />
+                <DocumentCard 
+                  key={doc.id} 
+                  doc={doc} 
+                  onKeywordClick={handleKeywordClick} 
+                />
               ))}
+              {/* (!!!) END: แก้ไขการเรียกใช้ (!!!) */}
             </div>
           )}
         </div>
@@ -451,4 +506,3 @@ const DocumentManagementSystem = () => {
 };
 
 export default DocumentManagementSystem;
-
