@@ -251,12 +251,12 @@ const StudentDocumentDetails = () => {
                 <thead>
                   <tr>
                             <th style={{ width: '30%', textAlign: 'left' }}>ชื่อ</th>
-                            <th style={{ width: '15%', textAlign: 'center' }}>PDF</th>
-                            <th style={{ width: '15%', textAlign: 'center' }}>DOCX</th>
-                            <th style={{ width: '15%', textAlign: 'center' }}>ZIP,RAR</th>
-                            <th style={{ width: '15%', textAlign: 'center' }}>EXE</th>
-                            <th style={{ width: '15%', textAlign: 'center' }}>PSD</th>
-                            <th style={{ width: '15%', textAlign: 'center' }}>JPG/PNG</th>
+                            <th style={{ width: '20%', textAlign: 'center' }}>PDF</th>
+                            <th style={{ width: '20%', textAlign: 'center' }}>DOCX</th>
+                            <th style={{ width: '20%', textAlign: 'center' }}>ZIP,RAR</th>
+                            <th style={{ width: '20%', textAlign: 'center' }}>EXE</th>
+                            <th style={{ width: '20%', textAlign: 'center' }}>PSD</th>
+                            <th style={{ width: '20%', textAlign: 'center' }}>JPG/PNG</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -270,7 +270,7 @@ const StudentDocumentDetails = () => {
                       </td>
                               
                       {/* (!!!) START: แก้ไข (เพิ่ม style) (!!!) */}
-                      <td style={{ textAlign: 'left' }}>{renderDownloadLink(file.pdf)}</td>
+                      <td style={{ textAlign: 'center' }}>{renderDownloadLink(file.pdf)}</td>
                       <td style={{ textAlign: 'center' }}>{renderDownloadLink(file.docx)}</td>
                       <td style={{ textAlign: 'center' }}>
                         {renderDownloadLink(file.zip)}
