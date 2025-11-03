@@ -9,6 +9,9 @@
     min-height: 100vh;
     margin: 0;
 }
+.uploadbtn{
+    background-color:#f0f2f5 ;
+}
 .btna, .actionBtn {
   border: none;
   padding: 10px 20px;

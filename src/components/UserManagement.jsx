@@ -241,9 +241,8 @@ const UserManagement = () => {
     return (
         <div className={styles.body}>
             <div className={styles.dashboardContainer}>
-
                 <div className={styles.usermanagementcontainer}>
-                                                  <div className={styles.dashboardContainer}>
+                    <div className={styles.dashboardContainer}>
                                     <div>
                                         <Link to="/AdminDashboard" className={styles.backButton}>
                                         &larr; กลับไปยังหน้าจัดการข้อมูลแอดมิน
@@ -270,10 +269,12 @@ const UserManagement = () => {
                             {/* (!!!) START: 4. (แก้ไข) แก้ไขปุ่มให้ถูกต้อง (!!!) */}
                             <button
                                 onClick={handleUploadClick} 
-
-                            >นำเข้า
+                                // (แนะนำ) เพิ่ม class 'uploadbtn' ใน CSS เพื่อทำเป็นสีเขียว
+                                className={`${styles.btn} ${styles.uploadbtn}`} 
+                            >
                                 {/* (!!!) 1. (แก้ไข) เปลี่ยนชื่อ Component (!!!) */}
                                 <Import size={18} style={{ marginRight: '8px' }} />
+                                นำเข้า
                             </button>
                             {/* (!!!) END: 4. (แก้ไข) แก้ไขปุ่มให้ถูกต้อง (!!!) */}
 
