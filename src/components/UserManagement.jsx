@@ -5,7 +5,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import * as XLSX from 'xlsx'; // (!!!) 1. Import 'xlsx'
 import { Link } from 'react-router-dom';
 // (!!!) 1. (แก้ไข) เปลี่ยนชื่อไอคอนที่ Import (!!!)
-import { Import } from 'lucide-react'; 
+import { ArrowUpToLine } from 'lucide-react'; 
 
 // (!!!) 2. Import 'bulkCreateUsers' (ที่เราจะสร้างใน api/usersApi.js)
 import { fetchUsers, createUser, updateUser, deleteUser, fetchUserById, bulkCreateUsers } from '../api/usersApi';
@@ -273,7 +273,7 @@ const UserManagement = () => {
                                 className={`${styles.uploadbtn}`} 
                             >
                                 {/* (!!!) 1. (แก้ไข) เปลี่ยนชื่อ Component (!!!) */}
-                                <Import size={20} style={{ marginRight: '8px' }} />นำเข้า
+                                <ArrowUpToLine size={20} style={{ marginRight: '8px' }} />นำเข้า
 
                             </button>
                             {/* (!!!) END: 4. (แก้ไข) แก้ไขปุ่มให้ถูกต้อง (!!!) */}
