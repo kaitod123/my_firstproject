@@ -241,15 +241,15 @@ const UserManagement = () => {
     return (
         <div className={styles.body}>
             <div className={styles.dashboardContainer}>
-                              <div className={styles.dashboardContainer}>
+                             
+                <div className={styles.usermanagementcontainer}>
+                     <div className={styles.dashboardContainer}>
                                     <div>
                                         <Link to="/AdminDashboard" className={styles.backButton}>
                                         &larr; กลับไปยังหน้าจัดการข้อมูลแอดมิน
                                         </Link>
                                     </div>
                               </div>
-                <div className={styles.usermanagementcontainer}>
-                    
                     <h1>User Management</h1>
 
                    
