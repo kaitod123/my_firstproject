@@ -376,7 +376,9 @@ const UserManagement = () => {
                                                 </div>
                                             </td>
                                             <td>
-                                                <span className={`${styles.roleBadge} ${styles['role-' + user.role.toLowerCase().replace(' ', '-')]}`}>{user.role}</span>
+                                                <span className={`roleBadge role-${(user.role || '').toLowerCase().replace(' ', '-')}`}>
+                                                    {roleTranslation[user.role] || user.role}
+                                                </span>
                                             </td>
                                             <td>
                                                 <span className={`${styles.status} ${user.is_active ? styles.active : styles.inactive}`}>{user.is_active ? 'พร้อมใช้งาน' : 'ไม่พร้อมใช้งาน'}</span>
