@@ -168,6 +168,9 @@
   background-color: #f0f2f5;
   transition: color 0.2s ease-in-out;
 }
+.backButton:hover {
+  color: var(--accent-blue);
+}
 .errorMessage{
   display: flex;
   flex-direction: column;

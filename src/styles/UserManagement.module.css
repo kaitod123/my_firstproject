@@ -148,6 +148,9 @@ h1 {
   background-color: #f0f2f5;
   transition: color 0.2s ease-in-out;
 }
+.backButton:hover {
+  color: var(--accent-blue);
+}
 /* === ส่วนที่เพิ่มเข้ามา: สไตล์สำหรับ Badge ของแต่ละ Role === */
 .roleBadge {
     padding: 4px 12px;
