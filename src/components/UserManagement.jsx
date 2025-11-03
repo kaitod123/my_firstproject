@@ -1,6 +1,7 @@
 // src/components/UserManagement.jsx
 
-import React, { useState, useEffect, useMemo } from 'react';
+// (!!!) 1. Import 'useRef' เพิ่ม
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 // (เพิ่ม) import ฟังก์ชันทั้งหมดจาก api
 import { fetchUsers, createUser, updateUser, deleteUser, fetchUserById } from '../api/usersApi';
@@ -22,6 +23,9 @@ const UserManagement = () => {
         last_name: '', identification: '', role: 'student', is_active: 1
     });
 
+    // (!!!) 2. สร้าง Ref สำหรับ File Input
+    const fileInputRef = useRef(null);
+
     const loadUsers = () => {
         setLoading(true);
         fetchUsers()
@@ -41,21 +45,23 @@ const UserManagement = () => {
         loadUsers();
     }, []);
 
-  const handleInputChange = (e) => {
+    // ... (ฟังก์ชัน handleInputChange, handleSelectAll, handleEditClick, handleFormSubmit, openAddModal, closeModalAndRefresh, handleDelete, handleDeleteSelected, handleSelectUser อยู่เหมือนเดิม) ...
+
+    const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
         const val = type === 'checkbox' ? (checked ? 1 : 0) : value;
         setCurrentUser(prev => ({ ...prev, [name]: val }));
     };
-const handleSelectAll = (e) => {
-    if (e.target.checked) {
-        // ถ้ากดเลือกทั้งหมด ให้เอา id ของทุกคนที่แสดงอยู่ไปใส่ใน state
-        const allUserIds = sortedAndFilteredUsers.map(user => user.id);
-        setSelectedUsers(allUserIds);
-    } else {
-        // ถ้ากดยกเลิก ให้ล้างค่าทั้งหมด
-        setSelectedUsers([]);
-    }
-};
+    const handleSelectAll = (e) => {
+        if (e.target.checked) {
+            // ถ้ากดเลือกทั้งหมด ให้เอา id ของทุกคนที่แสดงอยู่ไปใส่ใน state
+            const allUserIds = sortedAndFilteredUsers.map(user => user.id);
+            setSelectedUsers(allUserIds);
+        } else {
+            // ถ้ากดยกเลิก ให้ล้างค่าทั้งหมด
+            setSelectedUsers([]);
+        }
+    };
     const handleEditClick = async (user) => { // เมื่อคลิกปุ่ม Edit จะดึงข้อมูลผู้ใช้จาก API
         try {
             const fullUserData = await fetchUserById(user.id);
@@ -105,23 +111,23 @@ const handleSelectAll = (e) => {
             }
         }
     };
-const handleDeleteSelected = async () => {
-    if (selectedUsers.length === 0) {
-        alert("Please select users to delete.");
-        return;
-    }
-
-    if (window.confirm(`Are you sure you want to delete ${selectedUsers.length} selected users?`)) {
-        try {
-            // วนลูปเพื่อลบผู้ใช้ทีละคน
-            await Promise.all(selectedUsers.map(id => deleteUser(id)));
-            setSelectedUsers([]); // ล้างค่าที่เลือกไว้
-            loadUsers(); // โหลดข้อมูลใหม่
-        } catch (error) {
-            alert('Error: Could not delete selected users.');
+    const handleDeleteSelected = async () => {
+        if (selectedUsers.length === 0) {
+            alert("Please select users to delete.");
+            return;
         }
-    }
-};
+
+        if (window.confirm(`Are you sure you want to delete ${selectedUsers.length} selected users?`)) {
+            try {
+                // วนลูปเพื่อลบผู้ใช้ทีละคน
+                await Promise.all(selectedUsers.map(id => deleteUser(id)));
+                setSelectedUsers([]); // ล้างค่าที่เลือกไว้
+                loadUsers(); // โหลดข้อมูลใหม่
+            } catch (error) {
+                alert('Error: Could not delete selected users.');
+            }
+        }
+    };
     const handleSelectUser = (userId) => {
         setSelectedUsers(prev =>
             prev.includes(userId)
@@ -129,6 +135,44 @@ const handleDeleteSelected = async () => {
                 : [...prev, userId]
         );
     };
+
+    // (!!!) 3. เพิ่มฟังก์ชันสำหรับจัดการการอัปโหลดไฟล์
+    const handleUploadClick = () => {
+        // สั่งให้ file input ที่ซ่อนอยู่ทำงาน
+        fileInputRef.current.click();
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            console.log("Selected file:", file.name);
+            alert(`เลือกไฟล์: ${file.name}\n\n(ขั้นต่อไป: เพิ่มโค้ดสำหรับอ่านไฟล์ Excel และส่งข้อมูลไปยัง API)`);
+            
+            // ที่จุดนี้ คุณจะต้องใช้ library เช่น 'xlsx' (sheetjs) เพื่ออ่านข้อมูลในไฟล์
+            // แล้วจึงส่งข้อมูล (JSON) ไปยัง API endpoint ใหม่สำหรับ "Bulk Create Users"
+            
+            // ตัวอย่าง (ต้องติดตั้ง xlsx ก่อน: npm install xlsx)
+            /*
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                const bstr = evt.target.result;
+                const wb = XLSX.read(bstr, { type: 'binary' });
+                const wsname = wb.SheetNames[0];
+                const ws = wb.Sheets[wsname];
+                const data = XLSX.utils.sheet_to_json(ws);
+                console.log(data);
+                // ที่จุดนี้ คุณจะ GOTO API เพื่อสร้างผู้ใช้จาก 'data'
+                // await bulkCreateUsers(data); 
+            };
+            reader.readAsBinaryString(file);
+            */
+
+            // รีเซ็ตค่าใน input เพื่อให้สามารถอัปโหลดไฟล์ชื่อเดิมซ้ำได้
+            e.target.value = null;
+        }
+    };
+
+
     const sortedAndFilteredUsers = useMemo(() => {
         // กรองข้อมูลก่อน
         let filtered = users.filter(user => {
@@ -179,9 +223,28 @@ const handleDeleteSelected = async () => {
                    
                     <div className={styles.controlscontainer}>
                         <div className={styles.actionbuttons}>
-                            <button onClick={() => setIsModalOpen(true)} className={`${styles.btn} ${styles.adduserbtn}`}>
+                            <button onClick={openAddModal} className={`${styles.btn} ${styles.adduserbtn}`}>
                                 + เพิ่มผู้ใช้
                             </button>
+
+                            {/* (!!!) START: 4. เพิ่มปุ่มและ Input ที่ซ่อนอยู่ (!!!) */}
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleFileChange}
+                                style={{ display: 'none' }}
+                                accept=".xlsx, .xls" // จำกัดให้รับเฉพาะไฟล์ Excel
+                            />
+                            <button 
+                                onClick={handleUploadClick} 
+                                // (แนะนำ) เพิ่ม class 'uploadbtn' ใน CSS เพื่อทำเป็นสีเขียว
+                                className={`${styles.btn} ${styles.uploadbtn}`} 
+                            >
+                                อัพโหลด Excel
+                            </button>
+                            {/* (!!!) END: 4. เพิ่มปุ่มและ Input ที่ซ่อนอยู่ (!!!) */}
+
+
                             <button 
                                 onClick={handleDeleteSelected} 
                                 className={`${styles.btn} ${styles.deleteuserbtn}`}
