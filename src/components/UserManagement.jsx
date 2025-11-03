@@ -5,7 +5,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import * as XLSX from 'xlsx'; // (!!!) 1. Import 'xlsx'
 import { Link } from 'react-router-dom';
 // (!!!) 1. (แก้ไข) เปลี่ยนชื่อไอคอนที่ Import (!!!)
-import { ArrowDownToLine } from 'lucide-react'; // <--- แก้ไข
+import { ArrowUpToLine } from 'lucide-react'; 
 
 // (!!!) 2. Import 'bulkCreateUsers' (ที่เราจะสร้างใน api/usersApi.js)
 import { fetchUsers, createUser, updateUser, deleteUser, fetchUserById, bulkCreateUsers } from '../api/usersApi';
@@ -241,84 +241,85 @@ const UserManagement = () => {
     return (
         <div className={styles.body}>
             <div className={styles.dashboardContainer}>
-                              <div className={styles.dashboardContainer}>
+                <div className={styles.usermanagementcontainer}>
+                    <div className={styles.dashboardContainer}>
                                     <div>
                                         <Link to="/AdminDashboard" className={styles.backButton}>
                                         &larr; กลับไปยังหน้าจัดการข้อมูลแอดมิน
                                         </Link>
                                     </div>
                               </div>
-                <div className={styles.usermanagementcontainer}>
-                    
-                    <h1>User Management</h1>
+                    <h1>จัดการผู้ใช้งาน</h1>
 
-                   
-                    {/* (!!!) START: แก้ไขโครงสร้าง (!!!) */}
-                    {/* ลบ div 'controlscontainer' ที่ครอบออก */}
-                    
-                    {/* (!!!) START: แก้ไข (เพิ่ม style) (!!!) */}
-                    <div className={styles.actionbuttons} style={{ marginBottom: '1rem' }}>
-                    {/* (!!!) END: แก้ไข (เพิ่ม style) (!!!) */}
-                        <button onClick={openAddModal} className={`${styles.btn} ${styles.adduserbtn}`}>
-                            + เพิ่มผู้ใช้
-                        </button>
+                   <div className={styles.actionbuttons}>
+                            <button onClick={openAddModal} className={`${styles.btn} ${styles.adduserbtn}`}>
+                                + เพิ่มผู้ใช้
+                            </button>
 
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handleFileChange}
-                            style={{ display: 'none' }}
-                            accept=".xlsx, .xls" // จำกัดให้รับเฉพาะไฟล์ Excel
-                        />
-                        <button
-                            onClick={handleUploadClick} 
-                            className={`${styles.btn} ${styles.uploadbtn}`} 
-                        >
-                            <ArrowDownToLine size={18} style={{ marginRight: '8px' }} />
-                            นำเข้า
-                        </button>
+                            {/* (!!!) START: 4. เพิ่มปุ่มและ Input ที่ซ่อนอยู่ (!!!) */}
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleFileChange}
+                                style={{ display: 'none' }}
+                                accept=".xlsx, .xls" // จำกัดให้รับเฉพาะไฟล์ Excel
+                            />
+                            {/* (!!!) START: 4. (แก้ไข) แก้ไขปุ่มให้ถูกต้อง (!!!) */}
+                            <button
+                                onClick={handleUploadClick} 
+                                // (แนะนำ) เพิ่ม class 'uploadbtn' ใน CSS เพื่อทำเป็นสีเขียว
+                                className={`${styles.uploadbtn}`} 
+                            >
+                                {/* (!!!) 1. (แก้ไข) เปลี่ยนชื่อ Component (!!!) */}
+                                <ArrowUpToLine size={20} style={{ marginRight: '8px' }} />นำเข้า
 
-                        <button 
-                            onClick={handleDeleteSelected} 
-                            className={`${styles.btn} ${styles.deleteuserbtn}`}
-                            disabled={selectedUsers.length === 0}
-                        >
-                            ลบผู้ใช้ที่เลือก
-                        </button>
-                        
-                    </div>
-                    
-                    <div className={styles.roleselector}>
-                        
-                        <label>Filter by role</label>
-                         <div>
-                                <select
-                                    onChange={(e) => {
-                                        const [key, direction] = e.target.value.split('-');
-                                        setSortConfig({ key, direction });
-                                    }}
-                                    value={`${sortConfig.key}-${sortConfig.direction}`}
-                                    className={styles.btna}
-                                >
-                                    
-                                    <option value="created_at-descending">Date Added (Newest)</option>
-                                    <option value="created_at-ascending">Date Added (Oldest)</option>
-                                    <option value="role-ascending">Role (A-Z)</option>
-                                    <option value="role-descending">Role (Z-A)</option>
-                                    <option value="first_name-ascending">Name (A-Z)</option>
-                                    <option value="first_name-descending">Name (Z-A)</option>
-                                </select>
-                    </div>
-                        <div className={styles.roletabs}>
-                            <button onClick={() => setActiveRole('All')} className={activeRole === 'All' ? styles.active : ''}>All</button>
-                            <button onClick={() => setActiveRole('Admin')} className={activeRole === 'Admin' ? styles.active : ''}>Admin</button>
-                            <button onClick={() => setActiveRole('Advisor')} className={activeRole === 'Advisor' ? styles.active : ''}>Advisor</button>
-                            <button onClick={() => setActiveRole('Student')} className={activeRole === 'Student' ? styles.active : ''}>Student</button>
+                            </button>
+                            {/* (!!!) END: 4. (แก้ไข) แก้ไขปุ่มให้ถูกต้อง (!!!) */}
+
+
+                            <button 
+                                onClick={handleDeleteSelected} 
+                                className={`${styles.btn} ${styles.deleteuserbtn}`}
+                                disabled={selectedUsers.length === 0}
+                            >
+                                ลบผู้ใช้ที่เลือก
+                            </button>
                             
                         </div>
-                    </div>
-                    {/* (!!!) END: แก้ไขโครงสร้าง (!!!) */}
+                        
+                    <div className={styles.controlscontainer}>
+                        <div className={styles.roleselector}>
+                            
+
+                             <div>
+                                <label> </label>
+                                    <select
+                                        onChange={(e) => {
+                                            const [key, direction] = e.target.value.split('-');
+                                            setSortConfig({ key, direction });
+                                        }}
+                                        value={`${sortConfig.key}-${sortConfig.direction}`}
+                                        className={styles.btna}
+                                    >
+                                        
+                                        <option value="created_at-descending">Date Added (Newest)</option>
+                                        <option value="created_at-ascending">Date Added (Oldest)</option>
+                                        <option value="role-ascending">Role (A-Z)</option>
+                                        <option value="role-descending">Role (Z-A)</option>
+                                        <option value="first_name-ascending">Name (A-Z)</option>
+                                        <option value="first_name-descending">Name (Z-A)</option>
+                                    </select>
+                        </div>
+                            <div className={styles.roletabs}>
+                                <button onClick={() => setActiveRole('All')} className={activeRole === 'All' ? styles.active : ''}>All</button>
+                                <button onClick={() => setActiveRole('Admin')} className={activeRole === 'Admin' ? styles.active : ''}>Admin</button>
+                                <button onClick={() => setActiveRole('Advisor')} className={activeRole === 'Advisor' ? styles.active : ''}>Advisor</button>
+                                <button onClick={() => setActiveRole('Student')} className={activeRole === 'Student' ? styles.active : ''}>Student</button>
+                                
+                            </div>
+                        </div>
                        
+                    </div>
 
                     <div className={styles.searchbar}>
                         <input 
@@ -341,11 +342,11 @@ const UserManagement = () => {
                                             checked={sortedAndFilteredUsers.length > 0 && selectedUsers.length === sortedAndFilteredUsers.length}
                                         />
                                     </th> 
-                                    <th>User</th>
-                                    <th>Role</th>
-                                    <th>Status</th>
-                                    <th>Date Added</th>
-                                    <th>Actions</th>
+                                    <th>ผู้ใช้</th>
+                                    <th>บทบาท</th>
+                                    <th>สถานะ</th>
+                                    <th>วันที่เพิ่ม</th>
+                                    <th>แก้ไข/ลบ</th>
                                 </tr>
                             </thead>
                             
@@ -447,4 +448,3 @@ const UserManagement = () => {
 };
 
 export default UserManagement;
-
