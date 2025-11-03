@@ -141,14 +141,12 @@ h1 {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 30px;
-  color: var(--accent-blue);
+  margin: 20px 0 40px 20px;
+  color: var(--text-medium);
   text-decoration: none;
-  font-weight: 600;
-  padding: 10px 15px;
-  border-radius: 5px;
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-  border: 1px solid var(--accent-blue);
+  font-weight: 500;
+  background-color: #f0f2f5;
+  transition: color 0.2s ease-in-out;
 }
 /* === ส่วนที่เพิ่มเข้ามา: สไตล์สำหรับ Badge ของแต่ละ Role === */
 .roleBadge {
