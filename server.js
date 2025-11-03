@@ -1010,6 +1010,75 @@ app.get('/api/student/documents/:id', async (req, res, next) => { // <-- Add nex
   }
 });
 
+app.post('/api/users/bulk', async (req, res, next) => {
+    const users = req.body; // นี่คือ Array จาก Excel [ { username: ... }, ... ]
+    
+    if (!Array.isArray(users) || users.length === 0) {
+        return res.status(400).json({ message: "No user data provided or data is not an array." });
+    }
+
+    const client = await pool.connect(); // เชื่อมต่อฐานข้อมูล
+    
+    try {
+        await client.query('BEGIN'); // เริ่ม Transaction
+
+        const sql = `
+            INSERT INTO users (username, email, password, password_hash, first_name, last_name, identification, role, is_active) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        `;
+        
+        let successfulCount = 0;
+        let failedCount = 0;
+        let errors = [];
+
+        // วนลูป Array ผู้ใช้ที่ได้จาก Excel
+        for (const user of users) {
+            
+            // ตรวจสอบข้อมูลที่จำเป็น (เหมือนใน Excel)
+            if (!user.username || !user.email || !user.password || !user.first_name || !user.last_name) {
+                failedCount++;
+                errors.push(`Skipped user (username: ${user.username || 'N/A'}): Missing required fields.`);
+                continue; // ข้ามไปคนถัดไป
+            }
+
+            const values = [
+                user.username,
+                user.email,
+                user.password, // (ยังเป็น Plain text ตามโค้ดเดิม)
+                user.password, // (สำหรับ password_hash ตามโค้ดเดิม)
+                user.first_name,
+                user.last_name,
+                user.identification || null,
+                user.role || 'student',
+                true // ตั้งค่าให้ Active อัตโนมัติ
+            ];
+            
+            try {
+                // พยายามเพิ่มผู้ใช้
+                await client.query(sql, values);
+                successfulCount++;
+            } catch (insertErr) {
+                // หาก Error (เช่น username ซ้ำ)
+                failedCount++;
+                errors.push(`Failed to insert ${user.username}: ${insertErr.detail || insertErr.message}`);
+            }
+        }
+
+        await client.query('COMMIT'); // ยืนยันการเปลี่ยนแปลงทั้งหมด
+        
+        res.status(201).json({ 
+            message: `Bulk upload complete. Successful: ${successfulCount}. Failed: ${failedCount}.`,
+            errors: errors
+        });
+
+    } catch (err) {
+        await client.query('ROLLBACK'); // หากมีปัญหาใหญ่ ให้ยกเลิกทั้งหมด
+        console.error('Error during bulk user insert transaction:', err); 
+        next(err); // ส่งไปให้ Global Error Handler
+    } finally {
+        client.release(); // คืนการเชื่อมต่อ
+    }
+});
 
 // Start Server
 app.listen(port, () => {

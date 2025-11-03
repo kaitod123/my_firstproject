@@ -94,3 +94,25 @@ export const deleteUser = async (userId) => {
     throw error;
   }
 };
+
+//import excel file
+export const bulkCreateUsers = async (usersData) => {
+  try {
+    const response = await fetch(`${API_URL}/api/users/bulk`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(usersData), // ส่งข้อมูลผู้ใช้ทั้ง Array
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to bulk create users');
+    }
+    return response.json(); // คืนค่า message จาก server
+  } catch (error) {
+    console.error('Error in bulkCreateUsers API call:', error);
+    throw error;
+  }
+};
