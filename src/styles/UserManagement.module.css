@@ -83,7 +83,7 @@ h1 {
 .roleselector label {
     font-size: 14px;
     font-weight: 500;
-    color: #6c757d;
+    color: #28a745;
     display: block;
     margin-bottom: 8px;
 }
@@ -174,11 +174,14 @@ h1 {
 }
 .searchbar input {
     width: 100%;
-    padding: 12px 16px;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    font-size: 14px;
-    box-sizing: border-box;
+    padding: 1rem 1rem 1rem 3.5rem;
+    border: 2px solid #e5e7eb; /* เพิ่มขอบ */
+    border-radius: 50px;
+    background-color: #ffffff;
+    font-size: 1rem;
+    color: #374151; /* ข้อความเข้ม */
+    outline: none;
+    transition: all 0.3s ease;
 }
 
 .usertable table {

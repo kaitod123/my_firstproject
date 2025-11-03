@@ -34,7 +34,7 @@
 
 .searchInput input,
 .filterSelect select {
-    width: 100%;
+    width: 90%;
     padding: 1rem 1rem 1rem 3.5rem;
     border: 2px solid #e5e7eb; /* เพิ่มขอบ */
     border-radius: 50px;
