@@ -29,9 +29,9 @@ const UserManagement = () => {
     const fileInputRef = useRef(null);
 
         const roleTranslation = {
-        'Admin': 'ผู้ดูแล',
-        'Advisor': 'อาจารย์',
-        'Student': 'นักศึกษา',
+        'admin': 'ผู้ดูแล',
+        'advisor': 'อาจารย์',
+        'student': 'นักศึกษา',
     };
 
     const loadUsers = () => {
@@ -382,9 +382,9 @@ const UserManagement = () => {
                                                 </div>
                                             </td>
                                             <td>
-                                                <span className={`${styles.roleBadge} ${styles['role-' + user.role.toLowerCase().replace(' ', '-')]}`}>
-+                                                    {roleTranslation[user.role] || user.role}
-+                                                </span>
+                                                <span className={`${styles.roleBadge} ${styles['role-' + (user.role || '').toLowerCase().replace(' ', '-')]}`}>
+                                                    { (user.role && roleTranslation[user.role.charAt(0).toUpperCase() + user.role.slice(1)]) || user.role }
+                                                 </span>
                                             </td>
                                             <td>
                                                 <span className={`${styles.status} ${user.is_active ? styles.active : styles.inactive}`}>{user.is_active ? 'พร้อมใช้งาน' : 'ไม่พร้อมใช้งาน'}</span>
