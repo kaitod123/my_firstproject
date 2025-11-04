@@ -185,6 +185,10 @@ const DocumentDetails = () => {
             <span className={styles.listValue}>{document.author || 'N/A'}</span>
           </div>
           <div className={styles.listItem}>
+            <span className={styles.listLabel}>ผู้แต่งร่วม</span>
+            <span className={styles.listValue}>{document.coauthor || 'N/A'}</span>
+          </div>
+          <div className={styles.listItem}>
             <span className={styles.listLabel}>สาขาวิชา</span>
             <span className={styles.listValue}>{document.department || 'N/A'}</span>
           </div>
