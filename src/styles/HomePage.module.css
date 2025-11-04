@@ -60,7 +60,7 @@
     color: #374151; /* ข้อความเข้ม */
     outline: none;
     transition: all 0.3s ease;
-    margin-bottom: 3rem;
+
 }
 
 .searchBar input::placeholder {
