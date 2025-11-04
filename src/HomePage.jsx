@@ -68,7 +68,7 @@ const handleCardClick = (projectId) => {
             <img 
               src="/image_7359fe.png" 
               alt="โลโก้ Computer Science" 
-              style={{ width: '300px', height: 'auto', marginBottom: '1rem' }} 
+              style={{ width: '300px', height: 'auto'}} 
             />
             {/* --- (สิ้นสุดการเปลี่ยนแปลง) --- */}
             
