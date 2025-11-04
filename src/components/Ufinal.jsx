@@ -1,21 +1,21 @@
-import React, { useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import styles from '../styles/Ufinal1.module.css';
 
 function Ufinal() {
-const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState({
         document_type: [],
         title: '',
         title_eng: '',
         author: '',
+        co_author: '', // (เพิ่ม) State สำหรับผู้แต่งคนที่ 2
         abstract: '',
         advisorName: '',
         department: '',
         coAdvisorName: '',
         keywords: '',
         supportAgency: '',
-        permission: false, //ต้องกรอกข้อมูล
-        // --- ADDED: New state for additional file types ---
+        permission: false,
         complete_pdf: [],
         complete_doc: [],
         article_files: [],
@@ -28,25 +28,24 @@ const [formData, setFormData] = useState({
 
     const [advisorSuggestions, setAdvisorSuggestions] = useState([]);
     const [coAdvisorSuggestions, setCoAdvisorSuggestions] = useState([]);
+    const [coAuthorSuggestions, setCoAuthorSuggestions] = useState([]); // (เพิ่ม) State สำหรับค้นหาผู้แต่งคนที่ 2
 
+    // (คงเดิม) ฟังก์ชันค้นหาอาจารย์
     const handleAdvisorSearch = async (e) => {
         const { name, value } = e.target;
-        handleChange(e); // อัปเดต formData
+        handleChange(e); 
 
         if (value.length < 3) {
-            // ล้างรายการแนะนำถ้าคำค้นหาสั้นเกินไป
             if (name === 'advisorName') setAdvisorSuggestions([]);
             if (name === 'coAdvisorName') setCoAdvisorSuggestions([]);
             return;
         }
 
         try {
-            // เรียก API ใหม่เพื่อค้นหารายชื่ออาจารย์
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/advisors/search?query=${encodeURIComponent(value)}`);
             if (!response.ok) throw new Error("Failed to fetch advisors");
             const data = await response.json();
 
-            // อัปเดต state รายการแนะนำ
             if (name === 'advisorName') {
                 setAdvisorSuggestions(data);
             } else if (name === 'coAdvisorName') {
@@ -57,15 +56,38 @@ const [formData, setFormData] = useState({
         }
     };
 
+    // (เพิ่ม) ฟังก์ชันค้นหาผู้แต่งคนที่ 2 (นักศึกษา)
+    const handleStudentSearch = async (e) => {
+        const { name, value } = e.target;
+        handleChange(e); // อัปเดต formData
+
+        if (value.length < 3) {
+            setCoAuthorSuggestions([]);
+            return;
+        }
+
+        try {
+            // เรียก API ใหม่เพื่อค้นหานักศึกษา
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/students/search?query=${encodeURIComponent(value)}`);
+            if (!response.ok) throw new Error("Failed to fetch students");
+            const data = await response.json();
+            setCoAuthorSuggestions(data);
+        } catch (error) {
+            console.error('Error fetching student suggestions:', error);
+        }
+    };
+
+
     const handleSuggestionClick = (name, suggestion) => {
-        // อัปเดต formData เมื่อผู้ใช้คลิกเลือก
         setFormData(prevState => ({
             ...prevState,
             [name]: `${suggestion.first_name} ${suggestion.last_name}`,
         }));
+        
         // ล้างรายการแนะนำ
         if (name === 'advisorName') setAdvisorSuggestions([]);
         if (name === 'coAdvisorName') setCoAdvisorSuggestions([]);
+        if (name === 'co_author') setCoAuthorSuggestions([]); // (เพิ่ม)
     };
 
     useEffect(() => {
@@ -79,66 +101,59 @@ const [formData, setFormData] = useState({
         }
     }, []);
 
-const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
 
-    if (type === 'checkbox') {
-        // --- ส่วนจัดการ Checkbox ---
-        if (name === 'permission') {
-            // สำหรับ checkbox 'permission' (อันเดียว)
-            setFormData(prevState => ({ ...prevState, [name]: checked }));
-        } else if (name === 'document_type') {
-            // สำหรับ checkbox 'document_type' (หลายอัน)
-            setFormData(prevState => {
-                const currentTypes = prevState.document_type || []; // เอา Array เดิมมา (หรือ Array ว่าง ถ้ายังไม่มี)
-                if (checked) {
-                    // ถ้าถูกเลือก ให้เพิ่ม value เข้าไปใน Array
-                    return { ...prevState, document_type: [...currentTypes, value] };
-                } else {
-                    // ถ้าถูกยกเลิก ให้กรอง value นั้นออกจาก Array
-                    return { ...prevState, document_type: currentTypes.filter(type => type !== value) };
-                }
-            });
+        if (type === 'checkbox') {
+            if (name === 'permission') {
+                setFormData(prevState => ({ ...prevState, [name]: checked }));
+            } else if (name === 'document_type') {
+                setFormData(prevState => {
+                    const currentTypes = prevState.document_type || []; 
+                    if (checked) {
+                        return { ...prevState, document_type: [...currentTypes, value] };
+                    } else {
+                        return { ...prevState, document_type: currentTypes.filter(type => type !== value) };
+                    }
+                });
+            }
+        } else {
+            // (เพิ่ม) ตรวจสอบว่าไม่ใช่การค้นหา (ป้องกันการพิมพ์ทับขณะเลือก Suggestion)
+            if (name === 'advisorName' && advisorSuggestions.length > 0) {
+                 setFormData(prevState => ({ ...prevState, [name]: value }));
+            } else if (name === 'coAdvisorName' && coAdvisorSuggestions.length > 0) {
+                 setFormData(prevState => ({ ...prevState, [name]: value }));
+            } else if (name === 'co_author' && coAuthorSuggestions.length > 0) {
+                 setFormData(prevState => ({ ...prevState, [name]: value }));
+            } else {
+                 setFormData(prevState => ({ ...prevState, [name]: value }));
+            }
         }
-    } else {
-        // --- สำหรับ Input อื่นๆ (text, radio, textarea) ---
-        setFormData(prevState => ({ ...prevState, [name]: value }));
-    }
-};
+    };
 
-const handleFileChange = (e) => {
-    const { name, files, accept } = e.target; // <-- อ่าน accept มาด้วย
-    
-    // 1. แปลง accept string เป็น array ของนามสกุลที่อนุญาต (ตัวพิมพ์เล็ก)
-    // เช่น ".pdf,.jpg,.jpeg" -> [".pdf", ".jpg", ".jpeg"]
-    const allowedExtensions = accept.split(',').map(ext => ext.trim().toLowerCase());
+    const handleFileChange = (e) => {
+        const { name, files, accept } = e.target; 
+        const allowedExtensions = accept.split(',').map(ext => ext.trim().toLowerCase());
 
-    // 2. กรองไฟล์ที่ผู้ใช้เลือก เฉพาะไฟล์ที่มีนามสกุลถูกต้อง
-    const validFiles = Array.from(files).filter(file => {
-        // เอานามสกุลไฟล์ (ตัวพิมพ์เล็ก) เช่น ".pdf"
-        const fileExtension = file.name.slice(file.name.lastIndexOf('.')).toLowerCase(); 
-        // ตรวจสอบว่านามสกุลอยู่ในรายการที่อนุญาตหรือไม่
-        return allowedExtensions.includes(fileExtension);
-    });
+        const validFiles = Array.from(files).filter(file => {
+            const fileExtension = file.name.slice(file.name.lastIndexOf('.')).toLowerCase(); 
+            return allowedExtensions.includes(fileExtension);
+        });
 
-    // 3. (ทางเลือก) แจ้งเตือนถ้ามีไฟล์ที่ไม่ถูกต้องถูกเลือก
-    if (validFiles.length < files.length) {
-        const invalidCount = files.length - validFiles.length;
-        alert(`${invalidCount} ไฟล์ที่คุณเลือกมีนามสกุลไม่ถูกต้องสำหรับช่องนี้ และจะไม่ถูกเพิ่ม (ช่องนี้รองรับเฉพาะ: ${accept})`);
-    }
+        if (validFiles.length < files.length) {
+            const invalidCount = files.length - validFiles.length;
+            alert(`${invalidCount} ไฟล์ที่คุณเลือกมีนามสกุลไม่ถูกต้องสำหรับช่องนี้ และจะไม่ถูกเพิ่ม (ช่องนี้รองรับเฉพาะ: ${accept})`);
+        }
 
-    // 4. อัปเดต State เฉพาะไฟล์ที่ถูกต้อง
-    if (validFiles.length > 0) {
-        setFormData(prevState => ({
-            ...prevState,
-            // เพิ่มไฟล์ที่ถูกต้องเข้าไปใน Array เดิม
-            [name]: [...prevState[name], ...validFiles], 
-        }));
-    }
-    
-    // (สำคัญ) เคลียร์ค่า input เพื่อให้ผู้ใช้สามารถเลือกไฟล์เดิมซ้ำได้ ถ้าเผลอลบไป
-    e.target.value = null; 
-};
+        if (validFiles.length > 0) {
+            setFormData(prevState => ({
+                ...prevState,
+                [name]: [...prevState[name], ...validFiles], 
+            }));
+        }
+        
+        e.target.value = null; 
+    };
 
     const handleRemoveFile = (fileName, fileType) => {
         setFormData(prevState => ({
@@ -148,44 +163,35 @@ const handleFileChange = (e) => {
     };
 
     const handleSubmit = async (e) => {
-        // --- START: Validation Check ---
         if (e) e.preventDefault();
         const missingFields = [];
         
-        // 1. ตรวจสอบ Text Inputs
         if (formData.title.trim() === '') missingFields.push('ชื่อโครงงาน');
         if (formData.title_eng.trim() === '') missingFields.push('ชื่อโครงงานภาษาอังกฤษ');
         if (formData.abstract.trim() === '') missingFields.push('บทคัดย่อ');
         if (formData.keywords.trim() === '') missingFields.push('คำสำคัญ');
         if (formData.advisorName.trim() === '') missingFields.push('ชื่ออาจารย์ที่ปรึกษา');
-        
-        // 2. ตรวจสอบ Checkbox ยินยอม
         if (formData.permission === false) missingFields.push('การยืนยันสิทธิ์');
 
-        // 3. ถ้ามีฟิลด์ที่ขาดไป ให้แสดง Alert และหยุดการทำงาน
         if (missingFields.length > 0) {
             const errorMessage = 'กรุณากรอกข้อมูลต่อไปนี้ให้ครบถ้วน:\n\n- ' + missingFields.join('\n- ');
             alert(errorMessage);
-            return; // <-- หยุดการทำงาน, ไม่ส่งฟอร์ม
+            return; 
         }
-        // --- END: Validation Check ---
 
-
-        // (ส่วนที่เหลือของฟังก์ชันเหมือนเดิม)
         const data = new FormData();
         const fileKeys = [
             'complete_pdf', 'complete_doc', 'article_files', 'program_files', 
             'web_files', 'poster_files', 'certificate_files',
-            'front_face' // <-- เพิ่มบรรทัดนี้
+            'front_face'
         ];
 
         // Append text data
         for (const key in formData) {
             if (!fileKeys.includes(key)) {
-                 // *** แก้ไข: แปลง document_type (Array) เป็น String คั่นด้วยคอมมา ***
                 if (key === 'document_type') {
                     const documentTypesString = Array.isArray(formData.document_type) 
-                        ? formData.document_type.join(',') // Join Array เป็น String
+                        ? formData.document_type.join(',') 
                         : ''; 
                     data.append(key, documentTypesString);
                 } else {
@@ -202,29 +208,37 @@ const handleFileChange = (e) => {
                 });
             }
         });
+        
         console.log('กำลังส่ง FormData ที่มี keys:', [...data.keys()]);
+        
         try {
-            // NOTE: Ensure your backend endpoint is expecting these new field names.
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/upload-project`, { // Added /api/
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/upload-project`, { 
                 method: 'POST',
                 body: data,
-                // ไม่ต้องใส่ Header 'Content-Type' สำหรับ FormData
             });
 
             const result = await response.json();
             if (response.ok) {
                 alert(result.message || 'บันทึกข้อมูลสำเร็จ');
+                // (เพิ่ม) ล้างฟอร์มเมื่อสำเร็จ
+                // (คุณอาจต้องการ redirect ไปหน้าอื่นแทน)
+                setFormData({
+                    document_type: [], title: '', title_eng: '', author: formData.author, // เก็บ author ไว้
+                    co_author: '', abstract: '', advisorName: '', department: '',
+                    coAdvisorName: '', keywords: '', supportAgency: '', permission: false,
+                    complete_pdf: [], complete_doc: [], article_files: [], program_files: [],
+                    web_files: [], poster_files: [], certificate_files: [], front_face: [],
+                });
             } else {
-                // (แก้ไข) แสดง error จาก backend หากมีปัญหา (เช่น ชื่ออาจารย์ผิด)
                 alert('เกิดข้อผิดพลาด: ' + (result.message || 'ไม่สามารถบันทึกข้อมูลได้'));
             }
         } catch (error) {
             console.error('Error submitting form:', error);
-            alert('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบ Console');
+            // (แก้ไข) ตรวจสอบว่า error object มี message หรือไม่
+            alert('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้: ' + (error.message || 'กรุณาตรวจสอบ Console'));
         }
     };
 
-    // Helper component for rendering file upload zones to avoid repetition
     const FileUploadZone = ({ name, title, hint, accept }) => (
         <div className={styles.fileDropzone}>
             <p>{title}</p>
@@ -247,7 +261,7 @@ const handleFileChange = (e) => {
                             <button
                                 type="button" // Important for forms
                                 className={styles.removeFileButton}
-                                onClick={() => handleRemoveFile(file.name, name)} // Assuming handleRemoveFile exists
+                                onClick={() => handleRemoveFile(file.name, name)} 
                             >
                                 ลบ
                             </button>
@@ -264,19 +278,47 @@ const handleFileChange = (e) => {
             <div className={styles.uploadCard}>
                 <h1 className={styles.pageTitle}>ส่งคำขออัพโหลด</h1>
                 
-                {/* Sections 1, 2, 3 remain the same */}
                  {/* Section 1: ข้อมูลผู้เขียน */}
                  <div className={styles.section}>
                     <h2 className={styles.sectionTitle}>ข้อมูลผู้เขียน</h2>
-                    <div className={styles.inputGroup}>
-                        <label className={styles.label}>ชื่อผู้เขียน</label>
-                        <input
-                            type="text"
-                            name="author"
-                            value={formData.author}
-                            readOnly
-                            className={styles.inputField}
-                        />
+                    {/* (แก้ไข) ใช้ Grid 2 คอลัมน์สำหรับผู้แต่ง */}
+                    <div className={styles.twoColumnGrid}>
+                        <div className={styles.inputGroup}>
+                            <label className={styles.label}>ผู้แต่ง (หลัก)</label>
+                            <input
+                                type="text"
+                                name="author"
+                                value={formData.author}
+                                readOnly
+                                className={styles.inputField}
+                            />
+                        </div>
+                        
+                        {/* (เพิ่ม) ช่องสำหรับผู้แต่งคนที่ 2 */}
+                        <div className={styles.inputGroup}>
+                            <label className={styles.label}>ผู้แต่งคนที่ 2 (ถ้ามี)</label>
+                            <input 
+                                type="text" 
+                                name="co_author" 
+                                placeholder="ค้นหาชื่อนักศึกษา..."
+                                className={styles.inputField} 
+                                value={formData.co_author}
+                                onChange={handleStudentSearch} // ใช้ฟังก์ชันค้นหานักศึกษา
+                                autoComplete="off"
+                            />
+                            {coAuthorSuggestions.length > 0 && (
+                                <ul className={styles.suggestionsList}>
+                                    {coAuthorSuggestions.map((student) => (
+                                        <li 
+                                            key={student.id} 
+                                            onClick={() => handleSuggestionClick('co_author', student)}
+                                        >
+                                            {student.first_name} {student.last_name}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
                     </div>
                 </div>
 
@@ -286,36 +328,36 @@ const handleFileChange = (e) => {
                     <div className={styles.twoColumnGrid}>
                         <div className={styles.inputGroup}>
                             <label className={styles.label}>ชื่อโครงงาน</label>
-                            <input type="text" name="title" placeholder="ชื่อโครงงาน" className={styles.inputField} onChange={handleChange} />
+                            <input type="text" name="title" placeholder="ชื่อโครงงาน" className={styles.inputField} onChange={handleChange} value={formData.title} />
                         </div>
                         <div className={styles.inputGroup}>
                             <label className={styles.label}>ชื่อโครงงานภาษาอังกฤษ</label>
-                            <input type="text" name='title_eng' placeholder="ชื่อโครงงานภาษาอังกฤษ" className={styles.inputField} onChange={handleChange} />
+                            <input type="text" name='title_eng' placeholder="ชื่อโครงงานภาษาอังกฤษ" className={styles.inputField} onChange={handleChange} value={formData.title_eng} />
                         </div>
                     </div>
                     
                     <div className={styles.inputGroup}>
                         <label className={styles.label}>บทคัดย่อ</label>
-                        <textarea name="abstract" rows="4" className={styles.textarea} placeholder="ใส่บทคัดย่อโครงงานที่นี่..." onChange={handleChange}></textarea>
+                        <textarea name="abstract" rows="4" className={styles.textarea} placeholder="ใส่บทคัดย่อโครงงานที่นี่..." onChange={handleChange} value={formData.abstract}></textarea>
                     </div>
 
                     <div className={styles.inputGroup}>
                         <label className={styles.label}>คำสำคัญ</label>
-                        <textarea name="keywords" rows="4" className={styles.textarea} placeholder="ใส่คำสำคัญที่เกี่ยวข้องกับโครงงาน..." onChange={handleChange}></textarea>
+                        <textarea name="keywords" rows="4" className={styles.textarea} placeholder="ใส่คำสำคัญที่เกี่ยวข้องกับโครงงาน..." onChange={handleChange} value={formData.keywords}></textarea>
                     </div>
                     
                     <div className={styles.twoColumnGrid}>
                         <div className={styles.inputGroup}>
                             <label className={styles.label}>ชื่ออาจารย์ที่ปรึกษา</label>
-                            {/* เปลี่ยน onChange เป็น handleAdvisorSearch */}
                             <input 
                                 type="text" 
                                 name="advisorName" 
+                                placeholder="ค้นหาชื่ออาจารย์..."
                                 className={styles.inputField} 
-                                value={formData.advisorName} // ต้องมี value เพื่อผูกกับ state
+                                value={formData.advisorName} 
                                 onChange={handleAdvisorSearch} 
+                                autoComplete="off"
                             />
-                            {/* เพิ่มส่วนแสดงรายการแนะนำ */}
                             {advisorSuggestions.length > 0 && (
                                 <ul className={styles.suggestionsList}>
                                     {advisorSuggestions.map((advisor) => (
@@ -331,15 +373,15 @@ const handleFileChange = (e) => {
                         </div>
                         <div className={styles.inputGroup}>
                             <label className={styles.label}>ชื่ออาจารย์ที่ปรึกษาร่วม (ถ้ามี)</label>
-                            {/* เปลี่ยน onChange เป็น handleAdvisorSearch */}
                             <input 
                                 type="text" 
                                 name="coAdvisorName" 
+                                placeholder="ค้นหาชื่ออาจารย์..."
                                 className={styles.inputField} 
-                                value={formData.coAdvisorName} // ต้องมี value เพื่อผูกกับ state
+                                value={formData.coAdvisorName} 
                                 onChange={handleAdvisorSearch} 
+                                autoComplete="off"
                             />
-                            {/* เพิ่มส่วนแสดงรายการแนะนำ */}
                             {coAdvisorSuggestions.length > 0 && (
                                 <ul className={styles.suggestionsList}>
                                     {coAdvisorSuggestions.map((advisor) => (
@@ -356,7 +398,7 @@ const handleFileChange = (e) => {
                     </div>
                     <div className={styles.inputGroup}>
                         <label className={styles.label}>หน่วยงานที่สนับสนุน (ถ้ามี)</label>
-                        <input type="text" name="supportAgency" placeholder='ชื่อหน่วยงานที่สนับสนุน' className={styles.inputField} onChange={handleChange} />
+                        <input type="text" name="supportAgency" placeholder='ชื่อหน่วยงานที่สนับสนุน' className={styles.inputField} onChange={handleChange} value={formData.supportAgency} />
                     </div>
                 </div>
 
@@ -367,15 +409,15 @@ const handleFileChange = (e) => {
                         <label className={styles.label}>สาขาที่อัปโหลด</label>
                         <div className={styles.cardRadioGrid}>
                             <label className={styles.cardRadio}>
-                                <input type="radio" name="department" value="วิทยาการคอมพิวเตอร์" onChange={handleChange} />
+                                <input type="radio" name="department" value="วิทยาการคอมพิวเตอร์" onChange={handleChange} checked={formData.department === "วิทยาการคอมพิวเตอร์"} />
                                 <span className={styles.cardRadioText}>วิทยาการคอมพิวเตอร์</span>
                             </label>
                             <label className={styles.cardRadio}>
-                                <input type="radio" name="department" value="เทคโนโลยีสารสนเทศ" onChange={handleChange} />
+                                <input type="radio" name="department" value="เทคโนโลยีสารสนเทศ" onChange={handleChange} checked={formData.department === "เทคโนโลยีสารสนเทศ"} />
                                 <span className={styles.cardRadioText}>เทคโนโลยีสารสนเทศ</span>
                             </label>
                             <label className={styles.cardRadio}>
-                                <input type="radio" name="department" value="ระบบสารสนเทศเพื่อการจัดการ" onChange={handleChange} />
+                                <input type="radio" name="department" value="ระบบสารสนเทศเพื่อการจัดการ" onChange={handleChange} checked={formData.department === "ระบบสารสนเทศเพื่อการจัดการ"} />
                                 <span className={styles.cardRadioText}>ระบบสารสนเทศเพื่อการจัดการ</span>
                             </label>
                         </div>
@@ -384,35 +426,35 @@ const handleFileChange = (e) => {
                         <label className={styles.label}>ประเภท</label>
                         <div className={styles.cardRadioGrid}>
                             <label className={styles.cardRadio}>
-                                <input type="checkbox" name="document_type" value="เกม" onChange={handleChange} />
+                                <input type="checkbox" name="document_type" value="เกม" onChange={handleChange} checked={formData.document_type.includes("เกม")} />
                                 <span className={styles.cardRadioText}>เกม</span>
                             </label>
                             <label className={styles.cardRadio}>
-                                <input type="checkbox" name="document_type" value="IOT" onChange={handleChange} />
+                                <input type="checkbox" name="document_type" value="IOT" onChange={handleChange} checked={formData.document_type.includes("IOT")} />
                                 <span className={styles.cardRadioText}>IOT</span>
                             </label>
                             <label className={styles.cardRadio}>
-                                <input type="checkbox" name="document_type" value="WebSite" onChange={handleChange} />
+                                <input type="checkbox" name="document_type" value="WebSite" onChange={handleChange} checked={formData.document_type.includes("WebSite")} />
                                 <span className={styles.cardRadioText}>Web Site</span>
                             </label>
                             <label className={styles.cardRadio}>
-                                <input type="checkbox" name="document_type" value="WebApp" onChange={handleChange} />
+                                <input type="checkbox" name="document_type" value="WebApp" onChange={handleChange} checked={formData.document_type.includes("WebApp")} />
                                 <span className={styles.cardRadioText}>Web Application</span>
                             </label>
                                 <label className={styles.cardRadio}>
-                                <input type="checkbox" name="document_type" value="Application" onChange={handleChange} />
+                                <input type="checkbox" name="document_type" value="Application" onChange={handleChange} checked={formData.document_type.includes("Application")} />
                                 <span className={styles.cardRadioText}>Application</span>
                             </label>
                                 <label className={styles.cardRadio}>
-                                <input type="checkbox" name="document_type" value="AI" onChange={handleChange} />
+                                <input type="checkbox" name="document_type" value="AI" onChange={handleChange} checked={formData.document_type.includes("AI")} />
                                 <span className={styles.cardRadioText}>AI</span>
                             </label>
                                 <label className={styles.cardRadio}>
-                                <input type="checkbox" name="document_type" value="DataMining" onChange={handleChange} />
+                                <input type="checkbox" name="document_type" value="DataMining" onChange={handleChange} checked={formData.document_type.includes("DataMining")} />
                                 <span className={styles.cardRadioText}>Data Mining</span>
                             </label>
                                 <label className={styles.cardRadio}>
-                                <input type="checkbox" name="document_type" value="อื่นๆ" onChange={handleChange} />
+                                <input type="checkbox" name="document_type" value="อื่นๆ" onChange={handleChange} checked={formData.document_type.includes("อื่นๆ")} />
                                 <span className={styles.cardRadioText}>อื่นๆ</span>
                             </label>
                         </div>
@@ -423,33 +465,26 @@ const handleFileChange = (e) => {
                 <div className={styles.section}>
                     <h2 className={styles.sectionTitle}>อัปโหลดไฟล์</h2>
                     
-                    {/* --- Row 1 --- */}
                     <div className={styles.twoColumnGrid}>
                         <FileUploadZone name="complete_pdf" title="ไฟล์เอกสารฉบับสมบูรณ์ (PDF)" hint="รองรับไฟล์ .pdf เท่านั้น" accept=".pdf" />
-                        
-                        {/* --- (แก้ไข) เปลี่ยน title, hint, และ accept --- */}
                         <FileUploadZone 
                             name="complete_doc" 
                             title="ไฟล์เอกสารฉบับสมบูรณ์ (DOCX)" 
                             hint="รองรับไฟล์ .docx เท่านั้น" 
                             accept=".docx" 
                         />
-                        {/* --- จบส่วนที่แก้ไข --- */}
                     </div>
 
-                     {/* --- Row 2 --- */}
                     <div className={styles.twoColumnGrid}>
                         <FileUploadZone name="article_files" title="ไฟล์บทความสำหรับตีพิมพ์" hint="รองรับไฟล์ .docx และ .pdf" accept=".docx,.pdf" />
                         <FileUploadZone name="program_files" title="ไฟล์โปรแกรมพร้อมติดตั้ง" hint="แนะนำ .zip, .rar, .exe" accept=".zip,.rar,.exe" />
                     </div>
 
-                     {/* --- Row 3 --- */}
                     <div className={styles.twoColumnGrid}>
                         <FileUploadZone name="web_files" title="File Web (Zip)" hint="รองรับไฟล์ .zip เท่านั้น" accept=".zip" />
                         <FileUploadZone name="poster_files" title="ไฟล์โปสเตอร์" hint="รองรับไฟล์ .psd และ .jpg" accept=".psd,.jpg,.jpeg" />
                     </div>
 
-                     {/* --- Row 4 (Single Column) --- */}
                     <div className={styles.twoColumnGrid}>
                         <FileUploadZone name="certificate_files" title="ไฟล์ใบผ่านการอบรม (ถ้ามี)" hint="รองรับไฟล์ .pdf, .jpg, .png" accept=".pdf,.jpg,.jpeg,.png" />
                         <FileUploadZone name="front_face" title="หน้าปก" hint="รองรับไฟล์ .jpeg" accept=".jpeg" />
@@ -477,6 +512,7 @@ const handleFileChange = (e) => {
                         กลับ
                     </Link>
                     <button 
+                        type="submit" // (แก้ไข) เพิ่ม type="submit"
                         className={styles.submitButton} 
                     >
                         บันทึก

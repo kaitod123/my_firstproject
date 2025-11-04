@@ -290,6 +290,31 @@ app.get('/api/users/:id/projects', async (req, res, next) => { // <-- Add next
   }
 });
 
+app.get('/api/students/search', async (req, res, next) => {
+    const searchTerm = req.query.query || '';
+    if (searchTerm.length < 3) {
+        return res.json([]);
+    }
+
+    const searchPattern = `%${searchTerm}%`;
+    const sql = `
+        SELECT id, first_name, last_name 
+        FROM users 
+        WHERE role = 'student' -- ค้นหาเฉพาะนักศึกษา
+          AND (LOWER(first_name) LIKE LOWER($1) OR LOWER(last_name) LIKE LOWER($2))
+        LIMIT 10;
+    `; 
+    const values = [searchPattern, searchPattern];
+
+    try {
+        const results = await pool.query(sql, values);
+        res.json(results.rows); 
+    } catch (err) {
+        console.error('Error fetching student suggestions:', err); 
+        next(err); // Pass error to global handler
+    }
+});
+
 // ===============================================
 // API for Authentication
 // ===============================================
@@ -519,7 +544,7 @@ app.post('/api/upload-project', (req, res, next) => {
         const {
             document_type, title, title_eng, author, abstract,
             advisorName, department, coAdvisorName, keywords, supportAgency,
-            permission 
+            permission,co_author
         } = req.body;
 
         // Basic Validation
@@ -546,10 +571,11 @@ app.post('/api/upload-project', (req, res, next) => {
                     advisorName, department, coAdvisorName, supportAgency,
                     file_paths, file_sizes,
                     is_active,
+                    co_author,
                     publish_year, scan_date, approval_status
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, EXTRACT(YEAR FROM NOW()), CURRENT_DATE, 'pending')
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, EXTRACT(YEAR FROM NOW()), CURRENT_DATE, 'pending')
                 RETURNING id; 
-            `; 
+            `;
 
             const values = [
                 Array.isArray(document_type) ? document_type.join(',') : document_type, 
@@ -564,8 +590,9 @@ app.post('/api/upload-project', (req, res, next) => {
                 supportAgency || null,
                 JSON.stringify(filePathsJson), // file_paths ($11)
                 '', // file_sizes ($12) - Placeholder for NOT NULL constraint
-                (permission === 'true' || permission === true) // is_active ($13)
-            ];
+                (permission === 'true' || permission === true), // is_active ($13)
+                co_author || null // (!!!) ADDED: co_author value ($14) (!!!)
+            ]
             
             console.log("Attempting to insert into DB..."); 
             const result = await pool.query(sql, values); 
