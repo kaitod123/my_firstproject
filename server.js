@@ -276,11 +276,13 @@ app.get('/api/users/:id/projects', async (req, res, next) => { // <-- Add next
       WHERE 
         author LIKE $1 OR          
         advisorName LIKE $2 OR     
-        coAdvisorName LIKE $3      
+        coAdvisorName LIKE $3 OR
+        co_author LIKE $4      -- (!!!) เพิ่มบรรทัดนี้
       ORDER BY created_at DESC
     `; 
 
-    const values = [userFullName, userFullName, userFullName];
+    // (!!!) เพิ่ม userFullName อีก 1 ตัวสำหรับ $4
+    const values = [userFullName, userFullName, userFullName, userFullName]; 
     const projectsResults = await pool.query(projectsSql, values);
     res.json(projectsResults.rows);
 
