@@ -66,7 +66,7 @@ const handleCardClick = (projectId) => {
             {/* --- (เปลี่ยนแปลง) --- */}
             {/* ลบ h1 เดิม และแทนที่ด้วย img ที่ชี้ไปที่ public folder */}
             <img 
-              src="/image_7359fe.jpg" 
+              src="/image_7359fe.png" 
               alt="โลโก้ Computer Science" 
               style={{ width: '300px', height: 'auto', marginBottom: '1rem' }} 
             />
