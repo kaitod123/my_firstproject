@@ -186,7 +186,7 @@ const DocumentDetails = () => {
           </div>
           <div className={styles.listItem}>
             <span className={styles.listLabel}>ผู้แต่งร่วม</span>
-            <span className={styles.listValue}>{document.coauthor || 'N/A'}</span>
+            <span className={styles.listValue}>{document.co_author || 'N/A'}</span>
           </div>
           <div className={styles.listItem}>
             <span className={styles.listLabel}>สาขาวิชา</span>
