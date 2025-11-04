@@ -63,7 +63,15 @@ const handleCardClick = (projectId) => {
     <div>
       <div className={styles.homepageContainer}>
         <div className={styles.contentBox}>
-            <h1 style={{ color: '#4f46e5' }}>คอม007</h1> 
+            {/* --- (เปลี่ยนแปลง) --- */}
+            {/* ลบ h1 เดิม และแทนที่ด้วย img ที่ชี้ไปที่ public folder */}
+            <img 
+              src="/image_7359fe.png" 
+              alt="โลโก้ Computer Science" 
+              style={{ width: '300px', height: 'auto', marginBottom: '1rem' }} 
+            />
+            {/* --- (สิ้นสุดการเปลี่ยนแปลง) --- */}
+            
           {/* Updated search bar to be a functional form */}
           <form className={styles.searchBar} onSubmit={handleSearch}>
             <Search className={styles.searchIcon} />
