@@ -196,11 +196,11 @@ app.delete('/api/users/:id', async (req, res, next) => { // <-- Add next
 });
 
 //API for Project Summaries
-app.get('/api/users/:id/summary', async (req, res, next) => { // <-- Add next
+app.get('/api/users/:id/summary', async (req, res, next) => { 
   const userId = req.params.id;
 
   try {
-    //Get the user's full name from the users table
+    //Get the user's full name...
     const userSql = 'SELECT first_name, last_name FROM users WHERE id = $1'; 
     const userResults = await pool.query(userSql, [userId]);
 
@@ -209,7 +209,7 @@ app.get('/api/users/:id/summary', async (req, res, next) => { // <-- Add next
     }
 
     const user = userResults.rows[0];
-    const userFullName = `${user.first_name || ''} ${user.last_name || ''}`.trim(); // Handle null names
+    const userFullName = `${user.first_name || ''} ${user.last_name || ''}`.trim(); 
 
     //Get the counts from the documents table using the full name
     const summarySql = `
@@ -217,10 +217,13 @@ app.get('/api/users/:id/summary', async (req, res, next) => { // <-- Add next
         COUNT(*) AS uploaded,
         SUM(CASE WHEN approval_status = 'approved' THEN 1 ELSE 0 END) AS approved
       FROM documents
-      WHERE author = $1
+      WHERE author = $1 OR co_author = $2  -- (!!!) แก้ไขบรรทัดนี้
     `; 
 
-    const summaryResults = await pool.query(summarySql, [userFullName]);
+    // (!!!) ส่ง userFullName 2 ครั้ง สำหรับ $1 และ $2
+    const values = [userFullName, userFullName]; 
+    const summaryResults = await pool.query(summarySql, values); 
+    
     const summary = summaryResults.rows[0];
     res.json({
       uploaded: summary.uploaded || 0,
