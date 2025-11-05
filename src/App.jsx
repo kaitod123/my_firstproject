@@ -4,7 +4,6 @@ import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom
 import LoginForm from './components/loginform';
 import DocumentManagementSystem from './components/DocumentManagementSystem';
 import DocumentDetails from './components/DocumentDetails';
-import Upload from './components/Upload';
 import UserProfileEdit from './components/UserProfileEdit';
 import Header from './components/Header/Header';
 import HomePage from './HomePage';
