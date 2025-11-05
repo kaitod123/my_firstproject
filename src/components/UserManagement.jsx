@@ -20,10 +20,11 @@ const UserManagement = () => {
     
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
-    // (!!!) END: 1. เพิ่ม State และ Handlers สำหรับ Dropzone (!!!)
 
+    // (!!!) START: 1. เพิ่ม State สำหรับ Alert Modal ใหม่ (!!!)
     const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
     const [alertModalContent, setAlertModalContent] = useState({ title: '', message: '' });
+    // (!!!) END: 1. เพิ่ม State สำหรับ Alert Modal ใหม่ (!!!)
 
     const [modalMode, setModalMode] = useState('add'); // 'add' or 'edit'
     const [currentUser, setCurrentUser] = useState({ 
@@ -55,7 +56,9 @@ const UserManagement = () => {
             })
             .catch(error => {
                 console.error("Failed to fetch users:", error);
-                alert("Error fetching user list. Please check the console.");
+                // (!!!) 2. เปลี่ยน alert() เป็น Modal (!!!)
+                setAlertModalContent({ title: 'ข้อผิดพลาด', message: 'Error fetching user list. Please check the console.' });
+                setIsAlertModalOpen(true);
                 setLoading(false);
             });
     };
@@ -87,7 +90,9 @@ const UserManagement = () => {
             setModalMode('edit');
             setIsModalOpen(true);
         } catch (error) {
-            alert('Error fetching user data for editing.');
+            // (!!!) 2. เปลี่ยน alert() เป็น Modal (!!!)
+            setAlertModalContent({ title: 'ข้อผิดพลาด', message: 'Error fetching user data for editing.' });
+            setIsAlertModalOpen(true);
         }
     };
     const handleFormSubmit = async (e) => {
@@ -100,7 +105,9 @@ const UserManagement = () => {
             }
             closeModalAndRefresh();
         } catch (error) {
-            alert(`Error: Could not ${modalMode} user.`);
+            // (!!!) 2. เปลี่ยน alert() เป็น Modal (!!!)
+            setAlertModalContent({ title: 'ข้อผิดพลาด', message: `Error: Could not ${modalMode} user.` });
+            setIsAlertModalOpen(true);
         }
     };
     const openAddModal = () => {
@@ -121,13 +128,17 @@ const UserManagement = () => {
                 await deleteUser(userId);
                 loadUsers();
             } catch (error) {
-                alert('Error: Could not delete user.');
+                // (!!!) 2. เปลี่ยน alert() เป็น Modal (!!!)
+                setAlertModalContent({ title: 'ข้อผิดพลาด', message: 'Error: Could not delete user.' });
+                setIsAlertModalOpen(true);
             }
         }
     };
     const handleDeleteSelected = async () => {
         if (selectedUsers.length === 0) {
-            alert("Please select users to delete.");
+            // (!!!) 2. เปลี่ยน alert() เป็น Modal (!!!)
+            setAlertModalContent({ title: 'ข้อควรทราบ', message: 'Please select users to delete.' });
+            setIsAlertModalOpen(true);
             return;
         }
         if (window.confirm(`Are you sure you want to delete ${selectedUsers.length} selected users?`)) {
@@ -136,7 +147,9 @@ const UserManagement = () => {
                 setSelectedUsers([]); 
                 loadUsers(); 
             } catch (error) {
-                alert('Error: Could not delete selected users.');
+                // (!!!) 2. เปลี่ยน alert() เป็น Modal (!!!)
+                setAlertModalContent({ title: 'ข้อผิดพลาด', message: 'Error: Could not delete selected users.' });
+                setIsAlertModalOpen(true);
             }
         }
     };
@@ -154,13 +167,13 @@ const UserManagement = () => {
         setIsImportModalOpen(true); // เปิด Modal
     };
 
-    // (!!!) START: 2. เพิ่ม Handlers สำหรับ Dropzone (!!!)
+    // (!!!) START: Handlers สำหรับ Dropzone (!!!)
     const handleDropzoneClick = () => {
-        fileInputRef.current.click(); // คลิกที่ input[type=file] ที่ซ่อนอยู่
+        fileInputRef.current.click();
     };
 
     const handleDragOver = (e) => {
-        e.preventDefault(); // ป้องกันเบราว์เซอร์เปิดไฟล์
+        e.preventDefault(); 
         e.stopPropagation();
         setIsDragging(true);
     };
@@ -178,24 +191,23 @@ const UserManagement = () => {
 
         const files = e.dataTransfer.files;
         if (files && files.length > 0) {
-            // นำไฟล์ที่ Drop ไปใส่ใน fileInputRef
             fileInputRef.current.files = files;
-            
-            // สร้าง "fake event" เพื่อส่งให้ handleFileChange ทำงาน
             const fakeEvent = { target: fileInputRef.current };
-            handleFileChange(fakeEvent); // เรียกใช้ฟังก์ชันประมวลผลไฟล์
             
-            setIsImportModalOpen(false); // ปิด Modal หลังจาก Drop ไฟล์
+            handleFileChange(fakeEvent); // (!!!) เรียก handleFileChange
+            
+            // (!!!) ไม่ต้องปิด Modal ที่นี่แล้ว handleFileChange จะปิดเอง
         }
     };
-    // (!!!) END: 2. เพิ่ม Handlers สำหรับ Dropzone (!!!)
+    // (!!!) END: Handlers สำหรับ Dropzone (!!!)
 
 
-    // (!!!) ฟังก์ชันนี้ไม่ถูกแก้ไข ใช้ประมวลผลไฟล์เหมือนเดิม (!!!)
+    // (!!!) 4. อัปเดต handleFileChange ให้ปิด Modal เก่า และเปิด Modal ใหม่ (!!!)
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
+        setIsImportModalOpen(false); // (!!!) 1. ปิดป็อปอัพ Dropzone ทันที
         setLoading(true);
         const reader = new FileReader();
 
@@ -220,7 +232,7 @@ const UserManagement = () => {
                     throw new Error(`ไฟล์ Excel ขาดคอลัมน์ที่จำเป็น: ${missingHeaders.join(', ')}`);
                 }
                 
-                alert(`กำลังอัปโหลดผู้ใช้ ${data.length} คน...`);
+                // (!!!) ลบ alert() ที่แจ้งเตือน 'กำลังอัปโหลด...' ออกไป
                 
                 const response = await bulkCreateUsers(data); 
                 
@@ -237,22 +249,28 @@ const UserManagement = () => {
                     }
                 }
                 
-                alert(alertMessage);
+                // (!!!) 2. แสดงผลลัพธ์ด้วย Modal ใหม่ (!!!)
+                setAlertModalContent({ title: 'ผลการนำเข้า', message: alertMessage });
+                setIsAlertModalOpen(true);
                 
                 loadUsers();
 
             } catch (err) {
                 console.error("Error reading or processing Excel file:", err);
-                alert("เกิดข้อผิดพลาด: " + err.message);
+                // (!!!) 2. แสดงผลลัพธ์ (Error) ด้วย Modal ใหม่ (!!!)
+                setAlertModalContent({ title: 'เกิดข้อผิดพลาด', message: "เกิดข้อผิดพลาด: " + err.message });
+                setIsAlertModalOpen(true);
             } finally {
                 setLoading(false);
-                e.target.value = null; // รีเซ็ต input
+                e.target.value = null;
             }
         };
 
         reader.onerror = () => {
              console.error("File reading failed");
-             alert("ไม่สามารถอ่านไฟล์ได้");
+             // (!!!) 2. แสดงผลลัพธ์ (Error) ด้วย Modal ใหม่ (!!!)
+             setAlertModalContent({ title: 'เกิดข้อผิดพลาด', message: 'ไม่สามารถอ่านไฟล์ได้' });
+             setIsAlertModalOpen(true);
              setLoading(false);
              e.target.value = null;
         };
@@ -333,7 +351,6 @@ const UserManagement = () => {
                                     นำเข้า
                                 </button>
                                 
-                                {/* (!!!) Input นี้จะถูกซ่อนไว้ และถูกเรียกใช้โดย Dropzone (!!!) */}
                                 <input
                                     type="file"
                                     ref={fileInputRef}
@@ -490,14 +507,13 @@ const UserManagement = () => {
                     )}
 
 
-                {/* (!!!) START: 3. แก้ไข Modal นำเข้า ให้เป็น Dropzone (!!!) */}
+                {/* Modal นำเข้า (Dropzone) */}
                 {isImportModalOpen && (
                     <div className={styles.modalOverlay}>
                         <div className={styles.modalContent}>
                             <h2>นำเข้าผู้ใช้จากไฟล์ Excel</h2>
                             <p>ลากไฟล์ .xlsx หรือ .xls ของคุณมาวางในพื้นที่ด้านล่าง</p>
                             
-                            {/* (!!!) 4. นี่คือ Dropzone (!!!) */}
                             <div 
                                 className={`${styles.dropzone} ${isDragging ? styles.dragging : ''}`}
                                 onClick={handleDropzoneClick}
@@ -524,12 +540,12 @@ const UserManagement = () => {
                                 <button type="button" onClick={() => setIsImportModalOpen(false)} className={styles.cancelBtn}>
                                     ยกเลิก
                                 </button>
-                                {/* (!!!) ลบปุ่ม "เลือกไฟล์เพื่ออัปโหลด" ออก เพราะ Dropzone ทำหน้าที่แทนแล้ว (!!!) */}
                             </div>
                         </div>
                     </div>
                 )}
-                {/* (!!!) END: 3. แก้ไข Modal นำเข้า ให้เป็น Dropzone (!!!) */}
+                
+                {/* (!!!) START: 5. เพิ่ม Alert Modal (!!!) */}
                 {isAlertModalOpen && (
                     <div className={styles.modalOverlay}>
                         <div className={styles.modalContent}>
@@ -548,6 +564,8 @@ const UserManagement = () => {
                         </div>
                     </div>
                 )}
+                {/* (!!!) END: 5. เพิ่ม Alert Modal (!!!) */}
+
 
             </div>
                             <footer className={styles.footer}>
