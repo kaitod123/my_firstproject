@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+// (!!!) 1. Import 'useNavigate' เพิ่ม (!!!)
+import { Link, useNavigate } from 'react-router-dom';
 import styles from '../styles/Ufinal1.module.css';
 
 function Ufinal() {
+    // (!!!) 2. เรียกใช้ useNavigate (!!!)
+    const navigate = useNavigate();
+
     const [formData, setFormData] = useState({
         document_type: [],
         title: '',
@@ -26,27 +30,24 @@ function Ufinal() {
         front_face: [],
     });
 
-    // (!!!) START: 1. เพิ่ม State สำหรับ Modal ทั้งหมด (!!!)
     const [advisorSuggestions, setAdvisorSuggestions] = useState([]);
     const [coAdvisorSuggestions, setCoAdvisorSuggestions] = useState([]);
     const [coAuthorSuggestions, setCoAuthorSuggestions] = useState([]);
 
-    // Modal สำหรับ "แจ้งเตือน" (มีปุ่ม OK ปุ่มเดียว)
     const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
     const [alertModalContent, setAlertModalContent] = useState({ title: '', message: '' });
 
-    // Modal สำหรับ "ยืนยัน" (มีปุ่ม Confirm/Cancel)
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [confirmModalContent, setConfirmModalContent] = useState({ title: '', message: '' });
-    const [confirmModalAction, setConfirmModalAction] = useState(() => () => {}); // State ที่เก็บฟังก์ชันที่จะรันเมื่อกดยืนยัน
-    // (!!!) END: 1. เพิ่ม State (!!!)
+    const [confirmModalAction, setConfirmModalAction] = useState(() => () => {});
 
-    // (!!!) START: 2. เพิ่มฟังก์ชัน Helper สำหรับ Alert (!!!)
+    // (!!!) 3. เพิ่ม State "flag" (!!!)
+    const [uploadWasSuccessful, setUploadWasSuccessful] = useState(false);
+
     const showAlert = (title, message) => {
         setAlertModalContent({ title, message });
         setIsAlertModalOpen(true);
     };
-    // (!!!) END: 2. เพิ่มฟังก์ชัน Helper (!!!)
 
     // (คงเดิม) ฟังก์ชันค้นหาอาจารย์
     const handleAdvisorSearch = async (e) => {
@@ -85,7 +86,6 @@ function Ufinal() {
         }
 
         try {
-            // เรียก API ใหม่เพื่อค้นหานักศึกษา
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/students/search?query=${encodeURIComponent(value)}`);
             if (!response.ok) throw new Error("Failed to fetch students");
             const data = await response.json();
@@ -102,7 +102,6 @@ function Ufinal() {
             [name]: `${suggestion.first_name} ${suggestion.last_name}`,
         }));
         
-        // ล้างรายการแนะนำ
         if (name === 'advisorName') setAdvisorSuggestions([]);
         if (name === 'coAdvisorName') setCoAdvisorSuggestions([]);
         if (name === 'co_author') setCoAuthorSuggestions([]);
@@ -159,7 +158,8 @@ function Ufinal() {
 
         if (validFiles.length < files.length) {
             const invalidCount = files.length - validFiles.length;
-            // (!!!) 3. เปลี่ยน alert เป็น Modal (!!!)
+            // (!!!) รีเซ็ต flag เมื่อมี Alert อื่น (!!!)
+            setUploadWasSuccessful(false); 
             showAlert(
                 'ไฟล์ไม่ถูกต้อง', 
                 `${invalidCount} ไฟล์ที่คุณเลือกมีนามสกุลไม่ถูกต้องสำหรับช่องนี้ และจะไม่ถูกเพิ่ม (ช่องนี้รองรับเฉพาะ: ${accept})`
@@ -183,10 +183,7 @@ function Ufinal() {
         }));
     };
 
-    // (!!!) START: 4. แยกฟังก์ชัน ตรวจสอบ และ บันทึก (!!!)
     
-    // 4.1 ฟังก์ชันนี้จะถูกเรียกโดยปุ่ม "บันทึก"
-    // ทำหน้าที่ "ตรวจสอบ" ข้อมูลก่อน
     const handleSaveClick = (e) => {
         if (e) e.preventDefault();
         
@@ -196,28 +193,25 @@ function Ufinal() {
         if (formData.abstract.trim() === '') missingFields.push('บทคัดย่อ');
         if (formData.keywords.trim() === '') missingFields.push('คำสำคัญ');
         if (formData.advisorName.trim() === '') missingFields.push('ชื่ออาจารย์ที่ปรึกษา');
-        if (formData.department === undefined || formData.department.trim() === '') missingFields.push('สาขาที่อัปโหลด'); // (เพิ่ม) ตรวจสอบสาขา
+        if (formData.department === undefined || formData.department.trim() === '') missingFields.push('สาขาที่อัปโหลด');
         if (formData.permission === false) missingFields.push('การยืนยันสิทธิ์');
 
         if (missingFields.length > 0) {
             const errorMessage = 'กรุณากรอกข้อมูลต่อไปนี้ให้ครบถ้วน:\n\n- ' + missingFields.join('\n- ');
-            // (!!!) เปลี่ยน alert เป็น Modal (!!!)
+            // (!!!) รีเซ็ต flag เมื่อมี Alert อื่น (!!!)
+            setUploadWasSuccessful(false); 
             showAlert('ข้อมูลไม่ครบถ้วน', errorMessage);
             return; 
         }
 
-        // (!!!) ถ้าข้อมูลครบ ให้เปิด Modal ยืนยัน (!!!)
         setConfirmModalContent({
             title: 'ยืนยันการบันทึก',
             message: 'คุณแน่ใจหรือไม่ว่าต้องการบันทึกข้อมูลโครงงานนี้?'
         });
-        // (!!!) เมื่อกดยืนยัน ให้เรียก handleSubmit (ตัวจริง) (!!!)
         setConfirmModalAction(() => () => handleSubmit()); 
         setIsConfirmModalOpen(true);
     };
 
-    // 4.2 ฟังก์ชันนี้คือ "การบันทึกจริง"
-    // จะถูกเรียกโดย Modal ยืนยัน
     const handleSubmit = async () => {
         const data = new FormData();
         const fileKeys = [
@@ -259,31 +253,31 @@ function Ufinal() {
 
             const result = await response.json();
             if (response.ok) {
-                // (!!!) เปลี่ยน alert เป็น Modal (!!!)
+                // (!!!) 4. ตั้งค่า Flag เป็น true เมื่อสำเร็จ (!!!)
+                setUploadWasSuccessful(true); 
                 showAlert('สำเร็จ', result.message || 'บันทึกข้อมูลสำเร็จ');
                 
                 // ล้างฟอร์ม
                 setFormData({
-                    document_type: [], title: '', title_eng: '', author: formData.author, // เก็บ author ไว้
+                    document_type: [], title: '', title_eng: '', author: formData.author,
                     co_author: '', abstract: '', advisorName: '', department: '',
                     coAdvisorName: '', keywords: '', supportAgency: '', permission: false,
                     complete_pdf: [], complete_doc: [], article_files: [], program_files: [],
                     web_files: [], poster_files: [], certificate_files: [], front_face: [],
                 });
             } else {
-                // (!!!) เปลี่ยน alert เป็น Modal (!!!)
+                // (!!!) รีเซ็ต flag เมื่อมี Alert อื่น (!!!)
+                setUploadWasSuccessful(false); 
                 showAlert('เกิดข้อผิดพลาด', result.message || 'ไม่สามารถบันทึกข้อมูลได้');
             }
         } catch (error) {
             console.error('Error submitting form:', error);
-            // (!!!) เปลี่ยน alert เป็น Modal (!!!)
+            // (!!!) รีเซ็ต flag เมื่อมี Alert อื่น (!!!)
+            setUploadWasSuccessful(false); 
             showAlert('ไม่สามารถเชื่อมต่อได้', 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้: ' + (error.message || 'กรุณาตรวจสอบ Console'));
         }
     };
-    // (!!!) END: 4. แยกฟังก์ชัน (!!!)
 
-    // (!!!) 5. ลบฟังก์ชัน handleuploadfile ที่ไม่ถูกต้อง (!!!)
-    // const handleuploadfile = async (userId) => { ... }; // <--- ลบทิ้ง
 
     const FileUploadZone = ({ name, title, hint, accept }) => (
         <div className={styles.fileDropzone}>
@@ -319,7 +313,6 @@ function Ufinal() {
     );
 
     return (
-        // (!!!) 6. เอา onSubmit ออกจาก Form (!!!)
         <form>
         <div className={styles.pageContainer}>
             <div className={styles.uploadCard}>
@@ -556,10 +549,9 @@ function Ufinal() {
                     <Link to="/" className={styles.linkButton}>
                         กลับ
                     </Link>
-                    {/* (!!!) 7. แก้ไขปุ่มบันทึก (!!!) */}
                     <button
-                        onClick={handleSaveClick} // (!!!) เรียกฟังก์ชันตรวจสอบ
-                        type="button" // (!!!) เปลี่ยนเป็น type="button"
+                        onClick={handleSaveClick} 
+                        type="button" 
                         className={styles.submitButton} 
                     >
                         บันทึก
@@ -577,7 +569,7 @@ function Ufinal() {
             </footer>
         </div>
         
-        {/* (!!!) START: 8. เพิ่ม Modal JSX ทั้งหมด (!!!) */}
+        {/* (!!!) START: 5. แก้ไข Modal JSX (!!!) */}
 
         {/* Alert Modal (สำหรับ OK) */}
         {isAlertModalOpen && (
@@ -586,13 +578,20 @@ function Ufinal() {
                     <h2>{alertModalContent.title}</h2>
                     <p className={styles.alertMessage}>{alertModalContent.message}</p>
                     <div className={styles.modalActions}>
-                        <Link to ='/' 
+                        {/* (!!!) นี่คือปุ่มที่แก้ไข (!!!) */}
+                        <button 
                             type="button" 
-                            onClick={() => setIsAlertModalOpen(false)} 
-                            className={styles.submitButton} // (!!!) ใช้สไตล์ปุ่ม submit สีเขียว
+                            onClick={() => {
+                                setIsAlertModalOpen(false);
+                                if (uploadWasSuccessful) {
+                                    navigate('/'); // (!!!) กลับไปหน้า Home
+                                    setUploadWasSuccessful(false); // (!!!) รีเซ็ต flag
+                                }
+                            }} 
+                            className={styles.submitButton}
                         >
                             ตกลง
-                        </Link>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -608,17 +607,17 @@ function Ufinal() {
                         <button 
                             type="button" 
                             onClick={() => setIsConfirmModalOpen(false)} 
-                            className={styles.linkButton} // (!!!) ใช้สไตล์ปุ่ม "กลับ"
+                            className={styles.linkButton} 
                         >
                             ยกเลิก
                         </button>
                         <button 
                             type="button" 
                             onClick={() => {
-                                confirmModalAction(); // รันฟังก์ชันที่เก็บไว้ (handleSubmit)
-                                setIsConfirmModalOpen(false); // ปิด Modal
+                                confirmModalAction();
+                                setIsConfirmModalOpen(false); 
                             }} 
-                            className={styles.submitButton} // (!!!) ใช้สไตล์ปุ่ม "บันทึก"
+                            className={styles.submitButton}
                         >
                             ยืนยัน
                         </button>
@@ -626,7 +625,7 @@ function Ufinal() {
                 </div>
             </div>
         )}
-        {/* (!!!) END: 8. เพิ่ม Modal JSX (!!!) */}
+        {/* (!!!) END: 5. แก้ไข Modal JSX (!!!) */}
 
         </form>
     );
