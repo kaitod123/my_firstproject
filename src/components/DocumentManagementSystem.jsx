@@ -464,7 +464,7 @@ const DocumentManagementSystem = () => {
           {error ? (
               <div className={styles.errorMessage}>
                   <p>Error: {error}</p>
-                  <button onClick={reloadDocuments} className={styles.reloadButton}>ลองใหม่อGีกครั้ง</button>
+                  <button onClick={reloadDocuments} className={styles.reloadButton}>ลองใหม่อีกครั้ง</button>
               </div>
           ) : loading ? (
             <LoadingSpinner />
