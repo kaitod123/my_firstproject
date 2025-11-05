@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
+:root{
+      --accent-blue-hover: #3a7bd5; /* Darker blue on hover */
+}
 .body {
     background-color: #f0f2f5;
     font-family: 'Inter', sans-serif;
@@ -195,8 +197,8 @@ h1 {
   font-weight: 500;
   background-color: #f0f2f5;
   transition: color 0.2s ease-in-out;
-  border: 2px solid #e5e7eb; /* เพิ่มขอบ */
 }
+
 .backButton:hover {
   color: var(--accent-blue);
 }
@@ -215,6 +217,7 @@ h1 {
 .role-subscriber { background-color: #17a2b8; }
 .role-contributor { background-color: #fd7e14; }
 .role-only-user { background-color: #6c757d; }
+
 /* ======================================================= */
 
 .userinfo {

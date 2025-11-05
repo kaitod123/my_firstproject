@@ -258,9 +258,9 @@ const UserManagement = () => {
                 <div className={styles.usermanagementcontainer}>
                     <div className={styles.dashboardContainer}>
                                     <div>
-                                        <Link to="/AdminDashboard" className={styles.backButton}>
-                                        &larr; กลับไปยังหน้าจัดการข้อมูลแอดมิน
-                                        </Link>
+                                        <button onClick={() => navigate(-1)} className={styles.backButton}>
+                                            <ChevronLeft size={20} /> กลับไปยังหน้าก่อนหน้า
+                                        </button>
                                     </div>
                               </div>
                     <h1>จัดการผู้ใช้งาน</h1>
