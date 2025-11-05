@@ -88,6 +88,46 @@ h1 {
     float: right;
 }
 
+.exampleTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    font-size: 13px;
+    border: 1px solid #ddd; /* กรอบรอบตาราง */
+}
+
+.exampleTable th,
+.exampleTable td {
+    border: 1px solid #ddd; /* เส้นตาราง */
+    padding: 8px 10px;
+    text-align: left;
+    word-break: break-all; /* ตัดคำถ้าจำเป็น */
+}
+
+.exampleTable th {
+    background-color: #f4f6f8; /* สีพื้นหลัง Header */
+    font-weight: 600;
+    color: #333;
+}
+
+.exampleTable td {
+    background-color: #fff;
+}
+
+.modalNote {
+    background-color: #fdfdea; /* สีเหลืองอ่อน */
+    border: 1px solid #fceec4;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    font-size: 13px;
+}
+
+.modalNote ul {
+    margin: 8px 0 0 0;
+    padding-left: 20px;
+}
+
 /* (แก้ไข) เปลี่ยน .rightControls เป็น .rightColumn */
 .rightColumn {
     display: flex;

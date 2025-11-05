@@ -20,6 +20,11 @@ const UserManagement = () => {
     
     const [sortConfig, setSortConfig] = useState({ key: 'created_at', direction: 'descending' });//จัดเรียงข้อมูล
     const [isModalOpen, setIsModalOpen] = useState(false);
+    
+    // (!!!) START: 1. เพิ่ม State สำหรับ Modal นำเข้า (!!!)
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+    // (!!!) END: 1. เพิ่ม State สำหรับ Modal นำเข้า (!!!)
+
     const [modalMode, setModalMode] = useState('add'); // 'add' or 'edit'
     const [currentUser, setCurrentUser] = useState({ 
         username: '', email: '', password: '', first_name: '',
@@ -27,15 +32,15 @@ const UserManagement = () => {
     });
 
     const getInitials = (firstName, lastName) => {
-  if (!firstName && !lastName) return '??';
-  const firstInitial = firstName?.[0] || '';
-  const lastInitial = lastName?.[0] || '';
-  return `${firstInitial}${lastInitial}`.toUpperCase();
-}
+        if (!firstName && !lastName) return '??';
+        const firstInitial = firstName?.[0] || '';
+        const lastInitial = lastName?.[0] || '';
+        return `${firstInitial}${lastInitial}`.toUpperCase();
+    }
 
     const fileInputRef = useRef(null);
 
-        const roleTranslation = {
+    const roleTranslation = {
         'admin': 'ผู้ดูแล',
         'advisor': 'อาจารย์',
         'student': 'นักศึกษา',
@@ -144,8 +149,17 @@ const UserManagement = () => {
     };
 
     // (!!!) START: 3. อัปเดตฟังก์ชันสำหรับ Upload (!!!)
+    
+    // (!!!) 2. แก้ไข: ให้ฟังก์ชันนี้เปิด Modal ตัวอย่าง (!!!)
     const handleUploadClick = () => {
-        fileInputRef.current.click();
+        // fileInputRef.current.click(); // (!!!) ลบการคลิกไฟล์ตรงนี้ออก (!!!)
+        setIsImportModalOpen(true); // (!!!) ให้เปิด Modal ตัวอย่างแทน (!!!)
+    };
+
+    // (!!!) 3. เพิ่ม: ฟังก์ชันสำหรับปุ่มใน Modal ตัวอย่าง (!!!)
+    const handleProceedToUpload = () => {
+        setIsImportModalOpen(false); // ปิด Modal ตัวอย่าง
+        fileInputRef.current.click(); // เปิดหน้าต่างเลือกไฟล์ (พฤติกรรมเดิม)
     };
 
     const handleFileChange = (e) => {
@@ -292,7 +306,8 @@ const UserManagement = () => {
                                     ลบผู้ใช้ที่เลือก
                                 </button>
 
-                                                            <button
+                                {/* (!!!) ปุ่มนี้จะเรียก handleUploadClick ซึ่งจะเปิด Modal (ตามที่เราแก้ไข) (!!!) */}
+                                <button
                                     onClick={handleUploadClick} 
                                     className={`${styles.btna} ${styles.uploadbtn}`} 
                                 >
@@ -420,43 +435,112 @@ const UserManagement = () => {
                 </div>
 
                 {/* --- Modal และ Footer --- */}
+                
+                {/* (!!!) Modal สำหรับ Add/Edit User (อันเดิม) (!!!) */}
                 {isModalOpen && (
-                <div className={styles.modalOverlay}>
-                    <div className={styles.modalContent}>
-                        <h2>{modalMode === 'edit' ? 'Edit User' : 'Add New User'}</h2>
-                        <form onSubmit={handleFormSubmit}>
-                            <div className={styles.formGrid}>
-                                <input name="username" value={currentUser.username} onChange={handleInputChange} placeholder="Username" required />
-                                <input name="email" type="email" value={currentUser.email} onChange={handleInputChange} placeholder="Email" required />
-                                <input name="password" type="password" value={currentUser.password} onChange={handleInputChange} placeholder="New Password (leave blank to keep current)" />
-                                <input name="identification" value={currentUser.identification} onChange={handleInputChange} placeholder="Identification" />
-                                <input name="first_name" value={currentUser.first_name} onChange={handleInputChange} placeholder="First Name" required />
-                                <input name="last_name" value={currentUser.last_name} onChange={handleInputChange} placeholder="Last Name" required />
-                                
-                            </div>
-                                <div className={styles.formGroup}>
-                                    <label>Role:</label>
-                                    <div className={styles.radioGroup}>
-                                        <label><input type="radio" name="role" value="admin" checked={currentUser.role === 'admin'} onChange={handleInputChange} /> ผู้ดูแล</label>
-                                        <label><input type="radio" name="role" value="advisor" checked={currentUser.role === 'advisor'} onChange={handleInputChange} /> อาจารย์</label>
-                                        <label><input type="radio" name="role" value="student" checked={currentUser.role === 'student'} onChange={handleInputChange} /> นักศึกษา</label>
-                                    </div>
+                    <div className={styles.modalOverlay}>
+                        <div className={styles.modalContent}>
+                            <h2>{modalMode === 'edit' ? 'Edit User' : 'Add New User'}</h2>
+                            <form onSubmit={handleFormSubmit}>
+                                <div className={styles.formGrid}>
+                                    <input name="username" value={currentUser.username} onChange={handleInputChange} placeholder="Username" required />
+                                    <input name="email" type="email" value={currentUser.email} onChange={handleInputChange} placeholder="Email" required />
+                                    <input name="password" type="password" value={currentUser.password} onChange={handleInputChange} placeholder="New Password (leave blank to keep current)" />
+                                    <input name="identification" value={currentUser.identification} onChange={handleInputChange} placeholder="Identification" />
+                                    <input name="first_name" value={currentUser.first_name} onChange={handleInputChange} placeholder="First Name" required />
+                                    <input name="last_name" value={currentUser.last_name} onChange={handleInputChange} placeholder="Last Name" required />
+                                    
                                 </div>
-                              <div className={styles.formGroup}>
-                                <label className={styles.checkboxLabel}>
-                                    {/* (!!!) 5. (แก้ไข) เพิ่ม '== 1' เพื่อให้ Checkbox ทำงานถูกต้อง */}
-                                    <input type="checkbox" name="is_active" checked={currentUser.is_active == 1} onChange={handleInputChange} />
-                                    User is Active
-                                </label>
-                              </div>
-                                <div className={styles.modalActions}>
-                                <button type="button" onClick={() => setIsModalOpen(false)} className={styles.cancelBtn}>Cancel</button>
-                                <button type="submit" className={styles.saveBtn}>Save Changes</button>
+                                    <div className={styles.formGroup}>
+                                        <label>Role:</label>
+                                        <div className={styles.radioGroup}>
+                                            <label><input type="radio" name="role" value="admin" checked={currentUser.role === 'admin'} onChange={handleInputChange} /> ผู้ดูแล</label>
+                                            <label><input type="radio" name="role" value="advisor" checked={currentUser.role === 'advisor'} onChange={handleInputChange} /> อาจารย์</label>
+                                            <label><input type="radio" name="role" value="student" checked={currentUser.role === 'student'} onChange={handleInputChange} /> นักศึกษา</label>
+                                        </div>
+                                    </div>
+                                <div className={styles.formGroup}>
+                                    <label className={styles.checkboxLabel}>
+                                        {/* (!!!) 5. (แก้ไข) เพิ่ม '== 1' เพื่อให้ Checkbox ทำงานถูกต้อง */}
+                                        <input type="checkbox" name="is_active" checked={currentUser.is_active == 1} onChange={handleInputChange} />
+                                        User is Active
+                                    </label>
+                                </div>
+                                    <div className={styles.modalActions}>
+                                    <button type="button" onClick={() => setIsModalOpen(false)} className={styles.cancelBtn}>Cancel</button>
+                                    <button type="submit" className={styles.saveBtn}>Save Changes</button>
+                                </div>
+                                </form>
                             </div>
-                            </form>
+                        </div>
+                    )}
+
+
+                {/* (!!!) START: 4. เพิ่ม Modal สำหรับแสดงตัวอย่างไฟล์นำเข้า (!!!) */}
+                {isImportModalOpen && (
+                    <div className={styles.modalOverlay}>
+                        <div className={styles.modalContent}>
+                            <h2>ตัวอย่างไฟล์ Excel สำหรับนำเข้าผู้ใช้</h2>
+                            <p>ไฟล์ Excel ของคุณ (ชีตแรก) ต้องมีคอลัมน์ตามตัวอย่างนี้:</p>
+                            
+                            {/* (!!!) 5. เพิ่มตารางตัวอย่าง (!!!) */}
+                            <table className={styles.exampleTable}>
+                                <thead>
+                                    <tr>
+                                        <th>username</th>
+                                        <th>email</th>
+                                        <th>password</th>
+                                        <th>first_name</th>
+                                        <th>last_name</th>
+                                        <th>role</th>
+                                        <th>identification</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>student01</td>
+                                        <td>student.01@email.com</td>
+                                        <td>pass1234</td>
+                                        <td>สมชาย</td>
+                                        <td>ใจดี</td>
+                                        <td>student</td>
+                                        <td>110...</td>
+                                    </tr>
+                                    <tr>
+                                        <td>advisor01</td>
+                                        <td>advisor.01@email.com</td>
+                                        <td>pass5678</td>
+                                        <td>สมศรี</td>
+                                        <td>สอนดี</td>
+                                        <td>advisor</td>
+                                        <td>220...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            
+                            <div className={styles.modalNote}>
+                                <strong>ข้อควรระวัง:</strong>
+                                <ul>
+                                    <li><strong>คอลัมน์ที่จำเป็น:</strong> <code>username</code>, <code>email</code>, <code>password</code>, <code>first_name</code>, <code>last_name</code>, <code>role</code>.</li>
+                                    <li>คอลัมน์ <code>identification</code> สามารถเว้นว่างได้</li>
+                                    <li>ค่า <code>role</code> ที่รองรับคือ: <code>admin</code>, <code>advisor</code>, <code>student</code></li>
+                                    <li>ระบบจะอ่านข้อมูลจาก **ชีตแรก** ของไฟล์ Excel เท่านั้น</li>
+                                </ul>
+                            </div>
+
+                            <div className={styles.modalActions}>
+                                <button type="button" onClick={() => setIsImportModalOpen(false)} className={styles.cancelBtn}>
+                                    ยกเลิก
+                                </button>
+                                <button type="button" onClick={handleProceedToUpload} className={styles.saveBtn}>
+                                    เลือกไฟล์เพื่ออัปโหลด
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}
+                {/* (!!!) END: 4. เพิ่ม Modal สำหรับแสดงตัวอย่างไฟล์นำเข้า (!!!) */}
+
 
             </div>
                             <footer className={styles.footer}>
@@ -471,4 +555,3 @@ const UserManagement = () => {
 };
 
 export default UserManagement;
-
