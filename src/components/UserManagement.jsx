@@ -529,7 +529,24 @@ const UserManagement = () => {
                     </div>
                 )}
                 {/* (!!!) END: 3. แก้ไข Modal นำเข้า ให้เป็น Dropzone (!!!) */}
-
+                {isAlertModalOpen && (
+                    <div className={styles.modalOverlay}>
+                        <div className={styles.modalContent}>
+                            <h2>{alertModalContent.title}</h2>
+                            {/* (!!!) เพิ่ม className 'alertMessage' เพื่อจัดการ \n (!!!) */}
+                            <p className={styles.alertMessage}>{alertModalContent.message}</p>
+                            <div className={styles.modalActions}>
+                                <button 
+                                    type="button" 
+                                    onClick={() => setIsAlertModalOpen(false)} 
+                                    className={styles.saveBtn} /* ใช้สไตล์ปุ่ม save เพื่อให้เด่น */
+                                >
+                                    ตกลง
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
             </div>
                             <footer className={styles.footer}>

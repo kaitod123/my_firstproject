@@ -11,6 +11,22 @@
     min-height: 100vh;
     margin: 0;
 }
+
+.alertMessage {
+    font-size: 1rem;
+    color: #333;
+    line-height: 1.6;
+    white-space: pre-wrap; /* (!!!) สำคัญมาก: เพื่อให้ \n ทำงาน */
+    max-height: 400px; /* จำกัดความสูงเผื่อข้อความยาวมาก */
+    overflow-y: auto; /* เพิ่ม scrollbar ถ้าข้อความยาว */
+    background-color: #f9f9f9;
+    border: 1px solid #eee;
+    padding: 15px;
+    border-radius: 6px;
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
 .uploadbtn{
     background-color:#f0f2f5 ;
     color: #000;
