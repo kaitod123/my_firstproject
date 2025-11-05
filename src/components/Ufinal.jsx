@@ -8,7 +8,7 @@ function Ufinal() {
         title: '',
         title_eng: '',
         author: '',
-        co_author: '', // (เพิ่ม) State สำหรับผู้แต่งคนที่ 2
+        co_author: '',
         abstract: '',
         advisorName: '',
         department: '',
@@ -26,9 +26,27 @@ function Ufinal() {
         front_face: [],
     });
 
+    // (!!!) START: 1. เพิ่ม State สำหรับ Modal ทั้งหมด (!!!)
     const [advisorSuggestions, setAdvisorSuggestions] = useState([]);
     const [coAdvisorSuggestions, setCoAdvisorSuggestions] = useState([]);
-    const [coAuthorSuggestions, setCoAuthorSuggestions] = useState([]); // (เพิ่ม) State สำหรับค้นหาผู้แต่งคนที่ 2
+    const [coAuthorSuggestions, setCoAuthorSuggestions] = useState([]);
+
+    // Modal สำหรับ "แจ้งเตือน" (มีปุ่ม OK ปุ่มเดียว)
+    const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
+    const [alertModalContent, setAlertModalContent] = useState({ title: '', message: '' });
+
+    // Modal สำหรับ "ยืนยัน" (มีปุ่ม Confirm/Cancel)
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [confirmModalContent, setConfirmModalContent] = useState({ title: '', message: '' });
+    const [confirmModalAction, setConfirmModalAction] = useState(() => () => {}); // State ที่เก็บฟังก์ชันที่จะรันเมื่อกดยืนยัน
+    // (!!!) END: 1. เพิ่ม State (!!!)
+
+    // (!!!) START: 2. เพิ่มฟังก์ชัน Helper สำหรับ Alert (!!!)
+    const showAlert = (title, message) => {
+        setAlertModalContent({ title, message });
+        setIsAlertModalOpen(true);
+    };
+    // (!!!) END: 2. เพิ่มฟังก์ชัน Helper (!!!)
 
     // (คงเดิม) ฟังก์ชันค้นหาอาจารย์
     const handleAdvisorSearch = async (e) => {
@@ -56,7 +74,7 @@ function Ufinal() {
         }
     };
 
-    // (เพิ่ม) ฟังก์ชันค้นหาผู้แต่งคนที่ 2 (นักศึกษา)
+    // (คงเดิม) ฟังก์ชันค้นหาผู้แต่งคนที่ 2 (นักศึกษา)
     const handleStudentSearch = async (e) => {
         const { name, value } = e.target;
         handleChange(e); // อัปเดต formData
@@ -87,7 +105,7 @@ function Ufinal() {
         // ล้างรายการแนะนำ
         if (name === 'advisorName') setAdvisorSuggestions([]);
         if (name === 'coAdvisorName') setCoAdvisorSuggestions([]);
-        if (name === 'co_author') setCoAuthorSuggestions([]); // (เพิ่ม)
+        if (name === 'co_author') setCoAuthorSuggestions([]);
     };
 
     useEffect(() => {
@@ -118,7 +136,6 @@ function Ufinal() {
                 });
             }
         } else {
-            // (เพิ่ม) ตรวจสอบว่าไม่ใช่การค้นหา (ป้องกันการพิมพ์ทับขณะเลือก Suggestion)
             if (name === 'advisorName' && advisorSuggestions.length > 0) {
                  setFormData(prevState => ({ ...prevState, [name]: value }));
             } else if (name === 'coAdvisorName' && coAdvisorSuggestions.length > 0) {
@@ -142,7 +159,11 @@ function Ufinal() {
 
         if (validFiles.length < files.length) {
             const invalidCount = files.length - validFiles.length;
-            alert(`${invalidCount} ไฟล์ที่คุณเลือกมีนามสกุลไม่ถูกต้องสำหรับช่องนี้ และจะไม่ถูกเพิ่ม (ช่องนี้รองรับเฉพาะ: ${accept})`);
+            // (!!!) 3. เปลี่ยน alert เป็น Modal (!!!)
+            showAlert(
+                'ไฟล์ไม่ถูกต้อง', 
+                `${invalidCount} ไฟล์ที่คุณเลือกมีนามสกุลไม่ถูกต้องสำหรับช่องนี้ และจะไม่ถูกเพิ่ม (ช่องนี้รองรับเฉพาะ: ${accept})`
+            );
         }
 
         if (validFiles.length > 0) {
@@ -162,23 +183,42 @@ function Ufinal() {
         }));
     };
 
-    const handleSubmit = async (e) => {
+    // (!!!) START: 4. แยกฟังก์ชัน ตรวจสอบ และ บันทึก (!!!)
+    
+    // 4.1 ฟังก์ชันนี้จะถูกเรียกโดยปุ่ม "บันทึก"
+    // ทำหน้าที่ "ตรวจสอบ" ข้อมูลก่อน
+    const handleSaveClick = (e) => {
         if (e) e.preventDefault();
-        const missingFields = [];
         
+        const missingFields = [];
         if (formData.title.trim() === '') missingFields.push('ชื่อโครงงาน');
         if (formData.title_eng.trim() === '') missingFields.push('ชื่อโครงงานภาษาอังกฤษ');
         if (formData.abstract.trim() === '') missingFields.push('บทคัดย่อ');
         if (formData.keywords.trim() === '') missingFields.push('คำสำคัญ');
         if (formData.advisorName.trim() === '') missingFields.push('ชื่ออาจารย์ที่ปรึกษา');
+        if (formData.department === undefined || formData.department.trim() === '') missingFields.push('สาขาที่อัปโหลด'); // (เพิ่ม) ตรวจสอบสาขา
         if (formData.permission === false) missingFields.push('การยืนยันสิทธิ์');
 
         if (missingFields.length > 0) {
             const errorMessage = 'กรุณากรอกข้อมูลต่อไปนี้ให้ครบถ้วน:\n\n- ' + missingFields.join('\n- ');
-            alert(errorMessage);
+            // (!!!) เปลี่ยน alert เป็น Modal (!!!)
+            showAlert('ข้อมูลไม่ครบถ้วน', errorMessage);
             return; 
         }
 
+        // (!!!) ถ้าข้อมูลครบ ให้เปิด Modal ยืนยัน (!!!)
+        setConfirmModalContent({
+            title: 'ยืนยันการบันทึก',
+            message: 'คุณแน่ใจหรือไม่ว่าต้องการบันทึกข้อมูลโครงงานนี้?'
+        });
+        // (!!!) เมื่อกดยืนยัน ให้เรียก handleSubmit (ตัวจริง) (!!!)
+        setConfirmModalAction(() => () => handleSubmit()); 
+        setIsConfirmModalOpen(true);
+    };
+
+    // 4.2 ฟังก์ชันนี้คือ "การบันทึกจริง"
+    // จะถูกเรียกโดย Modal ยืนยัน
+    const handleSubmit = async () => {
         const data = new FormData();
         const fileKeys = [
             'complete_pdf', 'complete_doc', 'article_files', 'program_files', 
@@ -219,9 +259,10 @@ function Ufinal() {
 
             const result = await response.json();
             if (response.ok) {
-                alert(result.message || 'บันทึกข้อมูลสำเร็จ');
-                // (เพิ่ม) ล้างฟอร์มเมื่อสำเร็จ
-                // (คุณอาจต้องการ redirect ไปหน้าอื่นแทน)
+                // (!!!) เปลี่ยน alert เป็น Modal (!!!)
+                showAlert('สำเร็จ', result.message || 'บันทึกข้อมูลสำเร็จ');
+                
+                // ล้างฟอร์ม
                 setFormData({
                     document_type: [], title: '', title_eng: '', author: formData.author, // เก็บ author ไว้
                     co_author: '', abstract: '', advisorName: '', department: '',
@@ -230,14 +271,19 @@ function Ufinal() {
                     web_files: [], poster_files: [], certificate_files: [], front_face: [],
                 });
             } else {
-                alert('เกิดข้อผิดพลาด: ' + (result.message || 'ไม่สามารถบันทึกข้อมูลได้'));
+                // (!!!) เปลี่ยน alert เป็น Modal (!!!)
+                showAlert('เกิดข้อผิดพลาด', result.message || 'ไม่สามารถบันทึกข้อมูลได้');
             }
         } catch (error) {
             console.error('Error submitting form:', error);
-            // (แก้ไข) ตรวจสอบว่า error object มี message หรือไม่
-            alert('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้: ' + (error.message || 'กรุณาตรวจสอบ Console'));
+            // (!!!) เปลี่ยน alert เป็น Modal (!!!)
+            showAlert('ไม่สามารถเชื่อมต่อได้', 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้: ' + (error.message || 'กรุณาตรวจสอบ Console'));
         }
     };
+    // (!!!) END: 4. แยกฟังก์ชัน (!!!)
+
+    // (!!!) 5. ลบฟังก์ชัน handleuploadfile ที่ไม่ถูกต้อง (!!!)
+    // const handleuploadfile = async (userId) => { ... }; // <--- ลบทิ้ง
 
     const FileUploadZone = ({ name, title, hint, accept }) => (
         <div className={styles.fileDropzone}>
@@ -273,7 +319,8 @@ function Ufinal() {
     );
 
     return (
-        <form onSubmit={handleSubmit}>
+        // (!!!) 6. เอา onSubmit ออกจาก Form (!!!)
+        <form>
         <div className={styles.pageContainer}>
             <div className={styles.uploadCard}>
                 <h1 className={styles.pageTitle}>ส่งคำขออัพโหลด</h1>
@@ -281,7 +328,6 @@ function Ufinal() {
                  {/* Section 1: ข้อมูลผู้เขียน */}
                  <div className={styles.section}>
                     <h2 className={styles.sectionTitle}>ข้อมูลผู้เขียน</h2>
-                    {/* (แก้ไข) ใช้ Grid 2 คอลัมน์สำหรับผู้แต่ง */}
                     <div className={styles.twoColumnGrid}>
                         <div className={styles.inputGroup}>
                             <label className={styles.label}>ผู้แต่ง (หลัก)</label>
@@ -294,7 +340,6 @@ function Ufinal() {
                             />
                         </div>
                         
-                        {/* (เพิ่ม) ช่องสำหรับผู้แต่งคนที่ 2 */}
                         <div className={styles.inputGroup}>
                             <label className={styles.label}>ผู้แต่งคนที่ 2 (ถ้ามี)</label>
                             <input 
@@ -303,7 +348,7 @@ function Ufinal() {
                                 placeholder="ค้นหาชื่อนักศึกษา..."
                                 className={styles.inputField} 
                                 value={formData.co_author}
-                                onChange={handleStudentSearch} // ใช้ฟังก์ชันค้นหานักศึกษา
+                                onChange={handleStudentSearch}
                                 autoComplete="off"
                             />
                             {coAuthorSuggestions.length > 0 && (
@@ -511,8 +556,10 @@ function Ufinal() {
                     <Link to="/" className={styles.linkButton}>
                         กลับ
                     </Link>
-                    <button 
-                        type="submit" // (แก้ไข) เพิ่ม type="submit"
+                    {/* (!!!) 7. แก้ไขปุ่มบันทึก (!!!) */}
+                    <button
+                        onClick={handleSaveClick} // (!!!) เรียกฟังก์ชันตรวจสอบ
+                        type="button" // (!!!) เปลี่ยนเป็น type="button"
                         className={styles.submitButton} 
                     >
                         บันทึก
@@ -529,6 +576,58 @@ function Ufinal() {
                 </div>
             </footer>
         </div>
+        
+        {/* (!!!) START: 8. เพิ่ม Modal JSX ทั้งหมด (!!!) */}
+
+        {/* Alert Modal (สำหรับ OK) */}
+        {isAlertModalOpen && (
+            <div className={styles.modalOverlay}>
+                <div className={styles.modalContent}>
+                    <h2>{alertModalContent.title}</h2>
+                    <p className={styles.alertMessage}>{alertModalContent.message}</p>
+                    <div className={styles.modalActions}>
+                        <button 
+                            type="button" 
+                            onClick={() => setIsAlertModalOpen(false)} 
+                            className={styles.submitButton} // (!!!) ใช้สไตล์ปุ่ม submit สีเขียว
+                        >
+                            ตกลง
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
+        
+        {/* Confirmation Modal (สำหรับ Confirm/Cancel) */}
+        {isConfirmModalOpen && (
+            <div className={styles.modalOverlay}>
+                <div className={styles.modalContent}>
+                    <h2>{confirmModalContent.title}</h2>
+                    <p className={styles.alertMessage}>{confirmModalContent.message}</p>
+                    <div className={styles.modalActions}>
+                        <button 
+                            type="button" 
+                            onClick={() => setIsConfirmModalOpen(false)} 
+                            className={styles.linkButton} // (!!!) ใช้สไตล์ปุ่ม "กลับ"
+                        >
+                            ยกเลิก
+                        </button>
+                        <button 
+                            type="button" 
+                            onClick={() => {
+                                confirmModalAction(); // รันฟังก์ชันที่เก็บไว้ (handleSubmit)
+                                setIsConfirmModalOpen(false); // ปิด Modal
+                            }} 
+                            className={styles.submitButton} // (!!!) ใช้สไตล์ปุ่ม "บันทึก"
+                        >
+                            ยืนยัน
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
+        {/* (!!!) END: 8. เพิ่ม Modal JSX (!!!) */}
+
         </form>
     );
 }
