@@ -519,7 +519,7 @@ const UserManagement = () => {
                             </table>
                             
                             <div className={styles.modalNote}>
-                                <strong>ข้อควรระวัง:</strong>
+                                <strong color='black'>ข้อควรระวัง:</strong>
                                 <ul>
                                     <li><strong>คอลัมน์ที่จำเป็น:</strong> <code>username</code>, <code>email</code>, <code>password</code>, <code>first_name</code>, <code>last_name</code>, <code>role</code>.</li>
                                     <li>คอลัมน์ <code>identification</code> สามารถเว้นว่างได้</li>
