@@ -586,13 +586,13 @@ function Ufinal() {
                     <h2>{alertModalContent.title}</h2>
                     <p className={styles.alertMessage}>{alertModalContent.message}</p>
                     <div className={styles.modalActions}>
-                        <button 
+                        <Link to ='/' 
                             type="button" 
                             onClick={() => setIsAlertModalOpen(false)} 
                             className={styles.submitButton} // (!!!) ใช้สไตล์ปุ่ม submit สีเขียว
                         >
                             ตกลง
-                        </button>
+                        </Link>
                     </div>
                 </div>
             </div>
