@@ -88,30 +88,41 @@ h1 {
     float: right;
 }
 
-.exampleTable {
-    width: 100%;
-    border-collapse: collapse;
+.dropzone {
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 30px 20px;
+    text-align: center;
+    cursor: pointer;
+    background-color: #f9f9f9;
+    transition: background-color 0.2s, border-color 0.2s;
     margin-bottom: 20px;
-    font-size: 13px;
-    border: 1px solid #ddd; /* กรอบรอบตาราง */
 }
 
-.exampleTable th,
-.exampleTable td {
-    border: 1px solid #ddd; /* เส้นตาราง */
-    padding: 8px 10px;
-    text-align: left;
-    word-break: break-all; /* ตัดคำถ้าจำเป็น */
-}
-
-.exampleTable th {
-    background-color: #f4f6f8; /* สีพื้นหลัง Header */
-    font-weight: 600;
+.dropzone p {
+    margin: 8px 0;
     color: #333;
+    font-size: 1.1rem;
+    font-weight: 500;
 }
 
-.exampleTable td {
-    background-color: #fff;
+.dropzone a {
+    color: #3a7bd5; /* สีน้ำเงิน (Accent) */
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.dropzone span.dropzoneFormat {
+    color: #888;
+    font-size: 0.9rem;
+    margin-top: 10px;
+    display: block;
+}
+
+/* สถานะเมื่อลากไฟล์มาทับ */
+.dropzone.dragging {
+    background-color: #e6f7ff; /* สีฟ้าอ่อน */
+    border-color: #3a7bd5; /* สีน้ำเงิน */
 }
 
 .modalNote {

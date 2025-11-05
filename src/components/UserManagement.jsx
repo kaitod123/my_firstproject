@@ -1,13 +1,10 @@
 // src/components/UserManagement.jsx
 
-// (!!!) 1. Import 'useRef' และ 'xlsx'
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import * as XLSX from 'xlsx'; // (!!!) 1. Import 'xlsx'
+import * as XLSX from 'xlsx';
 import { Link } from 'react-router-dom';
-// (!!!) 1. (แก้ไข) เปลี่ยนชื่อไอคอนที่ Import (!!!)
 import { ArrowUpToLine,ChevronLeft} from 'lucide-react'; 
 
-// (!!!) 2. Import 'bulkCreateUsers' (ที่เราจะสร้างใน api/usersApi.js)
 import { fetchUsers, createUser, updateUser, deleteUser, fetchUserById, bulkCreateUsers } from '../api/usersApi';
 import styles from '../styles/UserManagement.module.css';
 
@@ -18,12 +15,14 @@ const UserManagement = () => {
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     
-    const [sortConfig, setSortConfig] = useState({ key: 'created_at', direction: 'descending' });//จัดเรียงข้อมูล
+    const [sortConfig, setSortConfig] = useState({ key: 'created_at', direction: 'descending' });
     const [isModalOpen, setIsModalOpen] = useState(false);
     
-    // (!!!) START: 1. เพิ่ม State สำหรับ Modal นำเข้า (!!!)
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-    // (!!!) END: 1. เพิ่ม State สำหรับ Modal นำเข้า (!!!)
+
+    // (!!!) START: 1. เพิ่ม State และ Handlers สำหรับ Dropzone (!!!)
+    const [isDragging, setIsDragging] = useState(false);
+    // (!!!) END: 1. เพิ่ม State และ Handlers สำหรับ Dropzone (!!!)
 
     const [modalMode, setModalMode] = useState('add'); // 'add' or 'edit'
     const [currentUser, setCurrentUser] = useState({ 
@@ -150,18 +149,48 @@ const UserManagement = () => {
 
     // (!!!) START: 3. อัปเดตฟังก์ชันสำหรับ Upload (!!!)
     
-    // (!!!) 2. แก้ไข: ให้ฟังก์ชันนี้เปิด Modal ตัวอย่าง (!!!)
     const handleUploadClick = () => {
-        // fileInputRef.current.click(); // (!!!) ลบการคลิกไฟล์ตรงนี้ออก (!!!)
-        setIsImportModalOpen(true); // (!!!) ให้เปิด Modal ตัวอย่างแทน (!!!)
+        setIsImportModalOpen(true); // เปิด Modal
     };
 
-    // (!!!) 3. เพิ่ม: ฟังก์ชันสำหรับปุ่มใน Modal ตัวอย่าง (!!!)
-    const handleProceedToUpload = () => {
-        setIsImportModalOpen(false); // ปิด Modal ตัวอย่าง
-        fileInputRef.current.click(); // เปิดหน้าต่างเลือกไฟล์ (พฤติกรรมเดิม)
+    // (!!!) START: 2. เพิ่ม Handlers สำหรับ Dropzone (!!!)
+    const handleDropzoneClick = () => {
+        fileInputRef.current.click(); // คลิกที่ input[type=file] ที่ซ่อนอยู่
     };
 
+    const handleDragOver = (e) => {
+        e.preventDefault(); // ป้องกันเบราว์เซอร์เปิดไฟล์
+        e.stopPropagation();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+
+        const files = e.dataTransfer.files;
+        if (files && files.length > 0) {
+            // นำไฟล์ที่ Drop ไปใส่ใน fileInputRef
+            fileInputRef.current.files = files;
+            
+            // สร้าง "fake event" เพื่อส่งให้ handleFileChange ทำงาน
+            const fakeEvent = { target: fileInputRef.current };
+            handleFileChange(fakeEvent); // เรียกใช้ฟังก์ชันประมวลผลไฟล์
+            
+            setIsImportModalOpen(false); // ปิด Modal หลังจาก Drop ไฟล์
+        }
+    };
+    // (!!!) END: 2. เพิ่ม Handlers สำหรับ Dropzone (!!!)
+
+
+    // (!!!) ฟังก์ชันนี้ไม่ถูกแก้ไข ใช้ประมวลผลไฟล์เหมือนเดิม (!!!)
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -192,18 +221,14 @@ const UserManagement = () => {
                 
                 alert(`กำลังอัปโหลดผู้ใช้ ${data.length} คน...`);
                 
-                // (!!!) START: แก้ไขส่วน Alert (!!!)
-                // รับ Response กลับมาจาก Server
                 const response = await bulkCreateUsers(data); 
                 
                 let alertMessage = response.message || "อัปโหลดสำเร็จ!";
 
-                // ตรวจสอบว่า Server ส่ง errors กลับมาหรือไม่
                 if (response.errors && response.errors.length > 0) {
-                    console.error("Bulk Upload Errors:", response.errors); // Log error ทั้งหมดใน Console
+                    console.error("Bulk Upload Errors:", response.errors); 
                     
                     alertMessage += "\n\nสาเหตุที่ล้มเหลว:\n";
-                    // เอา Error มาแสดง (จำกัดแค่ 5 ข้อแรก)
                     alertMessage += response.errors.slice(0, 5).join("\n"); 
                     
                     if (response.errors.length > 5) {
@@ -211,10 +236,9 @@ const UserManagement = () => {
                     }
                 }
                 
-                alert(alertMessage); // แสดง Alert ที่มีรายละเอียด
-                // (!!!) END: แก้ไขส่วน Alert (!!!)
+                alert(alertMessage);
                 
-                loadUsers(); // โหลดข้อมูลผู้ใช้ใหม่
+                loadUsers();
 
             } catch (err) {
                 console.error("Error reading or processing Excel file:", err);
@@ -232,7 +256,7 @@ const UserManagement = () => {
              e.target.value = null;
         };
 
-        reader.readAsBinaryString(file); // เริ่มอ่านไฟล์
+        reader.readAsBinaryString(file);
     };
     // (!!!) END: 3. อัปเดตฟังก์ชันสำหรับ Upload (!!!)
 
@@ -280,16 +304,10 @@ const UserManagement = () => {
                     <h1>จัดการผู้ใช้งาน</h1>
 
                    
-                    {/* (!!!) START: แก้ไขโครงสร้าง Layout (!!!) */}
                     <div className={styles.controlsContainer}>
                         
-                        {/* === ส่วนด้านซ้าย (ตอนนี้ว่างเปล่า) === */}
-                        {/* (!!!) ย้ายปุ่มนำเข้าไปไว้ใน .rightColumn แล้ว (!!!) */}
-
-                        {/* === ส่วนด้านขวา (เปลี่ยนชื่อ class) === */}
                         <div className={styles.rightColumn}>
                             
-                            {/* === แถวบน (ปุ่ม) === */}
                             <div className={styles.topButtonRow}>
                                 <button 
                                     onClick={openAddModal} 
@@ -306,7 +324,6 @@ const UserManagement = () => {
                                     ลบผู้ใช้ที่เลือก
                                 </button>
 
-                                {/* (!!!) ปุ่มนี้จะเรียก handleUploadClick ซึ่งจะเปิด Modal (ตามที่เราแก้ไข) (!!!) */}
                                 <button
                                     onClick={handleUploadClick} 
                                     className={`${styles.btna} ${styles.uploadbtn}`} 
@@ -314,18 +331,18 @@ const UserManagement = () => {
                                     <ArrowUpToLine size={18} style={{ marginRight: '8px' }} />
                                     นำเข้า
                                 </button>
+                                
+                                {/* (!!!) Input นี้จะถูกซ่อนไว้ และถูกเรียกใช้โดย Dropzone (!!!) */}
                                 <input
                                     type="file"
                                     ref={fileInputRef}
                                     onChange={handleFileChange}
                                     style={{ display: 'none' }}
-                                    accept=".xlsx, .xls" // จำกัดให้รับเฉพาะไฟล์ Excel
+                                    accept=".xlsx, .xls"
                                 />
 
                             </div>
                             
-                            {/* (!!!) START: แก้ไข (ย้าย Dropdown ออกมา) (!!!) */}
-                            {/* === แถวกลาง (Dropdown Sorter) === */}
                             <select
                                 onChange={(e) => {
                                     const [key, direction] = e.target.value.split('-');
@@ -341,9 +358,7 @@ const UserManagement = () => {
                                 <option value="first_name-ascending">ชื่อ (A-Z)</option>
                                 <option value="first_name-descending">ชื่อ (Z-A)</option>
                             </select>
-                            {/* (!!!) END: แก้ไข (ย้าย Dropdown ออกมา) (!!!) */}
                             
-                            {/* === แถวล่าง (Tabs) === */}
                             <div className={styles.roletabs}>
                                 <button onClick={() => setActiveRole('All')} className={activeRole === 'All' ? styles.active : ''}>ทั้งหมด</button>
                                 <button onClick={() => setActiveRole('Admin')} className={activeRole === 'Admin' ? styles.active : ''}>ผู้ดูแล</button>
@@ -352,7 +367,6 @@ const UserManagement = () => {
                             </div>
                         </div>
                     </div>
-                    {/* (!!!) END: แก้ไขโครงสร้าง Layout (!!!) */}
                        
 
                     <div className={styles.searchbar}>
@@ -436,7 +450,7 @@ const UserManagement = () => {
 
                 {/* --- Modal และ Footer --- */}
                 
-                {/* (!!!) Modal สำหรับ Add/Edit User (อันเดิม) (!!!) */}
+                {/* Modalสำหรับ Add/Edit User (อันเดิม) */}
                 {isModalOpen && (
                     <div className={styles.modalOverlay}>
                         <div className={styles.modalContent}>
@@ -461,7 +475,6 @@ const UserManagement = () => {
                                     </div>
                                 <div className={styles.formGroup}>
                                     <label className={styles.checkboxLabel}>
-                                        {/* (!!!) 5. (แก้ไข) เพิ่ม '== 1' เพื่อให้ Checkbox ทำงานถูกต้อง */}
                                         <input type="checkbox" name="is_active" checked={currentUser.is_active == 1} onChange={handleInputChange} />
                                         User is Active
                                     </label>
@@ -476,55 +489,33 @@ const UserManagement = () => {
                     )}
 
 
-                {/* (!!!) START: 4. เพิ่ม Modal สำหรับแสดงตัวอย่างไฟล์นำเข้า (!!!) */}
+                {/* (!!!) START: 3. แก้ไข Modal นำเข้า ให้เป็น Dropzone (!!!) */}
                 {isImportModalOpen && (
                     <div className={styles.modalOverlay}>
                         <div className={styles.modalContent}>
-                            <h2>ตัวอย่างไฟล์ Excel สำหรับนำเข้าผู้ใช้</h2>
-                            <p>ไฟล์ Excel ของคุณ (ชีตแรก) ต้องมีคอลัมน์ตามตัวอย่างนี้:</p>
+                            <h2>นำเข้าผู้ใช้จากไฟล์ Excel</h2>
+                            <p>ลากไฟล์ .xlsx หรือ .xls ของคุณมาวางในพื้นที่ด้านล่าง</p>
                             
-                            {/* (!!!) 5. เพิ่มตารางตัวอย่าง (!!!) */}
-                            <table className={styles.exampleTable}>
-                                <thead>
-                                    <tr>
-                                        <th>username</th>
-                                        <th>email</th>
-                                        <th>password</th>
-                                        <th>first_name</th>
-                                        <th>last_name</th>
-                                        <th>role</th>
-                                        <th>identification</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>student01</td>
-                                        <td>student.01@email.com</td>
-                                        <td>pass1234</td>
-                                        <td>สมชาย</td>
-                                        <td>ใจดี</td>
-                                        <td>student</td>
-                                        <td>110...</td>
-                                    </tr>
-                                    <tr>
-                                        <td>advisor01</td>
-                                        <td>advisor.01@email.com</td>
-                                        <td>pass5678</td>
-                                        <td>สมศรี</td>
-                                        <td>สอนดี</td>
-                                        <td>advisor</td>
-                                        <td>220...</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            {/* (!!!) 4. นี่คือ Dropzone (!!!) */}
+                            <div 
+                                className={`${styles.dropzone} ${isDragging ? styles.dragging : ''}`}
+                                onClick={handleDropzoneClick}
+                                onDragOver={handleDragOver}
+                                onDragLeave={handleDragLeave}
+                                onDrop={handleDrop}
+                            >
+                                <ArrowUpToLine size={40} color={isDragging ? '#3a7bd5' : '#888'} />
+                                <p>ลากไฟล์มาวางที่นี่</p>
+                                <p>หรือ <a>คลิกเพื่อเลือกไฟล์</a></p>
+                                <span className={styles.dropzoneFormat}>รองรับ .xlsx, .xls</span>
+                            </div>
                             
                             <div className={styles.modalNote}>
-                                <strong>ข้อควรระวัง:</strong>
+                                <strong>ข้อกำหนดของไฟล์:</strong>
                                 <ul>
                                     <li><strong>คอลัมน์ที่จำเป็น:</strong> <code>username</code>, <code>email</code>, <code>password</code>, <code>first_name</code>, <code>last_name</code>, <code>role</code>.</li>
-                                    <li>คอลัมน์ <code>identification</code> สามารถเว้นว่างได้</li>
+                                    <li>คอลัมน์ <code>identification</code> (รหัส) สามารถเว้นว่างได้</li>
                                     <li>ค่า <code>role</code> ที่รองรับคือ: <code>admin</code>, <code>advisor</code>, <code>student</code></li>
-                                    <li>ระบบจะอ่านข้อมูลจาก **ชีตแรก** ของไฟล์ Excel เท่านั้น</li>
                                 </ul>
                             </div>
 
@@ -532,21 +523,18 @@ const UserManagement = () => {
                                 <button type="button" onClick={() => setIsImportModalOpen(false)} className={styles.cancelBtn}>
                                     ยกเลิก
                                 </button>
-                                <button type="button" onClick={handleProceedToUpload} className={styles.saveBtn}>
-                                    เลือกไฟล์เพื่ออัปโหลด
-                                </button>
+                                {/* (!!!) ลบปุ่ม "เลือกไฟล์เพื่ออัปโหลด" ออก เพราะ Dropzone ทำหน้าที่แทนแล้ว (!!!) */}
                             </div>
                         </div>
                     </div>
                 )}
-                {/* (!!!) END: 4. เพิ่ม Modal สำหรับแสดงตัวอย่างไฟล์นำเข้า (!!!) */}
+                {/* (!!!) END: 3. แก้ไข Modal นำเข้า ให้เป็น Dropzone (!!!) */}
 
 
             </div>
                             <footer className={styles.footer}>
                     <p className={styles.footerText}>© 2025 Your Company. All Rights Reserved.</p>
                     <div className={styles.footerLinks}>
-                        <a href="#" className={styles.footerLink}>Contact Us</a>
                         <a href="#" className={styles.footerLink}>Privacy Policy</a>
                     </div>
                 </footer>
