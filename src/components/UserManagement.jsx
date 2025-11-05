@@ -19,10 +19,11 @@ const UserManagement = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-
-    // (!!!) START: 1. เพิ่ม State และ Handlers สำหรับ Dropzone (!!!)
     const [isDragging, setIsDragging] = useState(false);
     // (!!!) END: 1. เพิ่ม State และ Handlers สำหรับ Dropzone (!!!)
+
+    const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
+    const [alertModalContent, setAlertModalContent] = useState({ title: '', message: '' });
 
     const [modalMode, setModalMode] = useState('add'); // 'add' or 'edit'
     const [currentUser, setCurrentUser] = useState({ 
