@@ -21,16 +21,28 @@ const UserManagement = () => {
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
 
-    // (!!!) START: 1. เพิ่ม State สำหรับ Alert Modal ใหม่ (!!!)
+    // (!!!) 1. แยก State สำหรับ Modal 2 ประเภท (!!!)
+
+    // Modal สำหรับ "แจ้งเตือน" (มีปุ่ม OK ปุ่มเดียว)
     const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
     const [alertModalContent, setAlertModalContent] = useState({ title: '', message: '' });
-    // (!!!) END: 1. เพิ่ม State สำหรับ Alert Modal ใหม่ (!!!)
+
+    // (!!!) Modal สำหรับ "ยืนยัน" (มีปุ่ม Confirm/Cancel) (!!!)
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [confirmModalContent, setConfirmModalContent] = useState({ title: '', message: '' });
+    const [confirmModalAction, setConfirmModalAction] = useState(() => () => {}); // State ที่เก็บฟังก์ชันที่จะรันเมื่อกดยืนยัน
 
     const [modalMode, setModalMode] = useState('add'); // 'add' or 'edit'
     const [currentUser, setCurrentUser] = useState({ 
         username: '', email: '', password: '', first_name: '',
         last_name: '', identification: '', role: 'student', is_active: 1
     });
+
+    // (!!!) ฟังก์ชันสำหรับแสดง Alert Modal (!!!)
+    const showAlert = (title, message) => {
+        setAlertModalContent({ title, message });
+        setIsAlertModalOpen(true);
+    };
 
     const getInitials = (firstName, lastName) => {
         if (!firstName && !lastName) return '??';
@@ -56,9 +68,7 @@ const UserManagement = () => {
             })
             .catch(error => {
                 console.error("Failed to fetch users:", error);
-                // (!!!) 2. เปลี่ยน alert() เป็น Modal (!!!)
-                setAlertModalContent({ title: 'ข้อผิดพลาด', message: 'Error fetching user list. Please check the console.' });
-                setIsAlertModalOpen(true);
+                showAlert('ข้อผิดพลาด', 'Error fetching user list. Please check the console.');
                 setLoading(false);
             });
     };
@@ -90,9 +100,7 @@ const UserManagement = () => {
             setModalMode('edit');
             setIsModalOpen(true);
         } catch (error) {
-            // (!!!) 2. เปลี่ยน alert() เป็น Modal (!!!)
-            setAlertModalContent({ title: 'ข้อผิดพลาด', message: 'Error fetching user data for editing.' });
-            setIsAlertModalOpen(true);
+            showAlert('ข้อผิดพลาด', 'Error fetching user data for editing.');
         }
     };
     const handleFormSubmit = async (e) => {
@@ -105,9 +113,7 @@ const UserManagement = () => {
             }
             closeModalAndRefresh();
         } catch (error) {
-            // (!!!) 2. เปลี่ยน alert() เป็น Modal (!!!)
-            setAlertModalContent({ title: 'ข้อผิดพลาด', message: `Error: Could not ${modalMode} user.` });
-            setIsAlertModalOpen(true);
+            showAlert('ข้อผิดพลาด', `Error: Could not ${modalMode} user.`);
         }
     };
     const openAddModal = () => {
@@ -122,37 +128,61 @@ const UserManagement = () => {
         setIsModalOpen(false);
         loadUsers();
     };
-    const handleDelete = async (userId) => {
-        if (window.confirm(`Are you sure you want to delete this user?`)) {
-            try {
-                await deleteUser(userId);
-                loadUsers();
-            } catch (error) {
-                // (!!!) 2. เปลี่ยน alert() เป็น Modal (!!!)
-                setAlertModalContent({ title: 'ข้อผิดพลาด', message: 'Error: Could not delete user.' });
-                setIsAlertModalOpen(true);
-            }
+
+    // (!!!) START: 2. แก้ไขฟังก์ชัน Delete ให้ใช้ Confirmation Modal (!!!)
+
+    // 2.1 สร้างฟังก์ชันสำหรับการลบจริง
+    const proceedWithDelete = async (userId) => {
+        try {
+            await deleteUser(userId);
+            loadUsers();
+        } catch (error) {
+            showAlert('ข้อผิดพลาด', 'Error: Could not delete user.');
         }
     };
+
+    // 2.2 แก้ไข handleDelete ให้เปิด Modal
+    const handleDelete = async (userId) => {
+        setConfirmModalContent({ 
+            title: 'ยืนยันการลบ',
+            message: `คุณแน่ใจหรือไม่ว่าต้องการลบผู้ใช้นี้?`
+        });
+        // (!!!) ส่งฟังก์ชัน "การลบจริง" เข้าไปเก็บใน State (!!!)
+        setConfirmModalAction(() => () => proceedWithDelete(userId));
+        setIsConfirmModalOpen(true);
+    };
+
+    // 2.3 สร้างฟังก์ชันสำหรับการลบทีละหลายคน
+    const proceedWithDeleteSelected = async () => {
+        try {
+            await Promise.all(selectedUsers.map(id => deleteUser(id)));
+            setSelectedUsers([]); 
+            loadUsers(); 
+        } catch (error) {
+            showAlert('ข้อผิดพลาด', 'Error: Could not delete selected users.');
+        }
+    };
+
+    // 2.4 แก้ไข handleDeleteSelected ให้ใช้ Modal
     const handleDeleteSelected = async () => {
         if (selectedUsers.length === 0) {
-            // (!!!) 2. เปลี่ยน alert() เป็น Modal (!!!)
-            setAlertModalContent({ title: 'ข้อควรทราบ', message: 'Please select users to delete.' });
-            setIsAlertModalOpen(true);
+            // (!!!) เปลี่ยน alert() เป็น Alert Modal (!!!)
+            showAlert('ข้อควรทราบ', 'กรุณาเลือกผู้ใช้ที่ต้องการลบ');
             return;
         }
-        if (window.confirm(`Are you sure you want to delete ${selectedUsers.length} selected users?`)) {
-            try {
-                await Promise.all(selectedUsers.map(id => deleteUser(id)));
-                setSelectedUsers([]); 
-                loadUsers(); 
-            } catch (error) {
-                // (!!!) 2. เปลี่ยน alert() เป็น Modal (!!!)
-                setAlertModalContent({ title: 'ข้อผิดพลาด', message: 'Error: Could not delete selected users.' });
-                setIsAlertModalOpen(true);
-            }
-        }
+
+        setConfirmModalContent({ 
+            title: 'ยืนยันการลบ',
+            message: `คุณแน่ใจหรือไม่ว่าต้องการลบผู้ใช้ที่เลือก ${selectedUsers.length} คน?`
+        });
+        // (!!!) ส่งฟังก์ชัน "การลบจริง" เข้าไปเก็บใน State (!!!)
+        setConfirmModalAction(() => () => proceedWithDeleteSelected());
+        setIsConfirmModalOpen(true);
     };
+
+    // (!!!) END: 2. แก้ไขฟังก์ชัน Delete (!!!)
+
+
     const handleSelectUser = (userId) => {
         setSelectedUsers(prev =>
             prev.includes(userId)
@@ -195,19 +225,16 @@ const UserManagement = () => {
             const fakeEvent = { target: fileInputRef.current };
             
             handleFileChange(fakeEvent); // (!!!) เรียก handleFileChange
-            
-            // (!!!) ไม่ต้องปิด Modal ที่นี่แล้ว handleFileChange จะปิดเอง
         }
     };
     // (!!!) END: Handlers สำหรับ Dropzone (!!!)
 
 
-    // (!!!) 4. อัปเดต handleFileChange ให้ปิด Modal เก่า และเปิด Modal ใหม่ (!!!)
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        setIsImportModalOpen(false); // (!!!) 1. ปิดป็อปอัพ Dropzone ทันที
+        setIsImportModalOpen(false); 
         setLoading(true);
         const reader = new FileReader();
 
@@ -232,8 +259,6 @@ const UserManagement = () => {
                     throw new Error(`ไฟล์ Excel ขาดคอลัมน์ที่จำเป็น: ${missingHeaders.join(', ')}`);
                 }
                 
-                // (!!!) ลบ alert() ที่แจ้งเตือน 'กำลังอัปโหลด...' ออกไป
-                
                 const response = await bulkCreateUsers(data); 
                 
                 let alertMessage = response.message || "อัปโหลดสำเร็จ!";
@@ -249,17 +274,13 @@ const UserManagement = () => {
                     }
                 }
                 
-                // (!!!) 2. แสดงผลลัพธ์ด้วย Modal ใหม่ (!!!)
-                setAlertModalContent({ title: 'ผลการนำเข้า', message: alertMessage });
-                setIsAlertModalOpen(true);
+                showAlert('ผลการนำเข้า', alertMessage);
                 
                 loadUsers();
 
             } catch (err) {
                 console.error("Error reading or processing Excel file:", err);
-                // (!!!) 2. แสดงผลลัพธ์ (Error) ด้วย Modal ใหม่ (!!!)
-                setAlertModalContent({ title: 'เกิดข้อผิดพลาด', message: "เกิดข้อผิดพลาด: " + err.message });
-                setIsAlertModalOpen(true);
+                showAlert('เกิดข้อผิดพลาด', "เกิดข้อผิดพลาด: " + err.message);
             } finally {
                 setLoading(false);
                 e.target.value = null;
@@ -268,9 +289,7 @@ const UserManagement = () => {
 
         reader.onerror = () => {
              console.error("File reading failed");
-             // (!!!) 2. แสดงผลลัพธ์ (Error) ด้วย Modal ใหม่ (!!!)
-             setAlertModalContent({ title: 'เกิดข้อผิดพลาด', message: 'ไม่สามารถอ่านไฟล์ได้' });
-             setIsAlertModalOpen(true);
+             showAlert('เกิดข้อผิดพลาด', 'ไม่สามารถอ่านไฟล์ได้');
              setLoading(false);
              e.target.value = null;
         };
@@ -455,6 +474,7 @@ const UserManagement = () => {
                                                     <button onClick={() => handleEditClick(user)} className={`${styles.actionBtn} ${styles.editBtn}`}>
                                                         แก้ไข
                                                     </button>
+                                                    {/* (!!!) 4. ปุ่มลบนี้จะเรียก handleDelete (ที่เปิด Modal) (!!!) */}
                                                     <button onClick={() => handleDelete(user.id)} className={`${styles.actionBtn} ${styles.deleteuserbtn}`}>ลบผู้ใช้</button>
                                                 </div>
                                             </td>
@@ -545,18 +565,17 @@ const UserManagement = () => {
                     </div>
                 )}
                 
-                {/* (!!!) START: 5. เพิ่ม Alert Modal (!!!) */}
+                {/* (!!!) 5. Alert Modal (สำหรับ OK) (!!!) */}
                 {isAlertModalOpen && (
                     <div className={styles.modalOverlay}>
                         <div className={styles.modalContent}>
                             <h2>{alertModalContent.title}</h2>
-                            {/* (!!!) เพิ่ม className 'alertMessage' เพื่อจัดการ \n (!!!) */}
                             <p className={styles.alertMessage}>{alertModalContent.message}</p>
                             <div className={styles.modalActions}>
                                 <button 
                                     type="button" 
                                     onClick={() => setIsAlertModalOpen(false)} 
-                                    className={styles.saveBtn} /* ใช้สไตล์ปุ่ม save เพื่อให้เด่น */
+                                    className={styles.saveBtn} 
                                 >
                                     ตกลง
                                 </button>
@@ -564,7 +583,37 @@ const UserManagement = () => {
                         </div>
                     </div>
                 )}
-                {/* (!!!) END: 5. เพิ่ม Alert Modal (!!!) */}
+                {/* (!!!) END: 5. Alert Modal (!!!) */}
+                
+                {/* (!!!) START: 6. เพิ่ม Confirmation Modal (สำหรับ Confirm/Cancel) (!!!) */}
+                {isConfirmModalOpen && (
+                    <div className={styles.modalOverlay}>
+                        <div className={styles.modalContent}>
+                            <h2>{confirmModalContent.title}</h2>
+                            <p className={styles.alertMessage}>{confirmModalContent.message}</p>
+                            <div className={styles.modalActions}>
+                                <button 
+                                    type="button" 
+                                    onClick={() => setIsConfirmModalOpen(false)} 
+                                    className={styles.cancelBtn} 
+                                >
+                                    ยกเลิก
+                                </button>
+                                <button 
+                                    type="button" 
+                                    onClick={() => {
+                                        confirmModalAction(); // (!!!) รันฟังก์ชันที่เก็บไว้ (เช่น การลบ)
+                                        setIsConfirmModalOpen(false); // (!!!) ปิด Modal
+                                    }} 
+                                    className={styles.confirmDeleteBtn} /* (!!!) ใช้ Style สีแดง */
+                                >
+                                    ยืนยัน
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                {/* (!!!) END: 6. เพิ่ม Confirmation Modal (!!!) */}
 
 
             </div>

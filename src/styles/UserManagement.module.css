@@ -27,6 +27,15 @@
     margin-bottom: 20px;
 }
 
+.confirmDeleteBtn {
+    background-color: #dc3545; /* สีแดง (เหมือนปุ่มลบ) */
+    color: white;
+}
+
+.confirmDeleteBtn:hover {
+    background-color: #c82333; /* สีแดงเข้มขึ้น */
+}
+
 .uploadbtn{
     background-color:#f0f2f5 ;
     color: #000;
