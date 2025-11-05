@@ -195,6 +195,7 @@ h1 {
   font-weight: 500;
   background-color: #f0f2f5;
   transition: color 0.2s ease-in-out;
+  border: 2px solid #e5e7eb; /* เพิ่มขอบ */
 }
 .backButton:hover {
   color: var(--accent-blue);
