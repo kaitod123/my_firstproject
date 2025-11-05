@@ -434,7 +434,6 @@ input[type="checkbox"] {
     justify-content: center;
     align-items: center;
     z-index: 1000;
-    color: #000;
 }
 
 .modalContent {
@@ -444,7 +443,7 @@ input[type="checkbox"] {
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     width: 100%;
     max-width: 600px;
-    color: #000;
+    
 }
 
 .modalContent h2 {
@@ -458,6 +457,7 @@ input[type="checkbox"] {
     grid-template-columns: 1fr 1fr;
     gap: 16px;
     margin-bottom: 20px;
+    
 }
 
 .formGrid input {
@@ -468,6 +468,7 @@ input[type="checkbox"] {
     font-size: 14px;
     box-sizing: border-box;
     background-color: #ffffff;
+    color: #000;
 }
 
 .formGroup {
