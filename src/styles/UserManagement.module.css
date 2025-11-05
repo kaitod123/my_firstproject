@@ -380,11 +380,11 @@ input[type="checkbox"] {
 .formGrid input {
     width: 100%;
     padding: 10px 14px;
-    border: 1px solid #dee2e6;
+    border: 3px solid #e5e7eb;
     border-radius: 6px;
     font-size: 14px;
     box-sizing: border-box;
-    background-color: #007bff;
+    background-color: #ffffff;
 }
 
 .formGroup {
