@@ -98,9 +98,37 @@ const DeleteDashboard = () => {
         }
     }, []);
 
-    useEffect(() => {
-        fetchProjects();
-    }, [fetchProjects]);
+  useEffect(() => {
+    // 2. ฟังก์ชันสำหรับดึงข้อมูล
+    const fetchDocument = async () => {
+      setLoading(true);
+      setError(null);
+      console.log(`Attempting to fetch document with id: ${id}`); // Log นี้จะช่วยคุณ
+      try {
+        
+        // (!!!) นี่คือส่วนที่แก้ไข (!!!)
+        // เราเรียกไปที่ /api/documents/:id ไม่ใช่ /documents/:id
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/documents/${id}`
+        );
+        
+        console.log("Fetch successful:", response.data); // Log นี้จะช่วยคุณ
+        setDocument(response.data);
+
+      } catch (err) {
+        console.error("Error fetching document:", err);
+        // (!!!) นี่คือ Log "Ze" ที่คุณเห็นครับ (เกิดจาก Error)
+        // มันจะหายไปเมื่อ URL ถูกต้อง
+        setError('ไม่พบเอกสาร หรือเกิดข้อผิดพลาดในการโหลด');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchDocument();
+    }
+  }, [id]);
     
     const handleDelete = async (id) => {
         if (!window.confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบโปรเจกต์ ID: ${id} ออกจากระบบอย่างถาวร?`)) return;
