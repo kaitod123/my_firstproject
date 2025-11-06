@@ -98,44 +98,22 @@ const DeleteDashboard = () => {
         }
     }, []);
 
+  // (!!!) START: นี่คือส่วนที่แก้ไข (!!!)
+  // นี่คือ useEffect ที่ถูกต้องสำหรับหน้านี้
   useEffect(() => {
-    // 2. ฟังก์ชันสำหรับดึงข้อมูล
-    const fetchDocument = async () => {
-      setLoading(true);
-      setError(null);
-      console.log(`Attempting to fetch document with id: ${id}`); // Log นี้จะช่วยคุณ
-      try {
-        
-        // (!!!) นี่คือส่วนที่แก้ไข (!!!)
-        // เราเรียกไปที่ /api/documents/:id ไม่ใช่ /documents/:id
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/documents/${id}`
-        );
-        
-        console.log("Fetch successful:", response.data); // Log นี้จะช่วยคุณ
-        setDocument(response.data);
-
-      } catch (err) {
-        console.error("Error fetching document:", err);
-        // (!!!) นี่คือ Log "Ze" ที่คุณเห็นครับ (เกิดจาก Error)
-        // มันจะหายไปเมื่อ URL ถูกต้อง
-        setError('ไม่พบเอกสาร หรือเกิดข้อผิดพลาดในการโหลด');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (id) {
-      fetchDocument();
-    }
-  }, [id]);
+    fetchProjects();
+  }, [fetchProjects]);
+  
+  // (!!!) บล็อก useEffect ที่ผิดพลาดที่อ้างอิงถึง 'id' ถูกลบออกไปจากตรงนี้แล้ว (!!!)
+  // (!!!) END: ส่วนที่แก้ไข (!!!)
     
     const handleDelete = async (id) => {
-        if (!window.confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบโปรเจกต์ ID: ${id} ออกจากระบบอย่างถาวร?`)) return;
+        // (แก้ไข) ใช้ confirm ธรรมดาแทน window.confirm
+        if (!confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบโปรเจกต์ ID: ${id} ออกจากระบบอย่างถาวร?`)) return;
         try {
             // URL is now correctly constructed from the base API_URL
             await axios.delete(`${import.meta.env.VITE_API_URL}/api/documents/${id}`);
-            fetchProjects(); 
+            fetchProjects(); // โหลดข้อมูลใหม่หลังลบ
         } catch (error) {
             alert('เกิดข้อผิดพลาดในการลบโปรเจกต์');
             console.error(error);
@@ -146,7 +124,8 @@ const DeleteDashboard = () => {
         // --- !!! แก้ไขข้อความตรงนี้ !!! ---
         const actionText = status === 'approved' ? 'อนุมัติ' : 'ปฏิเสธ (ส่งกลับไปแก้ไข)';
         
-        if (!window.confirm(`คุณต้องการ '${actionText}' โปรเจกต์ ID: ${id} หรือไม่?`)) return;
+        // (แก้ไข) ใช้ confirm ธรรมดาแทน window.confirm
+        if (!confirm(`คุณต้องการ '${actionText}' โปรเจกต์ ID: ${id} หรือไม่?`)) return;
         try {
             // URL is now correctly constructed
             await axios.put(`${import.meta.env.VITE_API_URL}/api/documents/${id}/approval`, { approvalStatus: status });
@@ -159,7 +138,8 @@ const DeleteDashboard = () => {
 
     const handleToggleActive = async (id, newActiveState) => {
         const action = newActiveState ? 'เปิดการแสดงผล' : 'ซ่อน';
-        if (!window.confirm(`คุณต้องการ '${action}' โปรเจกต์ ID: ${id} หรือไม่?`)) return;
+        // (แก้ไข) ใช้ confirm ธรรมดาแทน window.confirm
+        if (!confirm(`คุณต้องการ '${action}' โปรเจกต์ ID: ${id} หรือไม่?`)) return;
         try {
             // URL is now correctly constructed
             await axios.put(`${import.meta.env.VITE_API_URL}/api/documents/${id}/toggle-active`, { isActive: newActiveState });
