@@ -486,21 +486,31 @@ app.get('/api/documents/:id', async (req, res, next) => { // <-- Add next
   }
 });
 
-app.delete('/api/documents/:id', async (req, res, next) => { // <-- Add next
+// (!!!) START: นี่คือส่วนที่แก้ไข (!!!)
+app.delete('/api/documents/:id', async (req, res, next) => {
   const documentId = req.params.id;
-  const sql = 'DELETE FROM users WHERE id = $1'; 
+  
+  // (แก้ไข) เปลี่ยนจาก 'DELETE FROM users' เป็น 'DELETE FROM documents'
+  const sql = 'DELETE FROM documents WHERE id = $1'; 
   
   try {
     const result = await pool.query(sql, [documentId]);
+    
     if (result.rowCount === 0) { 
+      // ถ้าไม่พบบรรทัดที่ถูกลบ (อาจจะถูกลบไปแล้ว หรือไม่มี ID นี้)
       return res.status(404).json({ message: 'ไม่พบเอกสารที่ต้องการลบ' });
     }
+    
+    // ถ้าลบสำเร็จ (rowCount > 0)
     res.status(200).json({ message: 'ลบเอกสารเรียบร้อยแล้ว' });
+
   } catch (err) {
     console.error('Error deleting document:', err); 
     next(err); // Pass error to global handler
   }
 });
+// (!!!) END: ส่วนที่แก้ไข (!!!)
+
 
 // --- S3 Multer Setup ---
 const upload = multer({
@@ -1141,7 +1151,7 @@ app.use((err, req, res, next) => {
             errorDetails: err.Code || err.name
         });
     } else if (err.name === 'NoSuchBucket') {
-         return res.status(404).json({
+         return res.status(440).json({
             message: 'S3 Error: Bucket not found. Check S3_BUCKET_NAME env var.',
             errorDetails: err.name
          });
@@ -1181,4 +1191,3 @@ app.use((err, req, res, next) => {
         errorDetails: process.env.NODE_ENV === 'development' ? err.stack : 'Error details hidden in production.'
     });
 });
-

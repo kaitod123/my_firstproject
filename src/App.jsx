@@ -17,7 +17,7 @@ import EditProject from './components/EditProject';
 import EditProfilePage from './components/EditProfilePage'; // Import EditProfilePage component
 import StudentDocumentDetails from './components/StudentDocumentDetails';
 import ProfessorDocumentDetails from './components/ProfessorDocumentDetails';
-import ProjectDetailPage from '../components/ProjectDetailPage';
+
 // ตอนเรียก ค่อยใส่ Endpoint
 
 // คอมโพเนนต์ Layout หลักที่จะมี Header อยู่ด้านบน
@@ -60,7 +60,6 @@ const App = () => {
           <Route path="/edit-profile/:id" element={<EditProfilePage />} />
           <Route path="/student/documents/:documentId" element={<StudentDocumentDetails />} />
           <Route path="/professor/documents/:documentId" element={<ProfessorDocumentDetails />} />
-          <Route path="/documents/:id" element={<ProjectDetailPage />} />
         </Route>
 
         {/* Optional: Not Found Page */}
