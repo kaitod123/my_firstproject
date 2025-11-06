@@ -514,17 +514,17 @@ function Ufinal() {
                     </div>
 
                     <div className={styles.twoColumnGrid}>
-                        <FileUploadZone name="article_files" title="ไฟล์บทความสำหรับตีพิมพ์" hint="รองรับไฟล์ .docx และ .pdf" accept=".docx,.pdf" />
-                        <FileUploadZone name="program_files" title="ไฟล์โปรแกรมพร้อมติดตั้ง" hint="แนะนำ .zip, .rar, .exe" accept=".zip,.rar,.exe" />
+                        <FileUploadZone name="article_files" title="ไฟล์บทความสำหรับตีพิมพ์(ต้องมีทั้งไฟล์DOCXและPDF)" hint="รองรับไฟล์ .docx และ .pdf" accept=".docx,.pdf" />
+                        <FileUploadZone name="program_files" title="ไฟล์โปรแกรมพร้อมติดตั้ง(ถ้ามี)" hint="แนะนำ .zip, .rar" accept=".zip,.rar" />
                     </div>
 
                     <div className={styles.twoColumnGrid}>
-                        <FileUploadZone name="web_files" title="File Web (Zip)" hint="รองรับไฟล์ .zip เท่านั้น" accept=".zip" />
-                        <FileUploadZone name="poster_files" title="ไฟล์โปสเตอร์" hint="รองรับไฟล์ .psd และ .jpg" accept=".psd,.jpg,.jpeg" />
+                        <FileUploadZone name="web_files" title="ไฟล์ซอร์ฺสโค้ดที่สมบูรณ์ทั้งหมดของโครงงาน (Zip)" hint="รองรับไฟล์ .zip เท่านั้น" accept=".zip" />
+                        <FileUploadZone name="poster_files" title="ไฟล์โปสเตอร์(80*120cm)" hint="รองรับไฟล์ .psd และ .pdf" accept=".psd,.pdf" />
                     </div>
 
                     <div className={styles.twoColumnGrid}>
-                        <FileUploadZone name="certificate_files" title="ไฟล์ใบผ่านการอบรม (ถ้ามี)" hint="รองรับไฟล์ .pdf, .jpg, .png" accept=".pdf,.jpg,.jpeg,.png" />
+                        <FileUploadZone name="certificate_files" title="ไฟล์ใบผ่านการอบรม(จริยธรรมการวิจัยในคน)" hint="รองรับไฟล์ .pdf, .jpg, .png" accept=".pdf,.jpg,.jpeg,.png" />
                         <FileUploadZone name="front_face" title="หน้าปก" hint="รองรับไฟล์ .jpeg" accept=".jpeg" />
                     </div>
                     <div className={styles.checkboxGroup}>
