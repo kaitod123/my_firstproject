@@ -561,10 +561,10 @@ function Ufinal() {
         
             {/* Footer */}
             <footer className={styles.footer}>
-                <p className={styles.footerText}>© 2023 University Project Hub </p>
+                <p className={styles.footerText}>© 2025 University CS</p>
                 <div className={styles.footerLinks}>
-                    <a href="#" className={styles.footerLink}> Contact Us </a>
-                    <a href="#" className={styles.footerLink}> Privacy Policy </a>
+                    <a href="#" className={styles.footerLink}> </a>
+                    <a href="#" className={styles.footerLink}> </a>
                 </div>
             </footer>
         </div>
