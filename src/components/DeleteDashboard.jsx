@@ -106,7 +106,7 @@ const DeleteDashboard = () => {
         if (!window.confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบโปรเจกต์ ID: ${id} ออกจากระบบอย่างถาวร?`)) return;
         try {
             // URL is now correctly constructed from the base API_URL
-            await axios.delete(`${import.meta.env.VITE_API_URL}/documents/${id}`);
+            await axios.delete(`${import.meta.env.VITE_API_URL}/api/documents/${id}`);
             fetchProjects(); 
         } catch (error) {
             alert('เกิดข้อผิดพลาดในการลบโปรเจกต์');
@@ -121,7 +121,7 @@ const DeleteDashboard = () => {
         if (!window.confirm(`คุณต้องการ '${actionText}' โปรเจกต์ ID: ${id} หรือไม่?`)) return;
         try {
             // URL is now correctly constructed
-            await axios.put(`${import.meta.env.VITE_API_URL}/documents/${id}/approval`, { approvalStatus: status });
+            await axios.put(`${import.meta.env.VITE_API_URL}/api/documents/${id}/approval`, { approvalStatus: status });
             fetchProjects();
         } catch (error) {
             alert('เกิดข้อผิดพลาดในการอัปเดตสถานะ');
@@ -134,7 +134,7 @@ const DeleteDashboard = () => {
         if (!window.confirm(`คุณต้องการ '${action}' โปรเจกต์ ID: ${id} หรือไม่?`)) return;
         try {
             // URL is now correctly constructed
-            await axios.put(`${import.meta.env.VITE_API_URL}/documents/${id}/toggle-active`, { isActive: newActiveState });
+            await axios.put(`${import.meta.env.VITE_API_URL}/api/documents/${id}/toggle-active`, { isActive: newActiveState });
             fetchProjects();
         } catch (error) {
             alert('เกิดข้อผิดพลาดในการสลับสถานะ');
