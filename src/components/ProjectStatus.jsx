@@ -113,11 +113,11 @@ const ProjectStatus = () => {
                 )}
             </div>
       <footer className={styles.footer}>
-          <p className={styles.footerText}>© 2023 University Project Hub</p>
-          <div className={styles.footerLinks}>
-            <a href="#" className={styles.footerLink}>Contact Us</a>
-            <a href="#" className={styles.footerLink}>Privacy Policy</a>
-          </div>
+        <p className={styles.footerText}>Copyright © 2025</p>
+        <div className={styles.footerLink}>
+          <a className={styles.footerLink}>Designed & Developed by </a>
+          <a href="https://informatics.nrru.ac.th/" className={styles.footerLink}>Informatics</a>
+        </div>
       </footer>
         </div>
     );

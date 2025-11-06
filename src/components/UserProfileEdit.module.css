@@ -144,9 +144,23 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 600px;
+  width:auto;
   background-color: #e0e0e0; /* Even darker background for footer */
   color: #888; /* Lighter grey text */
-  font-size: 0.9rem;
+  font-size: 0.7rem;
   margin-top: auto; /* Push footer to the bottom */
+}
+
+.footerLinks {
+  gap: 25px;
+}
+
+.footerLink {
+  color: var(--text-light);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footerLink:hover {
+  color: var(--accent-blue);
 }

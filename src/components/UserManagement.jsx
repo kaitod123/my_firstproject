@@ -617,12 +617,13 @@ const UserManagement = () => {
 
 
             </div>
-                            <footer className={styles.footer}>
-                    <p className={styles.footerText}>© 2025 Your Company. All Rights Reserved.</p>
-                    <div className={styles.footerLinks}>
-                        <a href="#" className={styles.footerLink}>Privacy Policy</a>
-                    </div>
-                </footer>
+      <footer className={styles.footer}>
+        <p className={styles.footerText}>Copyright © 2025</p>
+        <div className={styles.footerLink}>
+          <a className={styles.footerLink}>Designed & Developed by </a>
+          <a href="https://informatics.nrru.ac.th/" className={styles.footerLink}>Informatics</a>
+        </div>
+      </footer>
         </div>
     );
 };

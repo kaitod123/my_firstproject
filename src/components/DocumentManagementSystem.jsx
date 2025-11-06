@@ -494,11 +494,11 @@ const DocumentManagementSystem = () => {
           )}
         </div>
       </div>
-      <footer className={styles.footer} style={{ marginTop: 'auto' }}>
-        <p className={styles.footerText}>© 2025 University CS</p>
-        <div className={styles.footerLinks}>
-          <a href="#" className={styles.footerLink}></a>
-          <a href="#" className={styles.footerLink}></a>
+      <footer className={styles.footer}>
+        <p className={styles.footerText}>Copyright © 2025</p>
+        <div className={styles.footerLink}>
+          <a className={styles.footerLink}>Designed & Developed by </a>
+          <a href="https://informatics.nrru.ac.th/" className={styles.footerLink}>Informatics</a>
         </div>
       </footer>
     </div>

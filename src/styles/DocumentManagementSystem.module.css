@@ -2,6 +2,7 @@
 
 .container {
   min-height: 100vh;
+  width: 100%;
   /* ปรับให้เป็นโทนสีขาว/เทาอ่อนที่นุ่มนวลและสว่างขึ้น */
   background: linear-gradient(135deg, #f7f9fc, #eef1f6); 
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -377,10 +378,23 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
-  padding: 20px;
+  width:auto;
   background-color: #e0e0e0; /* Even darker background for footer */
   color: #888; /* Lighter grey text */
-  font-size: 0.9rem;
+  font-size: 0.7rem;
   margin-top: auto; /* Push footer to the bottom */
+}
+
+.footerLinks {
+  gap: 25px;
+}
+
+.footerLink {
+  color: var(--text-light);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footerLink:hover {
+  color: var(--accent-blue);
 }
