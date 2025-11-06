@@ -377,7 +377,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 600px;
+  width: 100%;
+  padding: 20px;
   background-color: #e0e0e0; /* Even darker background for footer */
   color: #888; /* Lighter grey text */
   font-size: 0.9rem;
