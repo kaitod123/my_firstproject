@@ -82,12 +82,11 @@ const DeleteDashboard = () => {
     const navigate = useNavigate();
 
     // FIX #2: The API_URL constant is now the base path, preventing URL duplication.
-    fetch(`${import.meta.env.VITE_API_URL}/api/documents`);
     const fetchProjects = useCallback(async () => {
         setLoading(true);
         try {
             // The API call now correctly targets the admin endpoint.
-            const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/documents`);
+            const response = axios.get(`${import.meta.env.VITE_API_URL}/api/documents/${id}`);
             setProjects(response.data);
             setError(null);
         } catch (err) {
