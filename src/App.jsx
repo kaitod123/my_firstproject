@@ -17,7 +17,7 @@ import EditProject from './components/EditProject';
 import EditProfilePage from './components/EditProfilePage'; // Import EditProfilePage component
 import StudentDocumentDetails from './components/StudentDocumentDetails';
 import ProfessorDocumentDetails from './components/ProfessorDocumentDetails';
-import ProjectDetailPage from './pages/ProjectDetailPage'; // (!!!) เพิ่มบรรทัดนี้
+import ProjectDetailPage from '../pages/ProjectDetailPage.jsx';
 // ตอนเรียก ค่อยใส่ Endpoint
 
 // คอมโพเนนต์ Layout หลักที่จะมี Header อยู่ด้านบน
