@@ -243,7 +243,7 @@ const DocumentManagementSystem = () => {
         } else if (userRole === 'admin' || userRole === 'advisor') {
             navigate(`/professor/documents/${doc.id}`);
         } else {
-            navigate(`/documents/${doc.id}`);
+            navigate(`/login`);
         }
     };
 
