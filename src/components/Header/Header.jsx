@@ -97,7 +97,7 @@ function Header() {
             <button onClick={() => navigate('/')} className={styles.navButton}>หน้าหลัก</button>
             <button onClick={() => navigate('/Ufinal1')} className={styles.navButton}>อัพโหลดเอกสาร</button>
             <button onClick={() => navigate('/documents')} className={styles.navButton}>ดาวน์โหลดเอกสาร</button>
-            <button onClick={(handleAdmin)} className={styles.navButton}></button>
+            <button onClick={(handleAdmin)} className={styles.navButton}>sssss</button>
 
       </div>
 
