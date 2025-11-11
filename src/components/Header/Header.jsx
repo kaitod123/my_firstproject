@@ -84,11 +84,12 @@ function Header() {
   };
 
   const handleAdmin =() =>{
-    if (userRole === 'admin') {
-          navigate('/AdminDashboard'); 
-        } else 
-          navigate('/'); 
-        } 
+if (userRole === 'admin') {
+      navigate('/AdminDashboard');
+    } else {
+      navigate('/');
+    }
+    // (ลบปีกกาที่เกินมาตรงนี้ และลบ '};' ที่บรรทัด 90 ทิ้ง)
   };
   return (
     <header className={styles.navbar}> {/* ใช้ class name จาก CSS module */}
@@ -142,6 +143,6 @@ function Header() {
       </div>
     </header>
   );
-
+};
 export default Header;
 
