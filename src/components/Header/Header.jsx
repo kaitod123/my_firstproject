@@ -83,6 +83,13 @@ function Header() {
     navigate('/login');
   };
 
+  const handleAdmin =() =>{
+    if (userRole === 'admin') {
+          navigate('/AdminDashboard'); 
+        } else 
+          navigate('/'); 
+        } 
+  };
   return (
     <header className={styles.navbar}> {/* ใช้ class name จาก CSS module */}
       {/* ฝั่งซ้าย: ปุ่มเมนู Hamburger และปุ่มนำทางหลัก */}
@@ -90,6 +97,7 @@ function Header() {
             <button onClick={() => navigate('/')} className={styles.navButton}>หน้าหลัก</button>
             <button onClick={() => navigate('/Ufinal1')} className={styles.navButton}>อัพโหลดเอกสาร</button>
             <button onClick={() => navigate('/documents')} className={styles.navButton}>ดาวน์โหลดเอกสาร</button>
+            <button onClick={(handleAdmin)} className={styles.navButton}></button>
 
       </div>
 
@@ -134,7 +142,6 @@ function Header() {
       </div>
     </header>
   );
-}
 
 export default Header;
 
