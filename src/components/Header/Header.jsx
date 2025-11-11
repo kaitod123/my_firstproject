@@ -83,14 +83,22 @@ function Header() {
     navigate('/login');
   };
 
-  const handleAdmin =() =>{
-if (userRole === 'admin') {
+const handleAdmin = () => {
+    // 1. ดึงข้อมูล user จาก localStorage
+    const userString = localStorage.getItem('user');
+    const user = userString ? JSON.parse(userString) : null;
+    
+    // 2. ดึง role ออกมา (นี่คือส่วนที่ขาดไป)
+    const userRole = user ? user.role : null; 
+
+    // 3. ตรวจสอบและ Navigate
+    if (userRole === 'admin') {
       navigate('/AdminDashboard');
     } else {
       navigate('/');
     }
-    // (ลบปีกกาที่เกินมาตรงนี้ และลบ '};' ที่บรรทัด 90 ทิ้ง)
   };
+  
   return (
     <header className={styles.navbar}> {/* ใช้ class name จาก CSS module */}
       {/* ฝั่งซ้าย: ปุ่มเมนู Hamburger และปุ่มนำทางหลัก */}
