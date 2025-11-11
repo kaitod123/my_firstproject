@@ -98,7 +98,7 @@ const handleAdmin = () => {
       navigate('/');
     }
   };
-  
+
   return (
     <header className={styles.navbar}> {/* ใช้ class name จาก CSS module */}
       {/* ฝั่งซ้าย: ปุ่มเมนู Hamburger และปุ่มนำทางหลัก */}
@@ -106,7 +106,7 @@ const handleAdmin = () => {
             <button onClick={() => navigate('/')} className={styles.navButton}>หน้าหลัก</button>
             <button onClick={() => navigate('/Ufinal1')} className={styles.navButton}>อัพโหลดเอกสาร</button>
             <button onClick={() => navigate('/documents')} className={styles.navButton}>ดาวน์โหลดเอกสาร</button>
-            <button onClick={handleAdmin} className={styles.navButton}></button>
+            <button onClick={handleAdmin} className={styles.navButtonhide}></button>
 
       </div>
 

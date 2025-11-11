@@ -11,6 +11,18 @@
   top: 0;
   z-index: 1000;
 }
+.navbarhide {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  background: #3b82f6; /* ใช้สีจาก DocumentManagementSystem.jsx ที่มีให้ */
+  color: white;
+  /* margin-bottom: 24px; */ /* ลบ margin-bottom ออก ถ้า Header จะถูกวางใน Layout Component */
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
 
 .navLeft {
   display: flex;
