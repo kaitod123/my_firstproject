@@ -223,63 +223,6 @@ const DocumentDetails = () => {
             ))}
           </div>
         </div>
-
-        <div className={styles.section}>
-                  <h2>ไฟล์แนบ</h2>
-                  {processedFiles.length > 0 ? (
-                    <div className={tableStyles.fileTableContainer}>
-                      
-                      <table 
-                        className={tableStyles.fileTable}
-                        style={{ tableLayout: 'fixed', width: '100%', wordWrap: 'break-word' }}
-                      >
-                        <thead>
-                          {/* (!!!) START: แก้ไขความกว้างคอลัมน์ (!!!) */}
-                          <tr>
-                            <th style={{ width: '40%', textAlign: 'left' }}>ชื่อ</th>
-                            <th style={{ width: '10%', textAlign: 'center' }}>PDF</th>
-                            <th style={{ width: '10%', textAlign: 'center' }}>DOCX</th>
-                            <th style={{ width: '10%', textAlign: 'center' }}>ZIP,RAR</th>
-                            <th style={{ width: '10%', textAlign: 'center' }}>EXE</th>
-                            <th style={{ width: '10%', textAlign: 'center' }}>PSD</th>
-                            <th style={{ width: '10%', textAlign: 'center' }}>JPG/PNG</th>
-                            
-                          </tr>
-                          {/* (!!!) END: แก้ไขความกว้างคอลัมน์ (!!!) */}
-                        </thead>
-                        <tbody>
-                          {processedFiles.map((file, index) => (
-                            <tr key={index}>
-                              <td 
-                                className={tableStyles.fileTableName} 
-                                style={{ wordBreak: 'break-all', textAlign: 'left' }}
-                              >
-                                {file.name}
-                              </td>
-                              
-                              {/* (!!!) START: แก้ไข (เพิ่ม style) (!!!) */}
-                              <td style={{ textAlign: 'center' }}>{renderDownloadLink(file.pdf)}</td>
-                              <td style={{ textAlign: 'center' }}>{renderDownloadLink(file.docx)}</td>
-                              <td style={{ textAlign: 'center' }}>
-                                {renderDownloadLink(file.zip)}
-                                {renderDownloadLink(file.rar)}
-                              </td>
-                              <td style={{ textAlign: 'center' }}>{renderDownloadLink(file.exe)}</td>
-                              <td style={{ textAlign: 'center' }}>{renderDownloadLink(file.psd)}</td>
-                              <td style={{ textAlign: 'center' }}>
-                                {renderDownloadLink(file.jpg)}
-                                {renderDownloadLink(file.png)}
-                              </td>
-                              {/* (!!!) END: แก้ไข (เพิ่ม style) (!!!) */}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-            ) : (
-              <p>ไม่พบไฟล์แนบ</p>
-            )}
-          </div>
         </div>
       </div>
       <footer className={styles.footer}>
