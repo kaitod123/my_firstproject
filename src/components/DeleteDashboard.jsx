@@ -199,7 +199,7 @@ const DeleteDashboard = () => {
                                     onReject={(id) => handleApproval(id, 'rejected')}
                                     onToggleActive={handleToggleActive}
                                     // NEW: Pass the navigation function to the card
-                                    onView={() => navigate(`/documents/${project.id}`)}
+                                    onView={() => navigate(`/professor/documents/${project.id}`)}
                                 />
                             ))
                         ) : (
