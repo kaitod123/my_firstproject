@@ -997,7 +997,7 @@ app.get('/api/student/documents/:id', async (req, res, next) => { // <-- Add nex
         SELECT 
             id, title, title_eng, author, department, advisorName, coAdvisorName, 
             abstract, keywords, document_type, publish_year, approval_status, is_active, 
-            file_paths,scan_date,display_date,language
+            file_paths,scan_date,display_date,language,co_author
         FROM documents 
         WHERE id = $1
     `;
