@@ -212,6 +212,10 @@ const StudentDocumentDetails = () => {
             <span className={styles.listValue}>{document.advisorName || document.advisorname || 'N/A'}</span>
           </div>
           <div className={styles.listItem}>
+            <span className={styles.listLabel}>อาจารย์ที่ปรึกษาร่วม</span>
+            <span className={styles.listValue}>{document.coadvisorName || document.coadvisorname || 'N/A'}</span>
+          </div>
+          <div className={styles.listItem}>
             <span className={styles.listLabel}>ปีที่เผยแพร่</span>
             <span className={styles.listValue}>{document.publish_year ? document.publish_year + 543 : 'N/A'}</span>
           </div>
