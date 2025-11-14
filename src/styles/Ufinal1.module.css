@@ -108,6 +108,7 @@
   font-weight: 500;
   background-color: #f0f2f5;
   transition: color 0.2s ease-in-out;
+  float: left;
 }
 .backButton:hover {
   color: var(--accent-blue);
