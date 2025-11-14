@@ -664,7 +664,6 @@ function Ufinal() {
                 </div>
             </div>
         )}
-        {/* (!!!) END: 5. แก้ไข Modal JSX (!!!) */}
 
         </form>
     );
