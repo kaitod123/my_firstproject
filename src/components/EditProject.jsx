@@ -367,23 +367,13 @@ function EditProject() {
             </div>
         );
     }
-  if (error) {
-    return (
-      <div className={styles.errorMessage}>
-        <p>Error: {error}</p>
-        <button 
-          onClick={() => navigate(-1)} 
-          className={styles.backButton}
-        >
-          <ChevronLeft /> กลับไปยังหน้าก่อนหน้า
-        </button>
-      </div>
-    );
-  }
+
     // --- (แก้ไข) หน้าฟอร์มหลัก ---
     return (
         <form onSubmit={handleSubmit}>
-            
+                            <Link to="/ProjectStatus" className={styles.backButton}>
+                                 &larr; กลับไปยังหน้าก่อนหน้า
+                            </Link>
         <div className={styles.pageContainer}>
             <div className={styles.uploadCard}>
                 <h1 className={styles.pageTitle}>แก้ไขโครงงาน</h1>
