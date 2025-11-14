@@ -42,7 +42,6 @@ function Ufinal() {
     const [confirmModalAction, setConfirmModalAction] = useState(() => () => {});
 
     // (!!!) 3. เพิ่ม State "flag" (!!!)
-    // เพิ่ม State นี้เพื่อติดตามว่าการอัปโหลดสำเร็จหรือไม่
     const [uploadWasSuccessful, setUploadWasSuccessful] = useState(false);
 
     const showAlert = (title, message) => {
@@ -50,586 +49,548 @@ function Ufinal() {
         setIsAlertModalOpen(true);
     };
 
-    const showConfirm = (title, message, onConfirm) => {
-        setConfirmModalContent({ title, message });
-        setConfirmModalAction(() => onConfirm); // ตั้งค่าฟังก์ชันที่จะรันเมื่อกด "ยืนยัน"
-        setIsConfirmModalOpen(true);
+    // (คงเดิม) ฟังก์ชันค้นหาอาจารย์
+    const handleAdvisorSearch = async (e) => {
+        const { name, value } = e.target;
+        handleChange(e); 
+
+        if (value.length < 3) {
+            if (name === 'advisorName') setAdvisorSuggestions([]);
+            if (name === 'coAdvisorName') setCoAdvisorSuggestions([]);
+            return;
+        }
+
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/advisors/search?query=${encodeURIComponent(value)}`);
+            if (!response.ok) throw new Error("Failed to fetch advisors");
+            const data = await response.json();
+
+            if (name === 'advisorName') {
+                setAdvisorSuggestions(data);
+            } else if (name === 'coAdvisorName') {
+                setCoAdvisorSuggestions(data);
+            }
+        } catch (error) {
+            console.error('Error fetching advisor suggestions:', error);
+        }
     };
 
-    const [userId, setUserId] = useState(null);
+    // (คงเดิม) ฟังก์ชันค้นหาผู้แต่งคนที่ 2 (นักศึกษา)
+    const handleStudentSearch = async (e) => {
+        const { name, value } = e.target;
+        handleChange(e); // อัปเดต formData
 
-    // ดึง User ID จาก localStorage ตอน Component โหลด
+        if (value.length < 3) {
+            setCoAuthorSuggestions([]);
+            return;
+        }
+
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/students/search?query=${encodeURIComponent(value)}`);
+            if (!response.ok) throw new Error("Failed to fetch students");
+            const data = await response.json();
+            setCoAuthorSuggestions(data);
+        } catch (error) {
+            console.error('Error fetching student suggestions:', error);
+        }
+    };
+
+
+    const handleSuggestionClick = (name, suggestion) => {
+        setFormData(prevState => ({
+            ...prevState,
+            [name]: `${suggestion.first_name} ${suggestion.last_name}`,
+        }));
+        
+        if (name === 'advisorName') setAdvisorSuggestions([]);
+        if (name === 'coAdvisorName') setCoAdvisorSuggestions([]);
+        if (name === 'co_author') setCoAuthorSuggestions([]);
+    };
+
     useEffect(() => {
-        const userData = localStorage.getItem('user');
-        if (userData) {
-            try {
-                const user = JSON.parse(userData);
-                setUserId(user.id); // เก็บ User ID
-            } catch (e) {
-                console.error("Failed to parse user data from localStorage", e);
-            }
+        const loggedInUser = localStorage.getItem('user');
+        if (loggedInUser) {
+            const user = JSON.parse(loggedInUser);
+            setFormData(prevState => ({
+                ...prevState,
+                author: `${user.first_name || ''} ${user.last_name || ''}`,
+            }));
         }
     }, []);
-
-    // Fetching functions (Advisors, Co-Advisors, Authors)
-    useEffect(() => {
-        // ( ... ขอย่อโค้ดส่วน Fetching ... )
-        const fetchAdvisors = async (query, setSuggestions) => {
-            if (query.length < 2) {
-                setSuggestions([]);
-                return;
-            }
-            try {
-                const response = await fetch(`${import.meta.env.VITE_API_URL}/api/search-advisors?q=${query}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    setSuggestions(data);
-                }
-            } catch (error) {
-                console.error('Error fetching advisors:', error);
-            }
-        };
-
-        const fetchCoAuthors = async (query, setSuggestions) => {
-             if (query.length < 2) {
-                setSuggestions([]);
-                return;
-            }
-             try {
-                // (สมมติว่าใช้ Endpoint เดียวกับ Author)
-                const response = await fetch(`${import.meta.env.VITE_API_URL}/api/search-authors?q=${query}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    setSuggestions(data);
-                }
-            } catch (error) {
-                console.error('Error fetching co-authors:', error);
-            }
-        };
-        
-        // ( ... ขอย่อโค้ดส่วน Fetching ... )
-        if (formData.advisorName.length > 1) fetchAdvisors(formData.advisorName, setAdvisorSuggestions);
-        if (formData.coAdvisorName.length > 1) fetchAdvisors(formData.coAdvisorName, setCoAdvisorSuggestions);
-        if (formData.co_author.length > 1) fetchCoAuthors(formData.co_author, setCoAuthorSuggestions);
-
-    }, [formData.advisorName, formData.coAdvisorName, formData.co_author]);
-    
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
 
         if (type === 'checkbox') {
-            // (จัดการ Checkbox 'permission')
             if (name === 'permission') {
-                 setFormData(prev => ({ ...prev, [name]: checked }));
+                setFormData(prevState => ({ ...prevState, [name]: checked }));
+            } else if (name === 'document_type') {
+                setFormData(prevState => {
+                    const currentTypes = prevState.document_type || []; 
+                    if (checked) {
+                        return { ...prevState, document_type: [...currentTypes, value] };
+                    } else {
+                        return { ...prevState, document_type: currentTypes.filter(type => type !== value) };
+                    }
+                });
             }
-            // (จัดการ Checkbox 'document_type')
-            else {
-                 handleCheckboxChange(name, value, checked);
-            }
-        } 
-        // (จัดการ Text/Select)
-        else {
-            setFormData(prev => ({
-                ...prev,
-                [name]: value
-            }));
-        }
-    };
-    
-    // (ฟังก์ชันสำหรับ 'document_type' โดยเฉพาะ)
-    const handleCheckboxChange = (name, value, checked) => {
-        setFormData(prev => {
-            const currentValues = prev[name] || [];
-            if (checked) {
-                // เพิ่มค่า (ถ้ายังไม่มี)
-                return { ...prev, [name]: [...currentValues, value] };
+        } else {
+            if (name === 'advisorName' && advisorSuggestions.length > 0) {
+                 setFormData(prevState => ({ ...prevState, [name]: value }));
+            } else if (name === 'coAdvisorName' && coAdvisorSuggestions.length > 0) {
+                 setFormData(prevState => ({ ...prevState, [name]: value }));
+            } else if (name === 'co_author' && coAuthorSuggestions.length > 0) {
+                 setFormData(prevState => ({ ...prevState, [name]: value }));
             } else {
-                // ลบค่า
-                return { ...prev, [name]: currentValues.filter(item => item !== value) };
+                 setFormData(prevState => ({ ...prevState, [name]: value }));
             }
-        });
-    };
-    
-    const handleSuggestionClick = (field, suggestion) => {
-        // (เช่น suggestion = { id: 5, first_name: 'John', last_name: 'Doe' })
-        const fullName = `${suggestion.first_name || ''} ${suggestion.last_name || ''}`.trim();
-        
-        setFormData(prev => ({
-            ...prev,
-            [field]: fullName // อัปเดตช่อง Input
-        }));
-        
-        // ซ่อน Suggestions
-        if (field === 'advisorName') setAdvisorSuggestions([]);
-        if (field === 'coAdvisorName') setCoAdvisorSuggestions([]);
-        if (field === 'co_author') setCoAuthorSuggestions([]);
+        }
     };
 
     const handleFileChange = (e) => {
-        const { name, files } = e.target;
-        if (files.length > 0) {
-            // รับไฟล์ทั้งหมดที่เลือก (แปลง FileList เป็น Array)
-            const fileArray = Array.from(files); 
-            
-            // (ตรวจสอบขนาดและประเภทไฟล์เบื้องต้น - ขอย่อไว้)
-            
-            // (อัปเดต State - ให้ 'เพิ่ม' ไฟล์เข้าไป ไม่ใช่ 'แทนที่')
-            setFormData(prev => ({
-                ...prev,
-                // (ใช้ Array.concat เพื่อรวม Array เก่ากับ Array ใหม่)
-                [name]: prev[name] ? prev[name].concat(fileArray) : fileArray
+        const { name, files, accept } = e.target; 
+        const allowedExtensions = accept.split(',').map(ext => ext.trim().toLowerCase());
+
+        const validFiles = Array.from(files).filter(file => {
+            const fileExtension = file.name.slice(file.name.lastIndexOf('.')).toLowerCase(); 
+            return allowedExtensions.includes(fileExtension);
+        });
+
+        if (validFiles.length < files.length) {
+            const invalidCount = files.length - validFiles.length;
+            // (!!!) รีเซ็ต flag เมื่อมี Alert อื่น (!!!)
+            setUploadWasSuccessful(false); 
+            showAlert(
+                'ไฟล์ไม่ถูกต้อง', 
+                `${invalidCount} ไฟล์ที่คุณเลือกมีนามสกุลไม่ถูกต้องสำหรับช่องนี้ และจะไม่ถูกเพิ่ม (ช่องนี้รองรับเฉพาะ: ${accept})`
+            );
+        }
+
+        if (validFiles.length > 0) {
+            setFormData(prevState => ({
+                ...prevState,
+                [name]: [...prevState[name], ...validFiles], 
             }));
         }
         
-        // (เคลียร์ค่าใน <input> เพื่อให้เลือกไฟล์ซ้ำได้)
-        e.target.value = null;
+        e.target.value = null; 
     };
+
+    const handleRemoveFile = (fileName, fileType) => {
+        setFormData(prevState => ({
+            ...prevState,
+            [fileType]: prevState[fileType].filter(file => file.name !== fileName)
+        }));
+    };
+
     
-    // (ฟังก์ชันลบไฟล์ออกจาก State)
-    const removeFile = (fieldName, fileIndex) => {
-         setFormData(prev => {
-            const newFiles = [...prev[fieldName]];
-            newFiles.splice(fileIndex, 1); // ลบไฟล์ที่ Index
-            return { ...prev, [fieldName]: newFiles };
-         });
-    };
+    const handleSaveClick = (e) => {
+        if (e) e.preventDefault();
+        
+        const missingFields = [];
+        if (formData.title.trim() === '') missingFields.push('ชื่อโครงงาน');
+        if (formData.title_eng.trim() === '') missingFields.push('ชื่อโครงงานภาษาอังกฤษ');
+        if (formData.abstract.trim() === '') missingFields.push('บทคัดย่อ');
+        if (formData.keywords.trim() === '') missingFields.push('คำสำคัญ');
+        if (formData.advisorName.trim() === '') missingFields.push('ชื่ออาจารย์ที่ปรึกษา');
+        if (formData.department === undefined || formData.department.trim() === '') missingFields.push('สาขาที่อัปโหลด');
+        if (formData.permission === false) missingFields.push('การยืนยันสิทธิ์');
 
-    // (ฟังก์ชัน Render รายการไฟล์ที่เลือก)
-    const renderFileList = (fieldName) => {
-        if (!formData[fieldName] || formData[fieldName].length === 0) {
-            return null;
+        if (missingFields.length > 0) {
+            const errorMessage = 'กรุณากรอกข้อมูลต่อไปนี้ให้ครบถ้วน:\n\n- ' + missingFields.join('\n- ');
+            // (!!!) รีเซ็ต flag เมื่อมี Alert อื่น (!!!)
+            setUploadWasSuccessful(false); 
+            showAlert('ข้อมูลไม่ครบถ้วน', errorMessage);
+            return; 
         }
-        return (
-            <ul className={styles.fileList}>
-                {formData[fieldName].map((file, index) => (
-                    <li key={`${file.name}-${index}`}>
-                        <span>{file.name} ({(file.size / 1024).toFixed(1)} KB)</span>
-                        <button 
-                            type="button" 
-                            onClick={() => removeFile(fieldName, index)}
-                            className={styles.removeFileButton}
-                        >
-                            &times;
-                        </button>
-                    </li>
-                ))}
-            </ul>
-        );
-    };
 
-    const [isSubmitting, setIsSubmitting] = useState(false); // (กันการกดซ้ำ)
-
-    // (!!!) 4. แก้ไข handleSubmit (!!!)
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        // (ตรวจสอบ User ID)
-        if (!userId) {
-            showAlert('ข้อผิดพลาด', 'ไม่พบข้อมูลผู้ใช้ (User ID) กรุณาล็อกอินใหม่อีกครั้ง');
-            return;
-        }
-        
-        // (ตรวจสอบ Permission)
-        if (!formData.permission) {
-            showAlert('ข้อผิดพลาด', 'กรุณายอมรับเงื่อนไขและยืนยันว่าเป็นข้อมูลจริง');
-            return;
-        }
-        
-        // (ตรวจสอบว่าเลือกไฟล์อย่างน้อย 1 ไฟล์)
-        const allFiles = [
-            ...formData.complete_pdf, ...formData.complete_doc, ...formData.article_files,
-            ...formData.program_files, ...formData.web_files, ...formData.poster_files,
-            ...formData.certificate_files, ...formData.front_face
-        ];
-        if (allFiles.length === 0) {
-             showAlert('ข้อผิดพลาด', 'กรุณาอัปโหลดไฟล์โครงงานอย่างน้อย 1 ไฟล์');
-             return;
-        }
-        
-        // (ป้องกันการกดซ้ำ)
-        if (isSubmitting) return;
-        setIsSubmitting(true);
-        
-        // (รีเซ็ตสถานะ "สำเร็จ")
-        setUploadWasSuccessful(false); 
-
-        // (แสดง Modal "กำลังโหลด...")
-        showAlert('กำลังอัปโหลด', 'กรุณารอสักครู่... ระบบกำลังบันทึกข้อมูลและไฟล์ของคุณ');
-
-        const data = new FormData();
-
-        // 1. เพิ่มข้อมูล Text (Fields)
-        const textFields = [
-            'title', 'title_eng', 'author', 'co_author', 'abstract',
-            'advisorName', 'department', 'coAdvisorName', 'keywords', 'supportAgency',
-            'publish_year', 'scan_date', 'display_date', 'language'
-        ];
-        
-        textFields.forEach(field => {
-            if (formData[field]) {
-                data.append(field, formData[field]);
-            }
+        setConfirmModalContent({
+            title: 'ยืนยันการบันทึก',
+            message: 'คุณแน่ใจหรือไม่ว่าต้องการบันทึกข้อมูลโครงงานนี้?'
         });
-        
-        // (เพิ่ม document_type - แปลง Array เป็น String)
-        const documentTypesString = Array.isArray(formData.document_type)
-            ? formData.document_type.join(',')
-            : '';
-        data.append('document_type', documentTypesString);
-        
-        // (เพิ่ม User ID)
-        data.append('userId', userId);
+        setConfirmModalAction(() => () => handleSubmit()); 
+        setIsConfirmModalOpen(true);
+    };
 
-        // 2. เพิ่มข้อมูล Files
-        const fileFields = [
+    const handleSubmit = async () => {
+        const data = new FormData();
+        const fileKeys = [
             'complete_pdf', 'complete_doc', 'article_files', 'program_files', 
-            'web_files', 'poster_files', 'certificate_files', 'front_face'
+            'web_files', 'poster_files', 'certificate_files',
+            'front_face'
         ];
-        
-        fileFields.forEach(fieldName => {
-            if (formData[fieldName] && formData[fieldName].length > 0) {
-                // (วนลูปเพิ่มไฟล์ทีละไฟล์)
-                formData[fieldName].forEach(file => {
-                    data.append(fieldName, file, file.name);
+
+        // Append text data
+        for (const key in formData) {
+            if (!fileKeys.includes(key)) {
+                if (key === 'document_type') {
+                    const documentTypesString = Array.isArray(formData.document_type) 
+                        ? formData.document_type.join(',') 
+                        : ''; 
+                    data.append(key, documentTypesString);
+                } else {
+                    data.append(key, formData[key]);
+                }
+            }
+        }
+
+        // Append file data
+        fileKeys.forEach(key => {
+            if (formData[key] && formData[key].length > 0) {
+                formData[key].forEach(file => {
+                    data.append(key, file);
                 });
             }
         });
-
-        // 3. ส่งข้อมูล (Fetch)
+        
+        console.log('กำลังส่ง FormData ที่มี keys:', [...data.keys()]);
+        
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/upload-project`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/upload-project`, { 
                 method: 'POST',
-                // (ไม่ต้องใช้ 'Content-Type': 'multipart/form-data', FormData จะจัดการเอง)
                 body: data,
-                // (ถ้าใช้ Token)
-                // headers: {
-                //     'Authorization': `Bearer ${token}`
-                // }
             });
 
             const result = await response.json();
-
             if (response.ok) {
-                // (!!!) ตั้งค่าว่า "สำเร็จ"
+                // (!!!) 4. ตั้งค่า Flag เป็น true เมื่อสำเร็จ (!!!)
                 setUploadWasSuccessful(true); 
-                // (แสดง Modal สำเร็จ)
-                showAlert(
-                    'อัปโหลดสำเร็จ', 
-                    'ระบบบันทึกข้อมูลโครงงานของคุณเรียบร้อยแล้ว'
-                );
-                // (!!!) ลบ navigate ออกจากตรงนี้ (!!!)
-                // navigate('/documents'); // (ลบออก)
+                showAlert('สำเร็จ', result.message || 'บันทึกข้อมูลสำเร็จ');
+                
+                // ล้างฟอร์ม
+                setFormData({
+                    document_type: [], title: '', title_eng: '', author: formData.author,
+                    co_author: '', abstract: '', advisorName: '', department: '',
+                    coAdvisorName: '', keywords: '', supportAgency: '', permission: false,
+                    complete_pdf: [], complete_doc: [], article_files: [], program_files: [],
+                    web_files: [], poster_files: [], certificate_files: [], front_face: [],
+                });
             } else {
-                // (แสดง Modal ไม่สำเร็จ)
-                showAlert(
-                    'อัปโหลดไม่สำเร็จ', 
-                    `เกิดข้อผิดพลาด: ${result.message || response.statusText}`
-                );
+                // (!!!) รีเซ็ต flag เมื่อมี Alert อื่น (!!!)
+                setUploadWasSuccessful(false); 
+                showAlert('เกิดข้อผิดพลาด', result.message || 'ไม่สามารถบันทึกข้อมูลได้');
             }
         } catch (error) {
-            console.error('Submit Error:', error);
-            showAlert(
-                'เกิดข้อผิดพลาด', 
-                `ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้: ${error.message}`
-            );
-        } finally {
-            // (ปลดล็อคปุ่ม)
-            setIsSubmitting(false);
-            // (ถ้า Modal ไม่ใช่ "กำลังโหลด" ก็ไม่ต้องปิด - ปิดเฉพาะ "กำลังโหลด")
-            if (alertModalContent.title === 'กำลังอัปโหลด') {
-                 // (การ showAlert ใหม่จะทับ "กำลังโหลด" ไปเอง)
-                 // setIsAlertModalOpen(false); 
-            }
+            console.error('Error submitting form:', error);
+            // (!!!) รีเซ็ต flag เมื่อมี Alert อื่น (!!!)
+            setUploadWasSuccessful(false); 
+            showAlert('ไม่สามารถเชื่อมต่อได้', 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้: ' + (error.message || 'กรุณาตรวจสอบ Console'));
         }
     };
 
 
-    return (
-        <form onSubmit={handleSubmit} className={styles.formContainer}>
-            
-            {/* ( ... ขอย่อ JSX ส่วนฟอร์ม ... ) */}
-            {/* ( ... title, title_eng ... ) */}
-            <div className={styles.formGroup}>
-                <label htmlFor="title">ชื่อโครงงาน (ภาษาไทย) *</label>
+    const FileUploadZone = ({ name, title, hint, accept }) => (
+        <div className={styles.fileDropzone}>
+            <p>{title}</p>
+            <p className={styles.fileHint}>{hint}</p>
+            <label className={styles.fileButton}>
+                เลือกไฟล์
                 <input
-                    type="text"
-                    id="title"
-                    name="title"
-                    value={formData.title}
-                    onChange={handleChange}
-                    required
+                    type="file"
+                    name={name}
+                    multiple
+                    accept={accept}
+                    onChange={handleFileChange}
                 />
-            </div>
-            
-             <div className={styles.formGroup}>
-                <label htmlFor="title_eng">ชื่อโครงงาน (ภาษาอังกฤษ)</label>
-                <input
-                    type="text"
-                    id="title_eng"
-                    name="title_eng"
-                    value={formData.title_eng}
-                    onChange={handleChange}
-                />
-            </div>
-
-            {/* ( ... author, co_author ... ) */}
-             <div className={styles.formRow}>
-                <div className={styles.formGroup} style={{ flex: 1 }}>
-                    <label htmlFor="author">ผู้จัดทำ (Author) *</label>
-                    <input
-                        type="text"
-                        id="author"
-                        name="author"
-                        value={formData.author}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div className={styles.formGroup} style={{ flex: 1 }}>
-                    <label htmlFor="co_author">ผู้จัดทำร่วม (Co-Author)</label>
-                    <input
-                        type="text"
-                        id="co_author"
-                        name="co_author"
-                        value={formData.co_author}
-                        onChange={handleChange}
-                        autoComplete="off"
-                    />
-                    {/* (Suggestions Box) */}
-                    {coAuthorSuggestions.length > 0 && (
-                        <ul className={styles.suggestionsList}>
-                            {coAuthorSuggestions.map(user => (
-                                <li key={user.id} onClick={() => handleSuggestionClick('co_author', user)}>
-                                    {user.first_name} {user.last_name}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
-            </div>
-
-            {/* ( ... advisorName, coAdvisorName ... ) */}
-             <div className={styles.formRow}>
-                <div className={styles.formGroup} style={{ flex: 1 }}>
-                    <label htmlFor="advisorName">อาจารย์ที่ปรึกษา *</label>
-                    <input
-                        type="text"
-                        id="advisorName"
-                        name="advisorName"
-                        value={formData.advisorName}
-                        onChange={handleChange}
-                        autoComplete="off"
-                        required
-                    />
-                     {advisorSuggestions.length > 0 && (
-                        <ul className={styles.suggestionsList}>
-                            {advisorSuggestions.map(user => (
-                                <li key={user.id} onClick={() => handleSuggestionClick('advisorName', user)}>
-                                    {user.first_name} {user.last_name}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
-                <div className={styles.formGroup} style={{ flex: 1 }}>
-                    <label htmlFor="coAdvisorName">อาจารย์ที่ปรึกษาร่วม</label>
-                    <input
-                        type="text"
-                        id="coAdvisorName"
-                        name="coAdvisorName"
-                        value={formData.coAdvisorName}
-                        onChange={handleChange}
-                        autoComplete="off"
-                    />
-                    {coAdvisorSuggestions.length > 0 && (
-                        <ul className={styles.suggestionsList}>
-                            {coAdvisorSuggestions.map(user => (
-                                <li key={user.id} onClick={() => handleSuggestionClick('coAdvisorName', user)}>
-                                    {user.first_name} {user.last_name}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
-            </div>
-
-            {/* ( ... department, keywords, abstract ... ) */}
-            <div className={styles.formGroup}>
-                <label htmlFor="department">สาขาวิชา *</label>
-                <select id="department" name="department" value={formData.department} onChange={handleChange} required>
-                    <option value="">เลือกสาขาวิชา</option>
-                    <option value="วิทยาการคอมพิวเตอร์">วิทยาการคอมพิวเตอร์</option>
-                    <option value="เทคโนโลยีสารสนเทศ">เทคโนโลยีสารสนเทศ</option>
-                    <option value="ระบบสารสนเทศเพื่อการจัดการ">ระบบสารสนเทศเพื่อการจัดการ</option>
-                    {/* (เพิ่มสาขาอื่นๆ) */}
-                </select>
-            </div>
-            
-            <div className={styles.formGroup}>
-                <label htmlFor="abstract">บทคัดย่อ (Abstract)</label>
-                <textarea
-                    id="abstract"
-                    name="abstract"
-                    value={formData.abstract}
-                    onChange={handleChange}
-                    rows="6"
-                />
-            </div>
-
-            <div className={styles.formGroup}>
-                <label htmlFor="keywords">คำสำคัญ (Keywords)</label>
-                <input
-                    type="text"
-                    id="keywords"
-                    name="keywords"
-                    value={formData.keywords}
-                    onChange={handleChange}
-                    placeholder="เช่น IOT, AI, DataMining (คั่นด้วย Comma)"
-                />
-            </div>
-            
-            {/* ( ... document_type ... ) */}
-            <div className={styles.formGroup}>
-                <label>ประเภทของโครงงาน (Document Type) *</label>
-                <div className={styles.checkboxGrid}>
-                    {['IOT', 'AI', 'DataMining', 'WebSite', 'WebApp', 'Application', 'เกม', 'อื่นๆ'].map(type => (
-                        <label key={type}>
-                            <input
-                                type="checkbox"
-                                name="document_type"
-                                value={type}
-                                checked={formData.document_type.includes(type)}
-                                onChange={handleChange}
-                            />
-                            {type}
-                        </label>
+            </label>
+            {formData[name] && Array.isArray(formData[name]) && formData[name].length > 0 && (
+                <ul className={styles.fileList}>
+                    {formData[name].map((file, index) => (
+                        <li key={index} className={styles.fileItem}>
+                            <span className={styles.fileName}>{file.name}</span>
+                            <button
+                                type="button" // Important for forms
+                                className={styles.removeFileButton}
+                                onClick={() => handleRemoveFile(file.name, name)} 
+                            >
+                                ลบ
+                            </button>
+                        </li>
                     ))}
-                </div>
-            </div>
-            
-             {/* ( ... ข้อมูลอื่นๆ ... ) */}
-             <div className={styles.formGroup}>
-                <label htmlFor="supportAgency">หน่วยงานที่สนับสนุน (ถ้ามี)</label>
-                <input
-                    type="text"
-                    id="supportAgency"
-                    name="supportAgency"
-                    value={formData.supportAgency}
-                    onChange={handleChange}
-                />
-            </div>
-            
-            {/* ( ... ส่วนอัปโหลดไฟล์ ... ) */}
-            <h2 className={styles.sectionTitle}>อัปโหลดไฟล์โครงงาน</h2>
-            <p className={styles.sectionSubtitle}>
-                กรุณาอัปโหลดไฟล์ที่เกี่ยวข้องกับโครงงานของคุณ (เลือกได้หลายไฟล์)
-            </p>
+                </ul>
+            )}
+        </div>
+    );
 
-            {/* (File Upload Fields) */}
-             <div className={styles.fileUploadContainer}>
-                <div className={styles.formGroup}>
-                    <label htmlFor="complete_pdf">ไฟล์ PDF (ฉบับสมบูรณ์)</label>
-                    <input type="file" id="complete_pdf" name="complete_pdf" onChange={handleFileChange} multiple />
-                    {renderFileList('complete_pdf')}
-                </div>
+    return (
+        <form>
+        <div className={styles.pageContainer}>
+            <div className={styles.uploadCard}>
+                <h1 className={styles.pageTitle}>ส่งคำขออัพโหลด</h1>
                 
-                 <div className={styles.formGroup}>
-                    <label htmlFor="complete_doc">ไฟล์ DOCX (ฉบับสมบูรณ์)</label>
-                    <input type="file" id="complete_doc" name="complete_doc" onChange={handleFileChange} multiple />
-                     {renderFileList('complete_doc')}
+                 {/* Section 1: ข้อมูลผู้เขียน */}
+                 <div className={styles.section}>
+                    <h2 className={styles.sectionTitle}>ข้อมูลผู้เขียน</h2>
+                    <div className={styles.twoColumnGrid}>
+                        <div className={styles.inputGroup}>
+                            <label className={styles.label}>ผู้แต่ง (หลัก)</label>
+                            <input
+                                type="text"
+                                name="author"
+                                value={formData.author}
+                                readOnly
+                                className={styles.inputField}
+                            />
+                        </div>
+                        
+                        <div className={styles.inputGroup}>
+                            <label className={styles.label}>ผู้แต่งคนที่ 2 (ถ้ามี)</label>
+                            <input 
+                                type="text" 
+                                name="co_author" 
+                                placeholder="ค้นหาชื่อนักศึกษา..."
+                                className={styles.inputField} 
+                                value={formData.co_author}
+                                onChange={handleStudentSearch}
+                                autoComplete="off"
+                            />
+                            {coAuthorSuggestions.length > 0 && (
+                                <ul className={styles.suggestionsList}>
+                                    {coAuthorSuggestions.map((student) => (
+                                        <li 
+                                            key={student.id} 
+                                            onClick={() => handleSuggestionClick('co_author', student)}
+                                        >
+                                            {student.first_name} {student.last_name}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+                    </div>
                 </div>
-                
-                <div className={styles.formGroup}>
-                    <label htmlFor="article_files">ไฟล์บทความ (Article)</label>
-                    <input type="file" id="article_files" name="article_files" onChange={handleFileChange} multiple />
-                    {renderFileList('article_files')}
-                </div>
-                
-                <div className={styles.formGroup}>
-                    <label htmlFor="program_files">ไฟล์โปรแกรม (Program/EXE/Script)</label>
-                    <input type="file" id="program_files" name="program_files" onChange={handleFileChange} multiple />
-                    {renderFileList('program_files')}
-                </div>
-                
-                <div className={styles.formGroup}>
-                    <label htmlFor="web_files">ไฟล์เว็บไซต์ (ZIP/RAR)</label>
-                    <input type="file" id="web_files" name="web_files" onChange={handleFileChange} multiple />
-                    {renderFileList('web_files')}
-                </div>
-                
-                <div className={styles.formGroup}>
-                    <label htmlFor="poster_files">ไฟล์โปสเตอร์ (Image/PDF)</label>
-                    <input type="file" id="poster_files" name="poster_files" onChange={handleFileChange} multiple />
-                    {renderFileList('poster_files')}
-                </div>
-                
-                 <div className={styles.formGroup}>
-                    <label htmlFor="certificate_files">ไฟล์เกียรติบัตร (ถ้ามี)</label>
-                    <input type="file" id="certificate_files" name="certificate_files" onChange={handleFileChange} multiple />
-                    {renderFileList('certificate_files')}
-                </div>
-                
-                <div className={styles.formGroup}>
-                    <label htmlFor="front_face">รูปหน้าปก (Front Image)</label>
-                    <input type="file" id="front_face" name="front_face" onChange={handleFileChange} />
-                    {renderFileList('front_face')}
-                </div>
-            </div>
 
-            {/* ( ... ยืนยันและส่ง ... ) */}
-            <div className={styles.formGroup}>
-                <label>
-                    <input
-                        type="checkbox"
-                        name="permission"
-                        checked={formData.permission}
-                        onChange={handleChange}
-                    />
-                    ข้าพเจ้ายินยอมให้เผยแพร่ข้อมูลและไฟล์เหล่านี้ และยืนยันว่าเป็นข้อมูลจริงทุกประการ *
-                </label>
-            </div>
+                {/* Section 2: ข้อมูลโครงงาน */}
+                <div className={styles.section}>
+                    <h2 className={styles.sectionTitle}>ข้อมูลโครงงาน</h2>
+                    <div className={styles.twoColumnGrid}>
+                        <div className={styles.inputGroup}>
+                            <label className={styles.label}>ชื่อโครงงาน</label>
+                            <input type="text" name="title" placeholder="ชื่อโครงงาน" className={styles.inputField} onChange={handleChange} value={formData.title} />
+                        </div>
+                        <div className={styles.inputGroup}>
+                            <label className={styles.label}>ชื่อโครงงานภาษาอังกฤษ</label>
+                            <input type="text" name='title_eng' placeholder="ชื่อโครงงานภาษาอังกฤษ" className={styles.inputField} onChange={handleChange} value={formData.title_eng} />
+                        </div>
+                    </div>
+                    
+                    <div className={styles.inputGroup}>
+                        <label className={styles.label}>บทคัดย่อ</label>
+                        <textarea name="abstract" rows="4" className={styles.textarea} placeholder="ใส่บทคัดย่อโครงงานที่นี่..." onChange={handleChange} value={formData.abstract}></textarea>
+                    </div>
 
-            <div className={styles.submitContainer}>
-                <Link to="/documents" className={styles.linkButton}>กลับหน้าหลัก</Link>
-                <button 
-                    type="submit" 
-                    className={styles.submitButton} 
-                    disabled={!formData.permission || isSubmitting}
-                >
-                    {isSubmitting ? 'กำลังบันทึก...' : 'ยืนยันการอัปโหลด'}
-                </button>
+                    <div className={styles.inputGroup}>
+                        <label className={styles.label}>คำสำคัญ</label>
+                        <textarea name="keywords" rows="4" className={styles.textarea} placeholder="ใส่คำสำคัญที่เกี่ยวข้องกับโครงงาน..." onChange={handleChange} value={formData.keywords}></textarea>
+                    </div>
+                    
+                    <div className={styles.twoColumnGrid}>
+                        <div className={styles.inputGroup}>
+                            <label className={styles.label}>ชื่ออาจารย์ที่ปรึกษา</label>
+                            <input 
+                                type="text" 
+                                name="advisorName" 
+                                placeholder="ค้นหาชื่ออาจารย์..."
+                                className={styles.inputField} 
+                                value={formData.advisorName} 
+                                onChange={handleAdvisorSearch} 
+                                autoComplete="off"
+                            />
+                            {advisorSuggestions.length > 0 && (
+                                <ul className={styles.suggestionsList}>
+                                    {advisorSuggestions.map((advisor) => (
+                                        <li 
+                                            key={advisor.id} 
+                                            onClick={() => handleSuggestionClick('advisorName', advisor)}
+                                        >
+                                            {advisor.first_name} {advisor.last_name}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+                        <div className={styles.inputGroup}>
+                            <label className={styles.label}>ชื่ออาจารย์ที่ปรึกษาร่วม (ถ้ามี)</label>
+                            <input 
+                                type="text" 
+                                name="coAdvisorName" 
+                                placeholder="ค้นหาชื่ออาจารย์..."
+                                className={styles.inputField} 
+                                value={formData.coAdvisorName} 
+                                onChange={handleAdvisorSearch} 
+                                autoComplete="off"
+                            />
+                            {coAdvisorSuggestions.length > 0 && (
+                                <ul className={styles.suggestionsList}>
+                                    {coAdvisorSuggestions.map((advisor) => (
+                                        <li 
+                                            key={advisor.id} 
+                                            onClick={() => handleSuggestionClick('coAdvisorName', advisor)}
+                                        >
+                                            {advisor.first_name} {advisor.last_name}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+                    </div>
+                    <div className={styles.inputGroup}>
+                        <label className={styles.label}>หน่วยงานที่สนับสนุน (ถ้ามี)</label>
+                        <input type="text" name="supportAgency" placeholder='ชื่อหน่วยงานที่สนับสนุน' className={styles.inputField} onChange={handleChange} value={formData.supportAgency} />
+                    </div>
+                </div>
+
+                {/* Section 3: ประเภทและสาขา */}
+                <div className={styles.section}>
+                    <h2 className={styles.sectionTitle}>ประเภทของโครงงานและสาขา</h2>
+                    <div className={styles.radioGroup}>
+                        <label className={styles.label}>สาขาที่อัปโหลด</label>
+                        <div className={styles.cardRadioGrid}>
+                            <label className={styles.cardRadio}>
+                                <input type="radio" name="department" value="วิทยาการคอมพิวเตอร์" onChange={handleChange} checked={formData.department === "วิทยาการคอมพิวเตอร์"} />
+                                <span className={styles.cardRadioText}>วิทยาการคอมพิวเตอร์</span>
+                            </label>
+                            <label className={styles.cardRadio}>
+                                <input type="radio" name="department" value="เทคโนโลยีสารสนเทศ" onChange={handleChange} checked={formData.department === "เทคโนโลยีสารสนเทศ"} />
+                                <span className={styles.cardRadioText}>เทคโนโลยีสารสนเทศ</span>
+                            </label>
+                            <label className={styles.cardRadio}>
+                                <input type="radio" name="department" value="ระบบสารสนเทศเพื่อการจัดการ" onChange={handleChange} checked={formData.department === "ระบบสารสนเทศเพื่อการจัดการ"} />
+                                <span className={styles.cardRadioText}>ระบบสารสนเทศเพื่อการจัดการ</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div className={styles.radioGroup}>
+                        <label className={styles.label}>ประเภท</label>
+                        <div className={styles.cardRadioGrid}>
+                            <label className={styles.cardRadio}>
+                                <input type="checkbox" name="document_type" value="เกม" onChange={handleChange} checked={formData.document_type.includes("เกม")} />
+                                <span className={styles.cardRadioText}>เกม</span>
+                            </label>
+                            <label className={styles.cardRadio}>
+                                <input type="checkbox" name="document_type" value="IOT" onChange={handleChange} checked={formData.document_type.includes("IOT")} />
+                                <span className={styles.cardRadioText}>IOT</span>
+                            </label>
+                            <label className={styles.cardRadio}>
+                                <input type="checkbox" name="document_type" value="WebSite" onChange={handleChange} checked={formData.document_type.includes("WebSite")} />
+                                <span className={styles.cardRadioText}>Web Site</span>
+                            </label>
+                            <label className={styles.cardRadio}>
+                                <input type="checkbox" name="document_type" value="WebApp" onChange={handleChange} checked={formData.document_type.includes("WebApp")} />
+                                <span className={styles.cardRadioText}>Web Application</span>
+                            </label>
+                                <label className={styles.cardRadio}>
+                                <input type="checkbox" name="document_type" value="Application" onChange={handleChange} checked={formData.document_type.includes("Application")} />
+                                <span className={styles.cardRadioText}>Application</span>
+                            </label>
+                                <label className={styles.cardRadio}>
+                                <input type="checkbox" name="document_type" value="AI" onChange={handleChange} checked={formData.document_type.includes("AI")} />
+                                <span className={styles.cardRadioText}>AI</span>
+                            </label>
+                                <label className={styles.cardRadio}>
+                                <input type="checkbox" name="document_type" value="DataMining" onChange={handleChange} checked={formData.document_type.includes("DataMining")} />
+                                <span className={styles.cardRadioText}>Data Mining</span>
+                            </label>
+                                <label className={styles.cardRadio}>
+                                <input type="checkbox" name="document_type" value="อื่นๆ" onChange={handleChange} checked={formData.document_type.includes("อื่นๆ")} />
+                                <span className={styles.cardRadioText}>อื่นๆ</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Section 4: อัปโหลดไฟล์ (REVISED) */}
+                <div className={styles.section}>
+                    <h2 className={styles.sectionTitle}>อัปโหลดไฟล์</h2>
+                    
+                    <div className={styles.twoColumnGrid}>
+                        <FileUploadZone name="complete_pdf" title="ไฟล์เอกสารฉบับสมบูรณ์ (PDF)" hint="รองรับไฟล์ .pdf เท่านั้น" accept=".pdf" />
+                        <FileUploadZone 
+                            name="complete_doc" 
+                            title="ไฟล์เอกสารฉบับสมบูรณ์ (DOCX)" 
+                            hint="รองรับไฟล์ .docx เท่านั้น" 
+                            accept=".docx" 
+                        />
+                    </div>
+
+                    <div className={styles.twoColumnGrid}>
+                        <FileUploadZone name="article_files" title="ไฟล์บทความสำหรับตีพิมพ์(ต้องมีทั้งไฟล์DOCXและPDF)" hint="รองรับไฟล์ .docx และ .pdf" accept=".docx,.pdf" />
+                        <FileUploadZone name="program_files" title="ไฟล์โปรแกรมพร้อมติดตั้ง(ถ้ามี)" hint="แนะนำ .zip, .rar" accept=".zip,.rar" />
+                    </div>
+
+                    <div className={styles.twoColumnGrid}>
+                        <FileUploadZone name="web_files" title="ไฟล์ซอร์ฺสโค้ดที่สมบูรณ์ทั้งหมดของโครงงาน (Zip)" hint="รองรับไฟล์ .zip เท่านั้น" accept=".zip" />
+                        <FileUploadZone name="poster_files" title="ไฟล์โปสเตอร์(80*120cm)" hint="รองรับไฟล์ .psd และ .pdf" accept=".psd,.pdf" />
+                    </div>
+
+                    <div className={styles.twoColumnGrid}>
+                        <FileUploadZone name="certificate_files" title="ไฟล์ใบผ่านการอบรม(จริยธรรมการวิจัยในคน)" hint="รองรับไฟล์ .pdf, .jpg, .png" accept=".pdf,.jpg,.jpeg,.png" />
+                        <FileUploadZone name="front_face" title="หน้าปก" hint="รองรับไฟล์ .jpeg" accept=".jpeg" />
+                    </div>
+                    <div className={styles.checkboxGroup}>
+                        <label className={styles.label}>ยืนยันสิทธิ์ต่างๆ</label>
+                            <label className={styles.checkboxLabel}>
+                            <input 
+                                type="checkbox" 
+                                name="permission" 
+                                required 
+                                className={styles.checkboxInput}
+                                onChange={handleChange}    
+                                checked={formData.permission}
+                                />
+                                <span className={styles.checkboxText}>ยืนยันการให้สิทธิ์ในการเผยแพร่</span>
+                            </label>
+                    </div>
+                </div>
+
+
+                {/* Buttons */}
+                <div className={styles.buttonGroup}>
+                    <Link to="/" className={styles.linkButton}>
+                        กลับ
+                    </Link>
+                    <button
+                        onClick={handleSaveClick} 
+                        type="button" 
+                        className={styles.submitButton} 
+                    >
+                        บันทึก
+                    </button>
+                </div>
             </div>
-            
-            
-        {/* (!!!) START: 5. แก้ไข Modal JSX (!!!) */}
         
-        {/* Alert Modal (สำหรับ OK เท่านั้น) */}
+            {/* Footer */}
+      <footer className={styles.footer}>
+        <p className={styles.footerText}>Copyright © 2025</p>
+        <div className={styles.footerLink}>
+          <a className={styles.footerLink}>Designed & Developed by </a>
+          <a href="https://informatics.nrru.ac.th/" className={styles.footerLink}>Informatics</a>
+        </div>
+      </footer>
+        </div>
+        
+        {/* (!!!) START: 5. แก้ไข Modal JSX (!!!) */}
+
+        {/* Alert Modal (สำหรับ OK) */}
         {isAlertModalOpen && (
             <div className={styles.modalOverlay}>
                 <div className={styles.modalContent}>
                     <h2>{alertModalContent.title}</h2>
                     <p className={styles.alertMessage}>{alertModalContent.message}</p>
                     <div className={styles.modalActions}>
+                        {/* (!!!) นี่คือปุ่มที่แก้ไข (!!!) */}
                         <button 
                             type="button" 
-                            className={styles.submitButton}
-                            // (!!!) แก้ไข onClick ที่นี่
                             onClick={() => {
-                                // ปิด Modal
-                                setIsAlertModalOpen(false); 
-                                
-                                // (สำคัญ) ถ้าอัปโหลดสำเร็จ ให้ย้ายหน้า
+                                setIsAlertModalOpen(false);
                                 if (uploadWasSuccessful) {
-                                    // รีเซ็ตสถานะ
-                                    setUploadWasSuccessful(false); 
-                                    // ย้ายไปหน้า Documents
-                                    navigate('/documents'); 
+                                    navigate('/'); // (!!!) กลับไปหน้า Home
+                                    setUploadWasSuccessful(false); // (!!!) รีเซ็ต flag
                                 }
-                                // (ถ้าไม่สำเร็จ ก็แค่ปิด Modal ไป)
-                            }}
+                            }} 
+                            className={styles.submitButton}
                         >
-                             ตกลง
+                            ตกลง
                         </button>
                     </div>
                 </div>
@@ -664,6 +625,7 @@ function Ufinal() {
                 </div>
             </div>
         )}
+        {/* (!!!) END: 5. แก้ไข Modal JSX (!!!) */}
 
         </form>
     );
