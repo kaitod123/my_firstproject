@@ -203,7 +203,7 @@
 /* Buttons */
 .buttonGroup {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between; /* (แก้ไข) เปลี่ยนจาก flex-end (ถ้ามี) */
     gap: 15px;
     margin-top: 30px;
 }
