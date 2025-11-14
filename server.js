@@ -995,9 +995,9 @@ app.get('/api/student/documents/:id', async (req, res, next) => { // <-- Add nex
   try {
     const documentSql = `
         SELECT 
-            id, title, title_eng, author, department, advisorName, coAdvisorName, 
+            id, title, title_eng, author, co_author, department, advisorName, coAdvisorName, 
             abstract, keywords, document_type, publish_year, approval_status, is_active, 
-            file_paths,scan_date,display_date,language,co_author
+            file_paths,scan_date,display_date,language
         FROM documents 
         WHERE id = $1
     `;
