@@ -97,22 +97,6 @@
 .radioGroup {
     margin-bottom: 20px;
 }
-
-.backButton {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin: 20px 0 40px 20px;
-  color: var(--text-medium);
-  text-decoration: none;
-  font-weight: 500;
-  background-color: #f0f2f5;
-  transition: color 0.2s ease-in-out;
-  float: left;
-}
-.backButton:hover {
-  color: var(--accent-blue);
-}
 .cardRadioGrid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -203,7 +187,7 @@
 /* Buttons */
 .buttonGroup {
     display: flex;
-    justify-content: space-between; /* (แก้ไข) เปลี่ยนจาก flex-end (ถ้ามี) */
+    justify-content: flex-end;
     gap: 15px;
     margin-top: 30px;
 }
