@@ -371,11 +371,11 @@ function EditProject() {
     // --- (แก้ไข) หน้าฟอร์มหลัก ---
     return (
         <form onSubmit={handleSubmit}>
-
+    <div>   <Link to="/ProjectStatus" className={styles.backButton}>
+                    &larr; กลับไปยังหน้าก่อนหน้า
+            </Link>
+    
         <div className={styles.pageContainer}>
-                                        <Link to="/ProjectStatus" className={styles.backButton}>
-                                 &larr; กลับไปยังหน้าก่อนหน้า
-                            </Link>
             <div className={styles.uploadCard}>
                 <h1 className={styles.pageTitle}>แก้ไขโครงงาน</h1>
                 <p>ID: {projectId}</p>
@@ -596,7 +596,7 @@ function EditProject() {
                     </button>
                 </div>
             </div>
-        
+        </div>
             {/* Footer */}
       <footer className={styles.footer}>
         <p className={styles.footerText}>Copyright © 2025</p>
