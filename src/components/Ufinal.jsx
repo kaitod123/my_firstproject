@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 // (!!!) 1. Import 'useNavigate' เพิ่ม (!!!)
 import { Link, useNavigate } from 'react-router-dom';
-import styles from '../styles/Ufinal1.module.css';
+// (!!!) 6. แก้ไข Path ของ CSS (ลบ '1' ออก) (!!!)
+import styles from '../styles/Ufinal.module.css';
 
 function Ufinal() {
     // (!!!) 2. เรียกใช้ useNavigate (!!!)
@@ -664,6 +665,7 @@ function Ufinal() {
                 </div>
             </div>
         )}
+        {/* (!!!) END: 5. แก้ไข Modal JSX (!!!) */}
 
         </form>
     );
