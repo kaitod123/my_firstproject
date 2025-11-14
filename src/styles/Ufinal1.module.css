@@ -97,6 +97,21 @@
 .radioGroup {
     margin-bottom: 20px;
 }
+
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 20px 0 40px 20px;
+  color: var(--text-medium);
+  text-decoration: none;
+  font-weight: 500;
+  background-color: #f0f2f5;
+  transition: color 0.2s ease-in-out;
+}
+.backButton:hover {
+  color: var(--accent-blue);
+}
 .cardRadioGrid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
