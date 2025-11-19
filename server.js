@@ -1,4 +1,4 @@
-// server.js (เวอร์ชันแก้ไข PostgreSQL และ S3 - ใช้ ES Module)
+// server.js (เวอร์ชันแก้ไข Routing Syntax - ใช้ ES Module)
 import 'dotenv/config'; 
 import multer from 'multer';
 import multerS3 from 'multer-s3';
@@ -627,7 +627,8 @@ app.get('/api/projects/:id', async (req, res) => {
 // ----------------------------------------------
 // API: Download ไฟล์ (ต้องใช้ S3 V3)
 // ----------------------------------------------
-app.get('/api/download/:key(*)', async (req, res) => {
+// (!!!) FIX Routing Syntax: เปลี่ยน (*) เป็น (.*)
+app.get('/api/download/:key(.*)', async (req, res) => {
     const s3Key = req.params.key;
     if (!s3Key) {
         return res.status(400).send("Missing file key.");
