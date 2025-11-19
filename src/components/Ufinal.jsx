@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import styles from '../styles/Ufinal1.module.css'; // เรียกใช้ CSS ให้ตรงกับชื่อไฟล์จริง
+// เรียกใช้ CSS ให้ตรงกับชื่อไฟล์จริงที่คุณมี (Ufinal1.module.css)
+import styles from '../styles/Ufinal1.module.css';
 
 function Ufinal() {
     const navigate = useNavigate();
@@ -417,7 +418,7 @@ function Ufinal() {
                 </label>
             </div>
 
-            {/* ปุ่มกดยืนยัน (ใช้ buttonGroup เพื่อจัดตำแหน่งปุ่มย้อนกลับไปทางซ้าย) */}
+            {/* ใช้ buttonGroup เพื่อให้ปุ่มแยกซ้าย-ขวา */}
             <div className={styles.buttonGroup}>
                 <Link to="/documents" className={styles.linkButton}>กลับหน้าหลัก</Link>
                 <button type="submit" className={styles.submitButton} disabled={!formData.permission || isSubmitting}>

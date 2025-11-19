@@ -17,6 +17,8 @@
   background-color: var(--secondary-bg);
   color: var(--text-dark);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0 auto; 
+  padding: 20px;
 }
 
 .mainContent {
