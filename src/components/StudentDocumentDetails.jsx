@@ -1,4 +1,4 @@
-// ... (Import เหมือนเดิม) ...
+// src/components/StudentDocumentDetails.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Download, ChevronLeft, FileText, User, Clock, Calendar } from 'lucide-react';
@@ -6,7 +6,6 @@ import styles from '../styles/DocumentDetails.module.css';
 import tableStyles from '../styles/FileTable.module.css';
 
 const StudentDocumentDetails = () => {
-  // ... (State & Logic เหมือนเดิม) ...
   const { documentId } = useParams();
   const [document, setDocument] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -14,8 +13,7 @@ const StudentDocumentDetails = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-      // ... (Fetch Logic เหมือนเดิม) ...
-      const fetchDocumentDetails = async () => {
+    const fetchDocumentDetails = async () => {
       setLoading(true);
       setError(null); 
       
@@ -53,8 +51,7 @@ const StudentDocumentDetails = () => {
   }, [documentId]);
   
   const processFilesForTable = (files) => {
-      // ... (Logic เหมือนเดิม) ...
-      const fileGroupMap = new Map();
+    const fileGroupMap = new Map();
 
     if (!files || typeof files !== 'object' || Array.isArray(files)) {
         return [];
@@ -110,7 +107,6 @@ const StudentDocumentDetails = () => {
     return Array.from(fileGroupMap.values());
   };
 
-  // ... (Loading/Error Render เหมือนเดิม) ...
   if (loading) return <div className={styles.loading}><div className={styles.spinner}></div><p>กำลังโหลดรายละเอียดเอกสาร...</p></div>;
   if (error) return <div className={styles.errorMessage}><p>Error: {error}</p><button onClick={() => navigate(-1)} className={styles.backButton}><ChevronLeft /> กลับไปยังหน้าก่อนหน้า</button></div>;
   if (!document) return <div className={styles.noDocumentFound}><p>ไม่พบเอกสารที่คุณกำลังมองหา</p><button onClick={() => navigate(-1)} className={styles.backButton}><ChevronLeft /> กลับไปยังหน้าก่อนหน้า</button></div>;
@@ -131,10 +127,7 @@ const StudentDocumentDetails = () => {
   const renderDownloadLink = (fileName) => {
     if (!fileName) return <span className={tableStyles.noFile}></span>; 
     
-    // (!!!) FIX: เปลี่ยน Link ให้เป็นแบบ Query Parameter
-    // จาก: /api/download/filename
-    // เป็น: /api/download?key=filename
-    // ใช้ encodeURIComponent เพื่อความชัวร์ในกรณีที่ชื่อไฟล์มีอักขระพิเศษ
+    // ใช้ query param เพื่อความปลอดภัยและรองรับทุก browser
     const downloadUrl = `${import.meta.env.VITE_API_URL}/api/download?key=${encodeURIComponent(fileName)}`;
     
     return (
@@ -146,7 +139,6 @@ const StudentDocumentDetails = () => {
 
   return (
     <div className={styles.container}>
-      {/* ... (JSX ส่วน UI เหมือนเดิมทั้งหมด) ... */}
       <button onClick={() => navigate(-1)} className={styles.backButton}>
         <ChevronLeft size={20} /> กลับไปยังหน้าก่อนหน้า
       </button>
@@ -156,7 +148,6 @@ const StudentDocumentDetails = () => {
         <p className={styles.documentType}>{document.document_type || 'N/A'}</p>
 
         <div className={styles.detailsList}>
-             {/* ... (รายการ Details) ... */}
              <div className={styles.listItem}><span className={styles.listLabel}>ผู้แต่ง</span><span className={styles.listValue}>{document.author || 'N/A'}</span></div>
              <div className={styles.listItem}><span className={styles.listLabel}>ผู้แต่งร่วม</span><span className={styles.listValue}>{document.co_author || 'N/A'}</span></div>
              <div className={styles.listItem}><span className={styles.listLabel}>สาขาวิชา</span><span className={styles.listValue}>{document.department || 'N/A'}</span></div>
