@@ -1,6 +1,6 @@
 /* src/styles/DocumentDetails.module.css */
 .container {
-  max-width: 1000px;
+  max-width: 1500px;
   margin: 0 auto;
   padding: 20px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -145,23 +145,26 @@
 }
 
 .footer {
-  margin-top: 40px;
-  padding-top: 20px;
-  border-top: 1px solid #e5e7eb;
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
   align-items: center;
-  gap: 10px;
-  color: #9ca3af;
-  font-size: 0.875rem;
+  width:auto;
+  background-color: #e0e0e0; /* Even darker background for footer */
+  color: #888; /* Lighter grey text */
+  font-size: 0.7rem;
+  margin-top: auto; /* Push footer to the bottom */
+}
+
+.footerLinks {
+  gap: 25px;
 }
 
 .footerLink {
-  display: flex;
-  gap: 5px;
+  color: var(--text-light);
+  text-decoration: none;
+  transition: color 0.2s ease;
 }
 
-.footerLink a {
-  color: #3b82f6;
-  text-decoration: none;
+.footerLink:hover {
+  color: var(--accent-blue);
 }
