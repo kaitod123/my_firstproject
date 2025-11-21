@@ -1,4 +1,6 @@
+// src/components/ProfessorDocumentDetails.jsx
 import React, { useState, useEffect } from 'react';
+// --- (แก้ไข) 1. Import useNavigate ---
 import { useParams, useNavigate } from 'react-router-dom';
 import { Download, ChevronLeft, FileText, User, Clock, Calendar } from 'lucide-react';
 import styles from '../styles/DocumentDetails.module.css';
@@ -8,28 +10,42 @@ const StudentDocumentDetails = () => {
   const { documentId } = useParams();
   const [document, setDocument] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const navigate = useNavigate();
+  const [error, setError] = useState(null); // --- (เพิ่ม) 2. เพิ่ม state สำหรับ error ---
+  const navigate = useNavigate(); // --- (เพิ่ม) 3. Initialize navigate ---
+
 
   useEffect(() => {
     const fetchDocumentDetails = async () => {
       setLoading(true);
-      setError(null); 
+      setError(null); // --- (เพิ่ม)
+      
       const userData = JSON.parse(localStorage.getItem('user'));
       if (!userData || !userData.id) {
-          setError("ไม่พบข้อมูลผู้ใช้ กรุณาล็อกอินใหม่อีกครั้ง"); 
+          console.error("User data not found in localStorage.");
+          setError("ไม่พบข้อมูลผู้ใช้ กรุณาล็อกอินใหม่อีกครั้ง"); // --- (เพิ่ม)
           setLoading(false);
           return;
       }
       const userId = userData.id;
+
       try {
+        // *** FIX: เปลี่ยน fetch URL ให้ถูกต้องสำหรับ StudentDetails
         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/student/documents/${documentId}?userId=${userId}`);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`); 
+        
+        if (!response.ok) {
+           throw new Error(`HTTP error! status: ${response.status}`); // --- (แก้ไข)
+        }
+        
         const data = await response.json();
-        if (data) setDocument(data);
-        else setError('ไม่พบเอกสารนี้'); 
+        
+        if (data) {
+          setDocument(data);
+        } else {
+          setError('ไม่พบเอกสารนี้'); // --- (เพิ่ม)
+        }
       } catch (err) {
-        setError(`ไม่สามารถดึงข้อมูลเอกสารได้: ${err.message}`); 
+        console.error("เกิดข้อผิดพลาดในการดึงข้อมูลเอกสาร:", err);
+        setError(`ไม่สามารถดึงข้อมูลเอกสารได้: ${err.message}`); // --- (แก้ไข)
       } finally {
         setLoading(false);
       }
@@ -39,43 +55,125 @@ const StudentDocumentDetails = () => {
   
   const processFilesForTable = (files) => {
     const fileGroupMap = new Map();
-    if (!files || typeof files !== 'object' || Array.isArray(files)) return [];
+
+    if (!files || typeof files !== 'object' || Array.isArray(files)) {
+        return [];
+    }
 
     Object.values(files).flat().forEach(fileName => {
         if (typeof fileName !== 'string' || !fileName) return; 
+
+        // *** FIX: แยก S3 Key ออกจาก URL เต็มๆ ***
         let s3Key = fileName;
-        const parts = fileName.split('.');
+        try {
+            const url = new URL(fileName);
+            // Key จะเป็น /projects/field/timestamp-filename.ext (ต้องลบ / ตัวแรกออก)
+            s3Key = url.pathname.substring(1); 
+        } catch (e) {
+            // หากไม่ใช่ URL ที่ถูกต้อง (อาจจะเป็น S3 Key อยู่แล้ว) ใช้ค่าเดิม
+        }
+
+        // แยกชื่อไฟล์เพื่อจัดกลุ่ม
+        const urlParts = fileName.split('/');
+        const nameWithTimestamp = urlParts[urlParts.length - 1]; // ชื่อไฟล์พร้อม timestamp
+        
+        const parts = nameWithTimestamp.split('.');
         const extension = parts.pop().toLowerCase(); 
-        const nameWithTimestamp = fileName.split('/').pop();
-        const baseName = nameWithTimestamp.substring(nameWithTimestamp.indexOf('-') + 1);
+        const nameWithoutExtension = parts.join('.'); 
+
+        // เอา Timestamp ออก: 123456789-filename -> filename
+        const baseName = nameWithoutExtension.substring(nameWithoutExtension.indexOf('-') + 1);
 
         if (!fileGroupMap.has(baseName)) {
-            fileGroupMap.set(baseName, { name: baseName, pdf: null, docx: null, zip: null, rar: null, exe: null, psd: null, jpg: null, png: null });
+            fileGroupMap.set(baseName, { 
+                name: baseName, pdf: null, docx: null, 
+                zip: null, rar: null, exe: null, psd: null, jpg: null, png: null 
+            });
         }
+
         const fileGroup = fileGroupMap.get(baseName);
-        if (['pdf', 'docx', 'zip', 'rar', 'exe', 'psd'].includes(extension)) fileGroup[extension] = s3Key;
-        else if (['jpg', 'jpeg'].includes(extension)) fileGroup.jpg = s3Key;
-        else if (extension === 'png') fileGroup.png = s3Key;
+        
+        // (!!!) START: แก้ไขส่วนนี้ (!!!)
+        // (ลบ case 'doc' ออกตามที่ขอ)
+        switch (extension) {
+            case 'pdf': fileGroup.pdf = s3Key; break;
+            // case 'doc': fileGroup.doc = s3Key; break; // <-- ลบออก
+            case 'docx': fileGroup.docx = s3Key; break;
+            case 'zip': fileGroup.zip = s3Key; break;
+            case 'rar': fileGroup.rar = s3Key; break;
+            case 'exe': fileGroup.exe = s3Key; break;
+            case 'psd': fileGroup.psd = s3Key; break;
+            case 'jpg':
+            case 'jpeg': 
+                fileGroup.jpg = s3Key; 
+                break;
+            case 'png':
+                fileGroup.png = s3Key;
+                break;
+            default: 
+                break;
+        }
+        // (!!!) END: แก้ไขส่วนนี้ (!!!)
     });
+
     return Array.from(fileGroupMap.values());
   };
 
-  if (loading) return <div className={styles.loading}><div className={styles.spinner}></div><p>กำลังโหลด...</p></div>;
-  if (error) return <div className={styles.errorMessage}><p>Error: {error}</p><button onClick={() => navigate(-1)} className={styles.backButton}><ChevronLeft /> กลับ</button></div>;
-  if (!document) return <div className={styles.noDocumentFound}><p>ไม่พบเอกสาร</p></div>;
+  // --- (เพิ่ม) 4. เพิ่มส่วน Loading, Error, Not Found ---
+  if (loading) {
+    return (
+      <div className={styles.loading}>
+        <div className={styles.spinner}></div>
+        <p>กำลังโหลดรายละเอียดเอกสาร...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.errorMessage}>
+        <p>Error: {error}</p>
+        <button 
+          onClick={() => navigate(-1)} 
+          className={styles.backButton}
+        >
+          <ChevronLeft /> กลับไปยังหน้าก่อนหน้า
+        </button>
+      </div>
+    );
+  }
+
+  if (!document) {
+     return (
+      <div className={styles.noDocumentFound}>
+        <p>ไม่พบเอกสารที่คุณกำลังมองหา</p>
+        <button onClick={() => navigate(-1)} className={styles.backButton}>
+          <ChevronLeft /> กลับไปยังหน้าก่อนหน้า
+        </button>
+      </div>
+    );
+  }
+  // --- (จบส่วนที่เพิ่ม) ---
 
   let files = {};
-  try {
-      files = (typeof document.file_paths === 'string') ? JSON.parse(document.file_paths) : document.file_paths || {};
-  } catch (e) { files = {}; }
+  if (document.file_paths) {
+      try {
+          files = (typeof document.file_paths === 'string' && document.file_paths.trim().startsWith('{'))
+              ? JSON.parse(document.file_paths)
+              : document.file_paths; 
+      } catch (e) {
+          console.error("Failed to parse file_paths JSON:", e);
+          files = {};
+      }
+  }
+
 
   const processedFiles = processFilesForTable(files);
 
   const renderDownloadLink = (fileName) => {
     if (!fileName) return <span className={tableStyles.noFile}></span>; 
-    const downloadUrl = `${import.meta.env.VITE_API_URL}/api/download?key=${encodeURIComponent(fileName)}`;
     return (
-      <a href={downloadUrl} className={tableStyles.downloadLink} target="_blank" rel="noopener noreferrer">
+      <a href={`${import.meta.env.VITE_API_URL}/api/download/${fileName}`} className={tableStyles.downloadLink} target="_blank" rel="noopener noreferrer">
         <Download size={16} /> 
       </a>
     );
@@ -83,50 +181,133 @@ const StudentDocumentDetails = () => {
 
   return (
     <div className={styles.container}>
-      <button onClick={() => navigate(-1)} className={styles.backButton}><ChevronLeft size={20} /> กลับไปยังหน้าก่อนหน้า</button>
+      <button onClick={() => navigate(-1)} className={styles.backButton}>
+        <ChevronLeft size={20} /> กลับไปยังหน้าก่อนหน้า
+      </button>
+
       <div className={styles.mainContent}>
-        <h1 className={styles.title}>{document.title}</h1>
+        <h1 
+          className={styles.title}
+          style={{ overflowWrap: 'break-word' }} 
+        >
+          {document.title}
+        </h1>
         <p className={styles.documentType}>{document.document_type || 'N/A'}</p>
+
         <div className={styles.detailsList}>
-             <div className={styles.listItem}><span className={styles.listLabel}>ผู้แต่ง</span><span className={styles.listValue}>{document.author || 'N/A'}</span></div>
-             <div className={styles.listItem}><span className={styles.listLabel}>ผู้แต่งร่วม</span><span className={styles.listValue}>{document.co_author || 'N/A'}</span></div>
-             <div className={styles.listItem}><span className={styles.listLabel}>สาขาวิชา</span><span className={styles.listValue}>{document.department || 'N/A'}</span></div>
-             <div className={styles.listItem}><span className={styles.listLabel}>อาจารย์ที่ปรึกษา</span><span className={styles.listValue}>{document.advisorName || document.advisorname || 'N/A'}</span></div>
-             <div className={styles.listItem}><span className={styles.listLabel}>อาจารย์ที่ปรึกษาร่วม</span><span className={styles.listValue}>{document.coadvisorName || document.coadvisorname || 'N/A'}</span></div>
-             <div className={styles.listItem}><span className={styles.listLabel}>ปีที่เผยแพร่</span><span className={styles.listValue}>{document.publish_year ? document.publish_year + 543 : 'N/A'}</span></div>
-             <div className={styles.listItem}><span className={styles.listLabel}>ภาษา</span><span className={styles.listValue}>{document.language || 'N/A'}</span></div>
-             <div className={styles.listItem}><span className={styles.listLabel}>วันที่อัพโหลด</span><span className={styles.listValue}>{document.scan_date ? new Date(document.scan_date).toLocaleDateString('th-TH') : 'N/A'}</span></div>
-             <div className={styles.listItem}><span className={styles.listLabel}>วันแสดงผล</span><span className={styles.listValue}>{document.display_date ? new Date(document.display_date).toLocaleDateString('th-TH') : 'N/A'}</span></div>
+          <div className={styles.listItem}>
+            <span className={styles.listLabel}>ผู้แต่ง</span>
+            <span className={styles.listValue}>{document.author || 'N/A'}</span>
+          </div>
+          <div className={styles.listItem}>
+            <span className={styles.listLabel}>ผู้แต่งร่วม</span>
+            <span className={styles.listValue}>{document.co_author || 'N/A'}</span>
+          </div>
+          <div className={styles.listItem}>
+            <span className={styles.listLabel}>สาขาวิชา</span>
+            <span className={styles.listValue}>{document.department || 'N/A'}</span>
+          </div>
+          <div className={styles.listItem}>
+            <span className={styles.listLabel}>อาจารย์ที่ปรึกษา</span>
+            <span className={styles.listValue}>{document.advisorName || document.advisorname || 'N/A'}</span>
+          </div>
+          <div className={styles.listItem}>
+            <span className={styles.listLabel}>ปีที่เผยแพร่</span>
+            <span className={styles.listValue}>{document.publish_year ? document.publish_year + 543 : 'N/A'}</span>
+          </div>
+          <div className={styles.listItem}>
+            <span className={styles.listLabel}>ภาษา</span>
+            <span className={styles.listValue}>{document.language || 'N/A'}</span>
+          </div>
+          <div className={styles.listItem}>
+            <span className={styles.listLabel}>วันที่อัพโหลด</span>
+            <span className={styles.listValue}>{document.scan_date ? new Date(document.scan_date).toLocaleDateString('th-TH') : 'N/A'}</span>
+          </div>
+          <div className={styles.listItem}>
+            <span className={styles.listLabel}>วันแสดงผล</span>
+            <span className={styles.listValue}>{document.display_date ? new Date(document.display_date).toLocaleDateString('th-TH') : 'N/A'}</span>
+          </div>
         </div>
-        <div className={styles.section}><h2>บทคัดย่อ</h2><p>{document.abstract || 'ไม่มีข้อมูล'}</p></div>
+
+
+        <div className={styles.section}>
+          <h2>บทคัดย่อ</h2>
+          <p>{document.abstract || 'ไม่มีข้อมูล'}</p>
+        </div>
+
+        <div className={styles.section}>
+          <h2>คำสำคัญ</h2>
+          <div className={styles.keywords}>
+            {document.keywords && document.keywords.split(',').map((keyword, index) => (
+              <span key={index} className={styles.keywordTag}>{keyword.trim()}</span>
+            ))}
+          </div>
+        </div>
+        
         <div className={styles.section}>
           <h2>ไฟล์แนบ</h2>
           {processedFiles.length > 0 ? (
             <div className={tableStyles.fileTableContainer}>
-                <table className={tableStyles.fileTable}>
+                <table 
+                        className={tableStyles.fileTable}
+                        style={{ tableLayout: 'fixed', width: '100%' }}
+                >
                 <thead>
-                  <tr><th>ชื่อ</th><th>PDF</th><th>DOCX</th><th>ZIP/RAR</th><th>EXE</th><th>PSD</th><th>IMG</th></tr>
+                  {/* (!!!) START: แก้ไขความกว้างคอลัมน์ (!!!) */}
+                  <tr>
+                            <th style={{ width: '40%', textAlign: 'left' }}>ชื่อ</th>
+                            <th style={{ width: '10%', textAlign: 'center' }}>PDF</th>
+                            <th style={{ width: '10%', textAlign: 'center' }}>DOCX</th>
+                            <th style={{ width: '10%', textAlign: 'center' }}>ZIP,RAR</th>
+                            <th style={{ width: '10%', textAlign: 'center' }}>EXE</th>
+                            <th style={{ width: '10%', textAlign: 'center' }}>PSD</th>
+                            <th style={{ width: '10%', textAlign: 'center' }}>JPG/PNG</th>
+                  </tr>
+                  {/* (!!!) END: แก้ไขความกว้างคอลัมน์ (!!!) */}
                 </thead>
                 <tbody>
                   {processedFiles.map((file, index) => (
                     <tr key={index}>
-                      <td className={tableStyles.fileTableName}>{file.name}</td>
-                      <td>{renderDownloadLink(file.pdf)}</td>
-                      <td>{renderDownloadLink(file.docx)}</td>
-                      <td>{renderDownloadLink(file.zip)}{renderDownloadLink(file.rar)}</td>
-                      <td>{renderDownloadLink(file.exe)}</td>
-                      <td>{renderDownloadLink(file.psd)}</td>
-                      <td>{renderDownloadLink(file.jpg)}{renderDownloadLink(file.png)}</td>
+                      <td 
+                        className={tableStyles.fileTableName} 
+                        style={{ wordBreak: 'break-all', textAlign: 'left' }}
+                      >
+                        {file.name}
+                      </td>
+                              
+                      {/* (!!!) START: แก้ไข (เพิ่ม style) (!!!) */}
+                      <td style={{ textAlign: 'center' }}>{renderDownloadLink(file.pdf)}</td>
+                      <td style={{ textAlign: 'center' }}>{renderDownloadLink(file.docx)}</td>
+                      <td style={{ textAlign: 'center' }}>
+                        {renderDownloadLink(file.zip)}
+                        {renderDownloadLink(file.rar)}
+                      </td>
+                      <td style={{ textAlign: 'center' }}>{renderDownloadLink(file.exe)}</td>
+                      <td style={{ textAlign: 'center' }}>{renderDownloadLink(file.psd)}</td>
+                      <td style={{ textAlign: 'center' }}>
+                        {renderDownloadLink(file.jpg)}
+                        {renderDownloadLink(file.png)}
+                      </td>
+                      {/* (!!!) END: แก้ไข (เพิ่ม style) (!!!) */}
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-          ) : <p>ไม่พบไฟล์แนบ</p>}
+          ) : (
+            <p>ไม่พบไฟล์แนบ</p>
+          )}
         </div>
       </div>
-      <footer className={styles.footer}><p className={styles.footerText}>Copyright © 2025</p></footer>
+            <footer className={styles.footer}>
+                <p className={styles.footerText}>© 2023 University Project Hub</p>
+                <div className={styles.footerLinks}>
+                  <a href="#" className={styles.footerLink}>Contact Us</a>
+                  <a href="#" className={styles.footerLink}>Privacy Policy</a>
+                </div>
+            </footer>
     </div>
   );
 };
+
 export default StudentDocumentDetails;
